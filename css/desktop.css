@@ -1,0 +1,104 @@
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.codenode-cell-frame {
+    overflow-x: none;
+    overflow-y: auto;
+    display: block;
+    margin: 30px;
+    width: 700px;
+    height: 300px;
+    border: 2px solid red;
+}
+
+.codenode-cell-input {
+    position: relative;
+    display: block;
+    height: auto;
+    margin: 10px;
+}
+
+.codenode-cell-input-label {
+    width: auto;
+    height: auto;
+    position: absolute;
+    white-space: pre;
+    font-family: monospace;
+    color: blue;
+    /* visibility: hidden; */
+}
+
+.codenode-cell-input-content {
+    margin-right: 22px; /* accomodate for W3C box model */
+    display: block;
+    height: auto;
+}
+
+.codenode-cell-input-textarea {
+    padding: 5px;
+    width: 100%;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-family: monospace;
+    border: 1px solid #bfbfbf;
+    -moz-box-shadow: 0 0 6px #bfbfbf;
+    -webkit-box-shadow: 0 0 6px #bfbfbf;
+}
+
+.codenode-cell-input-textarea-focus {
+    border: 1px solid #999adf;
+}
+
+.codenode-cell-input-controls {
+    margin-top: 2px;
+    width: 100%;
+    height: 10px;
+    font-size: 10px;
+}
+
+.codenode-cell-input-control {
+    padding-right: 5px;
+    display: inline;
+    cursor: pointer;
+    color: #dddddd;
+}
+
+.codenode-cell-input-control.codenode-enabled {
+    color: #bfbfbf;
+}
+
+.codenode-cell-input-control.codenode-enabled:hover {
+    color: blue;
+}
+
+.codenode-cell-input-hidden {
+    position: absolute;
+    display: block;
+    top: -10000000px;
+    left: -10000000px;
+    white-space: pre;
+    border: 1px dotted red;
+}
+
+.codenode-cell-input-bracket {
+    border: 1px solid blue;
+    border-left: none;
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 5px;
+    z-index: 10000;
+    cursor: pointer;
+}
+
+.codenode-cell-input-bracket:hover {
+    border-style: dotted;
+    border-left: none;
+}
+

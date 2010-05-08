@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+{% load compressed %}
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Codenode Desktop</title>
+        <script src="/static/js/start.js" type="text/javascript"></script>
+        <link href="/notebook/user_style?nocache=whatever" rel="stylesheet" type="text/css" />
+        {% compressed_css 'desktop' %}
+        {% compressed_js 'desktop' %}
+        <link href="/static/css/notebook.css" rel="stylesheet" type="text/css" />
+        <link href="/static/css/desktop.css" rel="stylesheet" type="text/css" />
+        <script src="/static/js/desktop.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div id='frame' class="codenode-cell-frame"></div>
+        <div id="bookshelf"></div>
+        <textarea>some stuff</textarea>
+    </body>
+</head>
+
