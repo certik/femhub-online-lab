@@ -19,7 +19,7 @@ Codenode.CellManager = function(root, json) {
     return {
         id: Codenode.unique(),
         json: json || Codenode.json,
-        root: root, // || Ext.getBody(),
+        root: root || Ext.getBody(),
 
         evalIndex: 0,
 
@@ -27,6 +27,7 @@ Codenode.CellManager = function(root, json) {
         hardEvalTimeout: null,
         newCellOnEval: true,
         cycleCells: true,
+        tabWidth: 4,
 
         newCell: function(render) {
             var cell = new Codenode.Cell({owner: this});
@@ -282,24 +283,112 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.setupKeyMap();
     },
 
-    newline: function() {
-        /* DUMMY */
-        this.autosize(true);
-        var text = this.el_textarea.getValue();
-        this.el_textarea.dom.value = text + '\n';
-    },
+    getSelection: function() {
+        var dom = this.el_textarea.dom;
 
-    backspace: function() {
-        var input = this.el_textarea.getValue();
-
-        if (input.length == 0) {
-            this.remove();
+        if (Ext.isDefined(dom.selectionStart)) {
+            return {
+                start: dom.selectionStart,
+                end: dom.selectionEnd,
+            }
         } else {
+            var range = dom.createTextRange();
 
+            range.moveStart("character", 1);
+            range.collapse();
+            range.moveEnd("character", 1);
+            range.select();
+
+            // TODO
         }
     },
 
-    autosize: function(enter) {
+    setSelection: function(obj) {
+        var dom = this.el_textarea.dom;
+
+        if (Ext.isDefined(dom.selectionStart)) {
+            dom.selectionStart = obj.start;
+            dom.selectionEnd = obj.end;
+        } else {
+            var range = dom.createTextRange();
+
+            range.moveStart("character", obj.start);
+            range.collapse();
+            range.moveEnd("character", obj.end);
+            range.select();
+        }
+    },
+
+    newline: function() {
+        var input = this.getInput();
+        var selection = this.getSelection();
+
+        var pos = selection.start;
+
+        if (selection.start == selection.end) {
+            if (pos == 0) {
+                input = '\n' + input;
+                pos += 1;
+            } else {
+                var insert = '\n';
+
+                if (input[pos-1] == ':') {
+                    var i = pos;
+
+                    while (i >= 0) {
+                        if (input[i-1] == '\n') {
+                            break;
+                        } else {
+                            i--;
+                        }
+                    }
+
+                    while (input[i++] == ' ') {
+                        insert += ' ';
+                    }
+
+                    for (var i = 0; i < this.owner.tabWidth; i++) {
+                        insert += ' ';
+                    }
+                }
+
+                input = input.slice(0, pos) + insert + input.slice(pos);
+                pos += insert.length;
+            }
+        } else {
+            input = input.slice(0, selection.start) + input.slice(selection.end);
+        }
+
+        this.setInput(input);
+        this.autosize();
+
+        this.setSelection({ start: pos, end: pos });
+    },
+
+    backspace: function() {
+        var input = this.getInput();
+        var selection = this.getSelection();
+
+        var pos = selection.start;
+
+        if (selection.start == selection.end) {
+            if (pos == 0) {
+                this.removeCell();
+                return;
+            }
+
+            input = input.slice(0, --pos) + input.slice(pos+1);
+        } else {
+            input = input.slice(0, selection.start) + input.slice(selection.end);
+        }
+
+        this.setInput(input);
+        this.autosize();
+
+        this.setSelection({ start: pos, end: pos });
+    },
+
+    autosize: function() {
         this.fireEvent('preautosize', this);
 
         this.copyFontStyles(this.el_textarea, this.el_label);
@@ -326,10 +415,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         } else {
             input = input.replace(/<|>|&/g, 'X');
             input = input.replace(/\n$/g, '\nX');
-        }
-
-        if (Ext.isDefined(enter) && enter) {
-            input += '\nX';
         }
 
         this.el_hidden.update(input);
@@ -372,7 +457,8 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     removeCell: function() {
-        /* pass */
+        this.nextCell();
+        this.destroy();
     },
 
     collapseCell: function() {
@@ -429,5 +515,14 @@ Ext.onReady(function() {
     for (var i = 0; i < 5; i++) {
         cells.newCell(true);
     }
+
+    /*
+    <div id='cells2' class="codenode-cell-frame"></div>
+    var cells2 = new Codenode.CellManager(Ext.get('cells2'));
+
+    for (var i = 0; i < 15; i++) {
+        cells2.newCell(true);
+    }
+    */
 });
 
