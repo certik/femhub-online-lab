@@ -217,7 +217,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     },
 
     clearLabel: function() {
-        this.el_label.update('');
+        this.el_label.update('In [' + this.owner.evalIndex + ']: ');
         this.hideLabel();
     },
 
