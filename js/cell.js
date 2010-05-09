@@ -16,19 +16,14 @@ Codenode.unique = function() {
 }
 
 Codenode.CellManager = function(config) {
-    if (!Ext.isDefined(config)) {
-        config = {};
-    }
+    config = config || {};
 
     if (Ext.isDefined(config.root)) {
         config.root = Ext.get(config.root);
-    } else {
-        config.root = Ext.getBody();
     }
 
-    return {
+    return Ext.apply({
         id: Codenode.unique(),
-        root: config.root,
 
         evalIndex: 0,
 
@@ -39,14 +34,16 @@ Codenode.CellManager = function(config) {
         tabWidth: 4,
 
         newCell: function(config) {
-            var cell = new Codenode.InputCell({owner: this});
+            config = config || {};
 
-            if (!Ext.isDefined(config)) {
-                config = {};
-            }
+            var cell = new Codenode.InputCell({
+                owner: this,
+                start: config.start,
+            });
 
             if (config.render !== false) {
                 cell.render(this.root, config.position);
+                this.root.scroll('bottom', 100);
             }
 
             return cell;
@@ -55,11 +52,41 @@ Codenode.CellManager = function(config) {
         nextEvalIndex: function() {
             return ++this.evalIndex;
         },
-    }
+
+        getFirstCell: function() {
+            return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:first", this.root.dom).id);
+        },
+
+        getLastCell: function() {
+            return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:last", this.root.dom).id);
+        },
+
+        getNextCell: function(id) {
+            var elt = Ext.DomQuery.selectNode(".codenode-cell-input:prev(div[id=" + id + "])", this.root.dom);
+
+            if (Ext.isDefined(elt)) {
+                return Ext.getCmp(elt.id);
+            } else {
+                return null;
+            }
+        },
+
+        getPrevCell: function(id) {
+            var elt = Ext.DomQuery.selectNode(".codenode-cell-input:next(div[id=" + id + "])", this.root.dom);
+
+            if (Ext.isDefined(elt)) {
+                return Ext.getCmp(elt.id);
+            } else {
+                return null;
+            }
+        },
+    }, config, {
+        root: Ext.getBody(),
+    });
 }
 
 Codenode.Cell = Ext.extend(Ext.BoxComponent, {
-    collepsed: false,
+    collapsed: false,
 
     constructor: function(config) {
         config.id = Codenode.unique();
@@ -185,11 +212,11 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     },
 
     getFirstCell: function() {
-        return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:first", this.owner.root.dom).id);
+        return this.owner.getFirstCell();
     },
 
     getLastCell: function() {
-        return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:last", this.owner.root.dom).id);
+        return this.owner.getLastCell();
     },
 
     isFirstCell: function() {
@@ -201,23 +228,11 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     },
 
     getNextCell: function() {
-        var elt = Ext.DomQuery.selectNode(".codenode-cell-input:prev(div[id=" + this.id + "])", this.owner.root.dom);
-
-        if (Ext.isDefined(elt)) {
-            return Ext.getCmp(elt.id);
-        } else {
-            return null;
-        }
+        return this.owner.getNextCell(this.id);
     },
 
     getPrevCell: function() {
-        var elt = Ext.DomQuery.selectNode(".codenode-cell-input:next(div[id=" + this.id + "])", this.owner.root.dom);
-
-        if (Ext.isDefined(elt)) {
-            return Ext.getCmp(elt.id);
-        } else {
-            return null;
-        }
+        return this.owner.getPrevCell(this.id);
     },
 
     setupObserver: function() {
@@ -482,6 +497,10 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         this.setupObserver();
         this.setupEvents();
         this.setupKeyMap();
+
+        if (this.start === true) {
+            // TODO: this.el_textarea.update("Click here to start ...");
+        }
     },
 
     newline: function() {
@@ -719,20 +738,64 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     },
 });
 
+Codenode.Cells = Ext.extend(Ext.BoxComponent, {
+
+    constructor: function(config) {
+        this.config = config;
+        Codenode.Cells.superclass.constructor.apply(this, arguments);
+    },
+
+    initComponent: function() {
+        Codenode.Cells.superclass.initComponent.call(this);
+    },
+
+    onRender: function(container, position) {
+        Codenode.Cells.superclass.onRender.apply(this, arguments);
+
+        this.el.addClass('codenode-cells');
+
+        this.cellMgr = new Codenode.CellManager(
+            Ext.applyIf({ root: this.el }, this.config)
+        );
+    },
+
+    addCell: function(config) {
+        this.cellMgr.newCell(config);
+    },
+});
+
+Ext.reg('x-codenode-cells', Codenode.Cells);
+
 Ext.onReady(function() {
-    var cells = new Codenode.CellManager({ root: 'cells' });
+    var cells1 = new Codenode.CellManager({ root: 'cells1' });
 
     for (var i = 0; i < 3; i++) {
-        cells.newCell();
+        cells1.newCell({ start: !i ? true : false });
     }
 
-    /*
-    <div id='cells2' class="codenode-cell-frame"></div>
-    var cells2 = new Codenode.CellManager(Ext.get('cells2'));
+    var cells2 = new Codenode.CellManager({ root: 'cells2' });
 
-    for (var i = 0; i < 15; i++) {
-        cells2.newCell(true);
+    for (var i = 0; i < 3; i++) {
+        cells2.newCell({ start: !i ? true : false });
     }
-    */
+
+    var notebook = new Ext.Window({
+        title: 'Codenode Notebook',
+        layout: 'fit',
+        width: 300,
+        height: 200,
+        maximizable: true,
+    })
+
+    var cells = new Codenode.Cells({
+        tabWidth: 2,
+    });
+
+    notebook.add(cells);
+    notebook.doLayout();
+
+    notebook.show();
+
+    cells.addCell({ start: true });
 });
 
