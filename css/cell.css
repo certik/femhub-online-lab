@@ -54,6 +54,7 @@
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
+    line-height: 15px;
     font-family: monospace;
     border: 1px solid #bfbfbf;
     -moz-box-shadow: 0 0 6px #bfbfbf;
@@ -85,15 +86,6 @@
 
 .codenode-cell-input-control.codenode-enabled:hover {
     color: blue;
-}
-
-.codenode-cell-input-hidden {
-    position: absolute;
-    display: block;
-    top: -10000000px;
-    left: -10000000px;
-    white-space: pre;
-    border: 1px dotted red;
 }
 
 .codenode-cell-bracket {

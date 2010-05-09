@@ -121,7 +121,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     collapseCell: function() {
         this.fireEvent('collapsing', this);
 
-
         var children = Ext.query('*', this.el.dom);
         this.hiddenEl = [];
 
@@ -184,14 +183,6 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     copyFontStyles: function(from, to) {
         var styles = from.getStyles(
             'line-height', 'font-size', 'font-family', 'font-weight', 'font-style');
-        to.applyStyles(styles);
-    },
-
-    copyBoxStyles: function(from, to) {
-        var styles = from.getStyles(
-            'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
-            'margin-top', 'margin-bottom', 'margin-left', 'margin-right',
-            'border-top-width', 'border-bottom-width', 'border-left-width', 'border-right-width');
         to.applyStyles(styles);
     },
 
@@ -536,13 +527,13 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
         this.el.addClass('codenode-cell-input');
 
-        this.el.createChild({
+        this.el_label = this.el.createChild({
             tag: 'div',
             cls: 'codenode-cell-input-label',
             html: 'In [' + this.owner.evalIndex + ']: ',
         });
 
-        this.el.createChild({
+        this.el_content = this.el.createChild({
             tag: 'div',
             cls: 'codenode-cell-input-content',
             children: [
@@ -571,11 +562,6 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
             ],
         });
 
-        this.el.createChild({
-            tag: 'div',
-            cls: 'codenode-cell-input-hidden',
-        });
-
         this.el_expander = this.el.createChild({
             tag: 'textarea',
             cls: 'codenode-cell-expander',
@@ -583,12 +569,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
         this.el_expander.dom.readonly = true;
 
-        this.el_label = this.el.child('.codenode-cell-input-label');
-
-        this.el_content = this.el.child('.codenode-cell-input-content');
         this.el_textarea = this.el.child('.codenode-cell-input-textarea');
-        this.el_hidden = this.el.child('.codenode-cell-input-hidden');
-
         this.el_controls = this.el.child('.codenode-cell-input-controls');
         this.el_evaluate = this.el.child('.codenode-cell-input-evaluate');
         this.el_clear = this.el.child('.codenode-cell-input-clear');
@@ -675,43 +656,32 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
     autosize: function() {
         this.copyFontStyles(this.el_textarea, this.el_label);
-        this.copyFontStyles(this.el_textarea, this.el_hidden);
 
-        var x_margin = this.el_textarea.getMargins('t');
         var x_border = this.el_textarea.getBorderWidth('t');
         var x_padding = this.el_textarea.getPadding('t');
 
-        var margin_top = x_margin + x_border + x_padding + 'px';
-
+        var margin_top = x_border + x_padding + 'px';
         this.el_label.applyStyles({ 'margin-top': margin_top });
-        this.copyBoxStyles(this.el_textarea, this.el_hidden);
 
-        this.el_content.applyStyles({'margin-left': this.el_label.getWidth() + 'px'});
+        var width = this.el_label.getWidth() + 'px';
+        this.el_content.applyStyles({'margin-left': width});
 
         if (!this.collapsed) {
-            var width = this.el_textarea.getWidth();
-            this.el_hidden.setWidth(width);
+            var nl = this.getInput().replace(/[^\n]/g, '').length + 1;
 
-            var input = this.getInput();
+            var line = this.el_textarea.getStyle('line-height');
+            var border = this.el_textarea.getBorderWidth('tb');
+            var padding = this.el_textarea.getPadding('tb');
 
-            if (input.length == 0) {
-                input = 'X';
-            } else {
-                input = input.replace(/<|>|&/g, 'X');
-                input = input.replace(/\n$/g, '\nX');
-            }
+            var height = nl*parseFloat(line) + border + padding;
 
-            this.el_hidden.update(input);
-
-            var height = this.el_hidden.getHeight();
+            this.el_textarea.dom.rows = nl + 1;
             this.el_textarea.setHeight(height);
         }
     },
 
     evaluateCell: function(config) {
-        if (!Ext.isDefined(config)) {
-            config = {};
-        }
+        config = config || {};
 
         var input = this.getInput();
 
