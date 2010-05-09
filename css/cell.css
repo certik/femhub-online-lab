@@ -25,6 +25,7 @@
     display: block;
     height: 30px;
     margin: 10px;
+    border: none;
 }
 
 .codenode-cell-input {
@@ -145,7 +146,10 @@
     border-bottom: 1px dashed #bfbfbf;
 }
 
-.codenode-cell-collapsed.codenode-cell-collapsed-focus,
+.codenode-cell-collapsed.codenode-cell-collapsed-focus {
+    border-bottom-style: solid;
+}
+
 .codenode-cell-collapsed.codenode-enabled:hover {
     border-bottom-color: blue;
 }
@@ -156,9 +160,7 @@
     border-bottom-color: #bfbfbf;
 }
 
-.codenode-cell-triangle.codenode-cell-triangle-focus,
 .codenode-cell-collapsed.codenode-enabled:hover .codenode-cell-triangle {
-    display: block;
     border-right-color: blue;
     border-bottom-color: blue;
 }

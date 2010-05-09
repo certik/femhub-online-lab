@@ -773,8 +773,6 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     focusCell: function() {
         if (this.collapsed) {
             this.el_expander.focus();
-
-            this.el_expand_triangle.addClass('codenode-cell-triangle-focus');
             this.el.addClass('codenode-cell-collapsed-focus');
         } else {
             this.el_textarea.focus();
@@ -784,9 +782,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
     blurCell: function() {
         if (this.collapsed) {
-            this.el_expand_triangle.removeClass('codenode-cell-triangle-focus');
             this.el.removeClass('codenode-cell-collapsed-focus');
-
             this.el_expander.blur();
         } else {
             this.el_textarea.removeClass('codenode-cell-input-textarea-focus');
