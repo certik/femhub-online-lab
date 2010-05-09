@@ -238,15 +238,12 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
         if (Ext.isDefined(dom.selectionStart)) {
             if (obj === 'start') {
-                dom.selectionStart = 0;
-                dom.selectionEnd = 0;
+                dom.setSelectionRange(0, 0);
             } else if (obj == 'end') {
                 var end = this.getInput().length;
-                dom.selectionStart = end;
-                dom.selectionEnd = end;
+                dom.setSelectionRange(end, end);
             } else {
-                dom.selectionStart = obj.start;
-                dom.selectionEnd = obj.end;
+                dom.setSelectionRange(obj.start, obj.end);
             }
         } else {
             /* TODO */
