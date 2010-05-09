@@ -32,7 +32,7 @@ Codenode.CellManager = function(root, json) {
         newCell: function(render) {
             var cell = new Codenode.Cell({owner: this});
 
-            if (Ext.isDefined(render) && render) {
+            if (render !== false) {
                 cell.render(this.root);
             }
 
@@ -103,6 +103,55 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_textarea.dom.value = input;
     },
 
+    getSelection: function() {
+        var dom = this.el_textarea.dom;
+
+        if (Ext.isDefined(dom.selectionStart)) {
+            return {
+                start: dom.selectionStart,
+                end: dom.selectionEnd,
+            }
+        } else {
+            /* TODO */
+        }
+    },
+
+    setSelection: function(obj) {
+        var dom = this.el_textarea.dom;
+
+        if (Ext.isDefined(dom.selectionStart)) {
+            if (obj === 'start') {
+                dom.selectionStart = 0;
+                dom.selectionEnd = 0;
+            } else if (obj == 'end') {
+                var end = this.getInput().length;
+                dom.selectionStart = end;
+                dom.selectionEnd = end;
+            } else {
+                dom.selectionStart = obj.start;
+                dom.selectionEnd = obj.end;
+            }
+        } else {
+            /* TODO */
+        }
+    },
+
+    getFirstCell: function() {
+        return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:first", this.owner.root.dom).id);
+    },
+
+    getLastCell: function() {
+        return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:last", this.owner.root.dom).id);
+    },
+
+    isFirstCell: function() {
+        return this.getFirstCell().id == this.id;
+    },
+
+    isLastCell: function() {
+        return this.getLastCell().id == this.id;
+    },
+
     setupObserver: function() {
         var observer = {
             run: function() {
@@ -144,13 +193,14 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     setupKeyMap: function() {
-        this.keymap = new Ext.KeyMap(this.el_textarea, [
+        this.keymap_stop = new Ext.KeyMap(this.el_textarea, [
             {
                 key: Ext.EventObject.TAB,
                 shift: false,
                 ctrl: false,
                 alt: false,
                 scope: this,
+                stopEvent: true,
                 handler: Ext.emptyFn,
             }, {
                 key: Ext.EventObject.TAB,
@@ -158,20 +208,23 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
                 ctrl: false,
                 alt: false,
                 scope: this,
+                stopEvent: true,
                 handler: Ext.emptyFn,
-            }, {
-                key: Ext.EventObject.ENTER,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                handler: this.evaluateCell,
             }, {
                 key: Ext.EventObject.ENTER,
                 shift: true,
                 ctrl: false,
                 alt: false,
                 scope: this,
+                stopEvent: true,
+                handler: this.evaluateCell,
+            }, {
+                key: Ext.EventObject.ENTER,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
                 handler: this.newline,
             }, {
                 key: Ext.EventObject.BACKSPACE,
@@ -179,6 +232,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
                 ctrl: false,
                 alt: false,
                 scope: this,
+                stopEvent: true,
                 handler: this.backspace,
             }, {
                 key: Ext.EventObject.UP,
@@ -186,20 +240,29 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
                 ctrl: true,
                 alt: false,
                 scope: this,
-                handler: this.prevCell,
+                stopEvent: true,
+                handler: function() {
+                    var cell = this.prevCell();
+                    cell.setSelection('end');
+                },
             }, {
                 key: Ext.EventObject.DOWN,
                 shift: false,
                 ctrl: true,
                 alt: false,
                 scope: this,
-                handler: this.nextCell,
+                stopEvent: true,
+                handler: function() {
+                    var cell = this.nextCell();
+                    cell.setSelection('start');
+                },
             }, {
                 key: Ext.EventObject.LEFT,
                 shift: false,
                 ctrl: false,
                 alt: true,
                 scope: this,
+                stopEvent: true,
                 handler: this.collapseCell,
             }, {
                 key: Ext.EventObject.RIGHT,
@@ -207,11 +270,58 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
                 ctrl: false,
                 alt: true,
                 scope: this,
+                stopEvent: true,
                 handler: this.expandCell,
             },
         ]);
 
-        this.keymap.stopEvent = true;
+        this.keymap_nostop = new Ext.KeyMap(this.el_textarea, [
+            {
+                key: Ext.EventObject.UP,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: false,
+                handler: function(key, ev) {
+                    var selection = this.getSelection();
+
+                    if (selection.start == selection.end) {
+                        var input = this.getInput();
+                        var index = input.indexOf('\n');
+
+                        if (index == -1 || selection.start <= index) {
+                            ev.stopEvent();
+
+                            var cell = this.prevCell();
+                            cell.setSelection('end');
+                        }
+                    }
+                },
+            }, {
+                key: Ext.EventObject.DOWN,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: false,
+                handler: function(key, ev) {
+                    var selection = this.getSelection();
+
+                    if (selection.start == selection.end) {
+                        var input = this.getInput();
+                        var index = input.lastIndexOf('\n');
+
+                        if (index == -1 || selection.start > index) {
+                            ev.stopEvent();
+
+                            var cell = this.nextCell();
+                            cell.setSelection('start');
+                        }
+                    }
+                },
+            },
+        ]);
     },
 
     onRender: function(container, position) {
@@ -283,42 +393,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.setupKeyMap();
     },
 
-    getSelection: function() {
-        var dom = this.el_textarea.dom;
-
-        if (Ext.isDefined(dom.selectionStart)) {
-            return {
-                start: dom.selectionStart,
-                end: dom.selectionEnd,
-            }
-        } else {
-            var range = dom.createTextRange();
-
-            range.moveStart("character", 1);
-            range.collapse();
-            range.moveEnd("character", 1);
-            range.select();
-
-            // TODO
-        }
-    },
-
-    setSelection: function(obj) {
-        var dom = this.el_textarea.dom;
-
-        if (Ext.isDefined(dom.selectionStart)) {
-            dom.selectionStart = obj.start;
-            dom.selectionEnd = obj.end;
-        } else {
-            var range = dom.createTextRange();
-
-            range.moveStart("character", obj.start);
-            range.collapse();
-            range.moveEnd("character", obj.end);
-            range.select();
-        }
-    },
-
     newline: function() {
         var input = this.getInput();
         var selection = this.getSelection();
@@ -331,22 +405,21 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
                 pos += 1;
             } else {
                 var insert = '\n';
+                var i = pos;
+
+                while (i >= 0) {
+                    if (input[i-1] == '\n') {
+                        break;
+                    } else {
+                        i--;
+                    }
+                }
+
+                while (input[i++] == ' ') {
+                    insert += ' ';
+                }
 
                 if (input[pos-1] == ':') {
-                    var i = pos;
-
-                    while (i >= 0) {
-                        if (input[i-1] == '\n') {
-                            break;
-                        } else {
-                            i--;
-                        }
-                    }
-
-                    while (input[i++] == ' ') {
-                        insert += ' ';
-                    }
-
                     for (var i = 0; i < this.owner.tabWidth; i++) {
                         insert += ' ';
                     }
@@ -431,17 +504,25 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.fireEvent('preevaluate', this, input);
 
         this.el_evaluate.removeClass('codenode-enabled');
+        this.el_clear.removeClass('codenode-enabled');
         this.el_interrupt.addClass('codenode-enabled');
+
+        this.evaluating = true;
 
         Codenode.log("eval");
         // XXX: evaluate here
         var output = null;
 
+        this.evaluating = false;
+
         this.setupLabel();
         this.autosize();
 
         this.el_evaluate.addClass('codenode-enabled');
+        this.el_clear.addClass('codenode-enabled');
         this.el_interrupt.removeClass('codenode-enabled');
+
+        this.nextCell(true);
 
         this.fireEvent('postevaluate', this, input, output);
     },
@@ -457,7 +538,12 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     removeCell: function() {
-        this.nextCell();
+        if (this.isLastCell()) {
+            this.prevCell();
+        } else {
+            this.nextCell();
+        }
+
         this.destroy();
     },
 
@@ -478,34 +564,40 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_textarea.removeClass('codenode-cell-input-textarea-focus');
     },
 
-    nextCell: function() {
+    nextCell: function(spawn) {
         var elt = Ext.DomQuery.selectNode(".codenode-cell-input:prev(div[id=" + this.id + "])", this.owner.root.dom);
 
         if (Ext.isDefined(elt)) {
             var cell = Ext.getCmp(elt.id);
+        } else if (spawn === true) {
+            var cell = this.owner.newCell();
         } else if (this.owner.cycleCells) {
-            var cell = Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:first", this.owner.root.dom).id);
+            var cell = this.getFirstCell();
         } else {
             return;
         }
 
         this.blurCell();
         cell.focusCell();
+
+        return cell;
     },
 
-    prevCell: function(cell) {
+    prevCell: function() {
         var elt = Ext.DomQuery.selectNode(".codenode-cell-input:next(div[id=" + this.id + "])", this.owner.root.dom);
 
         if (Ext.isDefined(elt)) {
             var cell = Ext.getCmp(elt.id);
         } else if (this.owner.cycleCells) {
-            var cell = Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:last", this.owner.root.dom).id);
+            var cell = this.getLastCell();
         } else {
             return;
         }
 
         this.blurCell();
         cell.focusCell();
+
+        return cell;
     },
 });
 
@@ -513,7 +605,7 @@ Ext.onReady(function() {
     var cells = new Codenode.CellManager(Ext.get('cells'));
 
     for (var i = 0; i < 5; i++) {
-        cells.newCell(true);
+        cells.newCell();
     }
 
     /*
