@@ -91,11 +91,11 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     showLabel: function() {
-        this.el_label.applyStyles({ visibility: 'visible' });
+        this.el_label.show();
     },
 
     hideLabel: function() {
-        this.el_label.applyStyles({ visibility: 'hidden' });
+        this.el_label.hide();
     },
 
     setupLabel: function() {
@@ -395,6 +395,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el.createChild({
             tag: 'div',
             cls: 'codenode-cell-input-label',
+            html: 'In [' + this.owner.evalIndex + ']: ',
         });
 
         this.el.createChild({
@@ -576,7 +577,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.evaluating = true;
 
-        Codenode.log("eval");
         // XXX: evaluate here
         var output = null;
 
