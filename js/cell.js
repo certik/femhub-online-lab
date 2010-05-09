@@ -15,17 +15,26 @@ Codenode.unique = function() {
     return (new Date()).getTime() + Math.random().toString().substr(2, 8);
 }
 
-Codenode.CellManager = function(root, json) {
+Codenode.CellManager = function(config) {
+    if (!Ext.isDefined(config)) {
+        config = {};
+    }
+
+    if (Ext.isDefined(config.root)) {
+        config.root = Ext.get(config.root);
+    } else {
+        config.root = Ext.getBody();
+    }
+
     return {
         id: Codenode.unique(),
-        json: json || Codenode.json,
-        root: root || Ext.getBody(),
+        root: config.root,
 
         evalIndex: 0,
 
         softEvalTimeout: null,
         hardEvalTimeout: null,
-        newCellOnEval: true,
+        newCellOnEval: false,
         cycleCells: true,
         tabWidth: 4,
 
@@ -522,7 +531,11 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_clear.addClass('codenode-enabled');
         this.el_interrupt.removeClass('codenode-enabled');
 
-        this.nextCell(true);
+        if (this.owner.newCellOnEval) {
+            // TODO
+        } else {
+            this.nextCell(true);
+        }
 
         this.fireEvent('postevaluate', this, input, output);
     },
@@ -602,7 +615,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 });
 
 Ext.onReady(function() {
-    var cells = new Codenode.CellManager(Ext.get('cells'));
+    var cells = new Codenode.CellManager({ root: 'cells' });
 
     for (var i = 0; i < 5; i++) {
         cells.newCell();
