@@ -536,31 +536,34 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         this.el_content = this.el.createChild({
             tag: 'div',
             cls: 'codenode-cell-input-content',
+        });
+
+        var textarea = "<textarea class='codenode-cell-input-textarea' rows='1' cols='0' wrap='off'></textarea>";
+        this.el_textarea = (new Ext.DomHelper.createTemplate(textarea)).append(this.el_content, [], true);
+
+        this.el_controls = this.el_content.createChild({
+            tag: 'div',
+            cls: 'codenode-cell-input-controls',
             children: [
                 {
-                    tag: 'textarea',
-                    cls: 'codenode-cell-input-textarea',
+                    tag: 'div',
+                    cls: 'codenode-cell-input-control codenode-cell-input-evaluate codenode-enabled',
+                    html: 'evaluate',
                 }, {
                     tag: 'div',
-                    cls: 'codenode-cell-input-controls',
-                    children: [
-                        {
-                            tag: 'div',
-                            cls: 'codenode-cell-input-control codenode-cell-input-evaluate codenode-enabled',
-                            html: 'evaluate',
-                        }, {
-                            tag: 'div',
-                            cls: 'codenode-cell-input-control codenode-cell-input-clear codenode-enabled',
-                            html: 'clear',
-                        }, {
-                            tag: 'div',
-                            cls: 'codenode-cell-input-control codenode-cell-input-interrupt',
-                            html: 'interrupt',
-                        },
-                    ],
+                    cls: 'codenode-cell-input-control codenode-cell-input-clear codenode-enabled',
+                    html: 'clear',
+                }, {
+                    tag: 'div',
+                    cls: 'codenode-cell-input-control codenode-cell-input-interrupt',
+                    html: 'interrupt',
                 },
             ],
         });
+
+        this.el_evaluate = this.el.child('.codenode-cell-input-evaluate');
+        this.el_clear = this.el.child('.codenode-cell-input-clear');
+        this.el_interrupt = this.el.child('.codenode-cell-input-interrupt');
 
         this.el_expander = this.el.createChild({
             tag: 'textarea',
@@ -568,12 +571,6 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         });
 
         this.el_expander.dom.readonly = true;
-
-        this.el_textarea = this.el.child('.codenode-cell-input-textarea');
-        this.el_controls = this.el.child('.codenode-cell-input-controls');
-        this.el_evaluate = this.el.child('.codenode-cell-input-evaluate');
-        this.el_clear = this.el.child('.codenode-cell-input-clear');
-        this.el_interrupt = this.el.child('.codenode-cell-input-interrupt');
 
         this.autosize();
 
@@ -667,16 +664,19 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         this.el_content.applyStyles({'margin-left': width});
 
         if (!this.collapsed) {
-            var nl = this.getInput().replace(/[^\n]/g, '').length + 1;
+            var input = this.getInput();
 
-            var line = this.el_textarea.getStyle('line-height');
-            var border = this.el_textarea.getBorderWidth('tb');
-            var padding = this.el_textarea.getPadding('tb');
+            var rows = input.replace(/[^\n]/g, '').length + 1;
+            var cols = input.split();
 
-            var height = nl*parseFloat(line) + border + padding;
+            for (var i = 0; i < cols.length; i++) {
+                cols[i] = cols[i].length;
+            }
 
-            this.el_textarea.dom.rows = nl + 1;
-            this.el_textarea.setHeight(height);
+            cols = Ext.max(cols);
+
+            this.el_textarea.dom.rows = rows;
+            this.el_textarea.dom.cols = cols;
         }
     },
 

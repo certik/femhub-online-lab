@@ -45,17 +45,21 @@
 .codenode-cell-input-content {
     margin-right: 22px; /* accomodate for W3C box model */
     display: block;
-    height: auto;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .codenode-cell-input-textarea {
     padding: 5px;
     width: 100%;
     white-space: nowrap;
+    /*
     overflow-x: auto;
     overflow-y: hidden;
-    line-height: 15px;
-    font-family: monospace;
+    */
+    overflow: hidden;
+    font-size: 10pt;
+    line-height: 1.0em;
     border: 1px solid #bfbfbf;
     -moz-box-shadow: 0 0 6px #bfbfbf;
     -webkit-box-shadow: 0 0 6px #bfbfbf;
