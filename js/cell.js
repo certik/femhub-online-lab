@@ -38,11 +38,15 @@ Codenode.CellManager = function(config) {
         cycleCells: true,
         tabWidth: 4,
 
-        newCell: function(render) {
+        newCell: function(config) {
             var cell = new Codenode.Cell({owner: this});
 
-            if (render !== false) {
-                cell.render(this.root);
+            if (!Ext.isDefined(config)) {
+                config = {};
+            }
+
+            if (config.render !== false) {
+                cell.render(this.root, config.position);
             }
 
             return cell;
@@ -96,7 +100,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
     setupLabel: function() {
         this.el_label.update('In [' + this.owner.nextEvalIndex() + ']: ');
-        this.showLabel();
     },
 
     clearLabel: function() {
@@ -161,6 +164,26 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         return this.getLastCell().id == this.id;
     },
 
+    getNextCell: function() {
+        var elt = Ext.DomQuery.selectNode(".codenode-cell-input:prev(div[id=" + this.id + "])", this.owner.root.dom);
+
+        if (Ext.isDefined(elt)) {
+            return Ext.getCmp(elt.id);
+        } else {
+            return null;
+        }
+    },
+
+    getPrevCell: function() {
+        var elt = Ext.DomQuery.selectNode(".codenode-cell-input:next(div[id=" + this.id + "])", this.owner.root.dom);
+
+        if (Ext.isDefined(elt)) {
+            return Ext.getCmp(elt.id);
+        } else {
+            return null;
+        }
+    },
+
     setupObserver: function() {
         var observer = {
             run: function() {
@@ -194,7 +217,10 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_textarea.on('focus', this.focusCell, this);
         this.el_textarea.on('blur', this.blurCell, this);
 
-        this.el_evaluate.on('click', this.evaluateCell, this);
+        this.el_evaluate.on('click', function() {
+            this.evaluateCell({ keepfocus: true });
+        }, this);
+
         this.el_clear.on('click', this.clearCell, this);
         this.el_interrupt.on('click', this.interruptCell, this);
 
@@ -226,7 +252,19 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
                 alt: false,
                 scope: this,
                 stopEvent: true,
-                handler: this.evaluateCell,
+                handler: function() {
+                    this.evaluateCell({ keepfocus: false });
+                },
+            }, {
+                key: Ext.EventObject.ENTER,
+                shift: false,
+                ctrl: true,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: function() {
+                    this.evaluateCell({ keepfocus: true });
+                },
             }, {
                 key: Ext.EventObject.ENTER,
                 shift: false,
@@ -265,6 +303,22 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
                     var cell = this.nextCell();
                     cell.setSelection('start');
                 },
+            }, {
+                key: Ext.EventObject.UP,
+                shift: false,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.insertCellBefore,
+            }, {
+                key: Ext.EventObject.DOWN,
+                shift: false,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.insertCellAfter,
             }, {
                 key: Ext.EventObject.LEFT,
                 shift: false,
@@ -507,7 +561,11 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.fireEvent('postautosize', this, height);
     },
 
-    evaluateCell: function() {
+    evaluateCell: function(config) {
+        if (!Ext.isDefined(config)) {
+            config = {};
+        }
+
         var input = this.getInput();
 
         this.fireEvent('preevaluate', this, input);
@@ -526,15 +584,20 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.setupLabel();
         this.autosize();
+        this.showLabel();
 
         this.el_evaluate.addClass('codenode-enabled');
         this.el_clear.addClass('codenode-enabled');
         this.el_interrupt.removeClass('codenode-enabled');
 
-        if (this.owner.newCellOnEval) {
-            // TODO
+        if (config.keepfocus === true) {
+            this.focusCell();
         } else {
-            this.nextCell(true);
+            if (this.owner.newCellOnEval || this.isLastCell()) {
+                this.insertCellAfter();
+            } else {
+                this.nextCell();
+            }
         }
 
         this.fireEvent('postevaluate', this, input, output);
@@ -544,6 +607,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.setInput('');
         this.clearLabel();
         this.autosize();
+        this.focusCell();
     },
 
     interruptCell: function() {
@@ -577,17 +641,15 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_textarea.removeClass('codenode-cell-input-textarea-focus');
     },
 
-    nextCell: function(spawn) {
-        var elt = Ext.DomQuery.selectNode(".codenode-cell-input:prev(div[id=" + this.id + "])", this.owner.root.dom);
+    nextCell: function() {
+        var cell = this.getNextCell();
 
-        if (Ext.isDefined(elt)) {
-            var cell = Ext.getCmp(elt.id);
-        } else if (spawn === true) {
-            var cell = this.owner.newCell();
-        } else if (this.owner.cycleCells) {
-            var cell = this.getFirstCell();
-        } else {
-            return;
+        if (cell === null) {
+            if (this.owner.cycleCells) {
+                cell = this.getFirstCell();
+            } else {
+                return;
+            }
         }
 
         this.blurCell();
@@ -597,14 +659,38 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     prevCell: function() {
-        var elt = Ext.DomQuery.selectNode(".codenode-cell-input:next(div[id=" + this.id + "])", this.owner.root.dom);
+        var cell = this.getPrevCell();
 
-        if (Ext.isDefined(elt)) {
-            var cell = Ext.getCmp(elt.id);
-        } else if (this.owner.cycleCells) {
-            var cell = this.getLastCell();
+        if (cell === null) {
+            if (this.owner.cycleCells) {
+                var cell = this.getLastCell();
+            } else {
+                return;
+            }
+        }
+
+        this.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
+
+    insertCellBefore: function() {
+        var cell = this.owner.newCell({ position: this.id });
+
+        this.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
+
+    insertCellAfter: function() {
+        var next = this.getNextCell();
+
+        if (next === null) {
+            var cell = this.owner.newCell();
         } else {
-            return;
+            var cell = this.owner.newCell({ position: next.id });
         }
 
         this.blurCell();
@@ -617,7 +703,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 Ext.onReady(function() {
     var cells = new Codenode.CellManager({ root: 'cells' });
 
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 3; i++) {
         cells.newCell();
     }
 
