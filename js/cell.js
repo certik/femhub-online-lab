@@ -677,6 +677,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
     blurCell: function() {
         this.el_textarea.removeClass('codenode-cell-input-textarea-focus');
+        this.el_textarea.blur();
     },
 
     nextCell: function() {
@@ -714,15 +715,17 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     },
 
     insertCellBefore: function() {
-        var cell = this.owner.newCell({ position: this.id });
-
         this.blurCell();
+
+        var cell = this.owner.newCell({ position: this.id });
         cell.focusCell();
 
         return cell;
     },
 
     insertCellAfter: function() {
+        this.blurCell();
+
         var next = this.getNextCell();
 
         if (next === null) {
@@ -731,7 +734,6 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
             var cell = this.owner.newCell({ position: next.id });
         }
 
-        this.blurCell();
         cell.focusCell();
 
         return cell;
