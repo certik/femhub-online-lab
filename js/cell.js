@@ -87,6 +87,8 @@ Codenode.CellManager = function(config) {
 
 Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     collapsed: false,
+    prevHeight: null,
+    hiddenEl: null,
 
     constructor: function(config) {
         config.id = Codenode.unique();
@@ -96,7 +98,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     initComponent: function() {
         Codenode.Cell.superclass.initComponent.call(this);
 
-        this.addEvents('collapse', 'expand');
+        this.addEvents('collapsed', 'expanded');
     },
 
     onRender: function(container, position) {
@@ -114,15 +116,64 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         });
 
         this.el_bracket = this.el.child('.codenode-cell-bracket');
-        this.el_bracket.on('click', this.collapseCell, this);
+        this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
     },
 
     collapseCell: function() {
-        /* pass */
+        var children = Ext.query('*', this.el.dom);
+
+        this.hiddenEl = [];
+
+        Ext.each(children, function(child) {
+            var el = Ext.get(child);
+
+            if (el.isVisible()) {
+                this.hiddenEl.push(el);
+                el.hide();
+            }
+        }, this);
+
+        this.el.on('click', this.expandCell, this, { stopEvent: true });
+
+        this.el_expand_triangle = this.el.createChild({
+            tag: 'div',
+            cls: 'codenode-cell-triangle',
+        });
+
+        this.el.addClass('codenode-cell-collapsed');
+        this.collapsed = true;
+
+        this.prevHeight = this.el.getHeight();
+        this.el.setHeight(5, {
+            duration: 0.5,
+            callback: function() {
+                this.el.addClass('codenode-enabled');
+            },
+            scope: this,
+        });
+
+        this.fireEvent('collapsed', this);
     },
 
     expandCell: function() {
-        /* pass */
+        this.el.un('click', this.expandCell, this);
+
+        this.el.removeClass('codenode-cell-collapsed');
+        this.el.removeClass('codenode-enabled');
+
+        this.el_expand_triangle.remove();
+        this.collapsed = false;
+
+        this.el.setHeight(this.prevHeight);
+        this.prevHeight = null;
+
+        Ext.each(this.hiddenEl, function(el) {
+            el.show();
+        }, this);
+
+        this.hiddenEl = null;
+
+        this.fireEvent('expanded', this);
     },
 });
 
@@ -136,7 +187,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     initComponent: function() {
         Codenode.InputCell.superclass.initComponent.call(this);
 
-        this.addEvents('preautosize', 'postautosize', 'preevaluate', 'postevaluate');
+        this.addEvents('preevaluate', 'postevaluate');
     },
 
     copyFontStyles: function(from, to) {
@@ -572,8 +623,6 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
     },
 
     autosize: function() {
-        this.fireEvent('preautosize', this);
-
         this.copyFontStyles(this.el_textarea, this.el_label);
         this.copyFontStyles(this.el_textarea, this.el_hidden);
 
@@ -588,24 +637,24 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
         this.el_content.applyStyles({'margin-left': this.el_label.getWidth() + 'px'});
 
-        var width = this.el_textarea.getWidth();
-        this.el_hidden.setWidth(width);
+        if (!this.collapsed) {
+            var width = this.el_textarea.getWidth();
+            this.el_hidden.setWidth(width);
 
-        var input = this.getInput();
+            var input = this.getInput();
 
-        if (input.length == 0) {
-            input = 'X';
-        } else {
-            input = input.replace(/<|>|&/g, 'X');
-            input = input.replace(/\n$/g, '\nX');
+            if (input.length == 0) {
+                input = 'X';
+            } else {
+                input = input.replace(/<|>|&/g, 'X');
+                input = input.replace(/\n$/g, '\nX');
+            }
+
+            this.el_hidden.update(input);
+
+            var height = this.el_hidden.getHeight();
+            this.el_textarea.setHeight(height);
         }
-
-        this.el_hidden.update(input);
-
-        var height = this.el_hidden.getHeight();
-        this.el_textarea.setHeight(height);
-
-        this.fireEvent('postautosize', this, height);
     },
 
     evaluateCell: function(config) {

@@ -119,10 +119,29 @@
     position: absolute;
     bottom: -1px;
     right: 0;
-    visibility: hidden;
+    display: none;
 }
 
 .codenode-cell-bracket:hover .codenode-cell-triangle {
-    visibility: visible;
+    display: block;
+}
+
+.codenode-cell-collapsed {
+    border-bottom: 1px dashed #bfbfbf;
+}
+
+.codenode-cell-collapsed.codenode-enabled:hover {
+    border-bottom-color: blue;
+}
+
+.codenode-cell-collapsed .codenode-cell-triangle {
+    display: block;
+    border-right-color: #bfbfbf;
+    border-bottom-color: #bfbfbf;;
+}
+
+.codenode-cell-collapsed.codenode-enabled:hover .codenode-cell-triangle {
+    border-right-color: blue;
+    border-bottom-color: blue;
 }
 
