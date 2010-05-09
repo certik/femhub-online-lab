@@ -207,7 +207,22 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         return this.el_textarea.getValue();
     },
 
+    setRowsCols: function(input) {
+        var rows = input.replace(/[^\n]/g, '').length + 1;
+        var cols = input.split();
+
+        for (var i = 0; i < cols.length; i++) {
+            cols[i] = cols[i].length;
+        }
+
+        cols = Ext.max(cols);
+
+        this.el_textarea.dom.rows = rows;
+        this.el_textarea.dom.cols = cols;
+    },
+
     setInput: function(input) {
+        this.setRowsCols(input);
         this.el_textarea.dom.value = input;
     },
 
@@ -664,19 +679,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         this.el_content.applyStyles({'margin-left': width});
 
         if (!this.collapsed) {
-            var input = this.getInput();
-
-            var rows = input.replace(/[^\n]/g, '').length + 1;
-            var cols = input.split();
-
-            for (var i = 0; i < cols.length; i++) {
-                cols[i] = cols[i].length;
-            }
-
-            cols = Ext.max(cols);
-
-            this.el_textarea.dom.rows = rows;
-            this.el_textarea.dom.cols = cols;
+            this.setRowsCols(this.getInput());
         }
     },
 

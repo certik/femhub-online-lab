@@ -52,14 +52,13 @@
 .codenode-cell-input-textarea {
     padding: 5px;
     width: 100%;
-    white-space: nowrap;
+    white-space: pre;
     /*
     overflow-x: auto;
     overflow-y: hidden;
     */
     overflow: hidden;
     font-size: 10pt;
-    line-height: 1.0em;
     border: 1px solid #bfbfbf;
     -moz-box-shadow: 0 0 6px #bfbfbf;
     -webkit-box-shadow: 0 0 6px #bfbfbf;
