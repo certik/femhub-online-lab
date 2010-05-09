@@ -39,7 +39,7 @@ Codenode.CellManager = function(config) {
         tabWidth: 4,
 
         newCell: function(config) {
-            var cell = new Codenode.Cell({owner: this});
+            var cell = new Codenode.InputCell({owner: this});
 
             if (!Ext.isDefined(config)) {
                 config = {};
@@ -59,11 +59,7 @@ Codenode.CellManager = function(config) {
 }
 
 Codenode.Cell = Ext.extend(Ext.BoxComponent, {
-    evaluating: false,
-
-    observedFontSize: 0,
-    observedInputLength: 0,
-    observationInterval: 250,
+    collepsed: false,
 
     constructor: function(config) {
         config.id = Codenode.unique();
@@ -73,7 +69,47 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     initComponent: function() {
         Codenode.Cell.superclass.initComponent.call(this);
 
-        this.addEvents('preautosize', 'postautosize', 'preevaluate', 'postevaluate', 'collapse', 'expand');
+        this.addEvents('collapse', 'expand');
+    },
+
+    onRender: function(container, position) {
+        Codenode.Cell.superclass.onRender.apply(this, arguments);
+
+        this.el.addClass('codenode-cell');
+
+        this.el.createChild({
+            tag: 'div',
+            cls: 'codenode-cell-bracket',
+            children: {
+                tag: 'div',
+                cls: 'codenode-cell-triangle',
+            },
+        });
+
+        this.el_bracket = this.el.child('.codenode-cell-bracket');
+        this.el_bracket.on('click', this.collapseCell, this);
+    },
+
+    collapseCell: function() {
+        /* pass */
+    },
+
+    expandCell: function() {
+        /* pass */
+    },
+});
+
+Codenode.InputCell = Ext.extend(Codenode.Cell, {
+    evaluating: false,
+
+    observedFontSize: 0,
+    observedInputLength: 0,
+    observationInterval: 250,
+
+    initComponent: function() {
+        Codenode.InputCell.superclass.initComponent.call(this);
+
+        this.addEvents('preautosize', 'postautosize', 'preevaluate', 'postevaluate');
     },
 
     copyFontStyles: function(from, to) {
@@ -223,8 +259,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.el_clear.on('click', this.clearCell, this);
         this.el_interrupt.on('click', this.interruptCell, this);
-
-        this.el_bracket.on('click', this.collapseCell, this);
     },
 
     setupKeyMap: function() {
@@ -388,7 +422,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     onRender: function(container, position) {
-        Codenode.Cell.superclass.onRender.apply(this, arguments);
+        Codenode.InputCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('codenode-cell-input');
 
@@ -432,11 +466,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
             cls: 'codenode-cell-input-hidden',
         });
 
-        this.el.createChild({
-            tag: 'div',
-            cls: 'codenode-cell-input-bracket',
-        });
-
         this.el_label = this.el.child('.codenode-cell-input-label');
 
         this.el_content = this.el.child('.codenode-cell-input-content');
@@ -447,8 +476,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_evaluate = this.el.child('.codenode-cell-input-evaluate');
         this.el_clear = this.el.child('.codenode-cell-input-clear');
         this.el_interrupt = this.el.child('.codenode-cell-input-interrupt');
-
-        this.el_bracket = this.el.child('.codenode-cell-input-bracket');
 
         this.autosize();
 
@@ -622,14 +649,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         }
 
         this.destroy();
-    },
-
-    collapseCell: function() {
-        /* pass */
-    },
-
-    expandCell: function() {
-        /* pass */
     },
 
     focusCell: function() {

@@ -12,13 +12,18 @@
     width: 700px;
     height: 300px;
     border: 2px solid red;
+    position: relative;
+}
+
+.codenode-cell {
+    position: relative;
+    display: block;
+    height: 30px;
+    margin: 10px;
 }
 
 .codenode-cell-input {
-    position: relative;
-    display: block;
     height: auto;
-    margin: 10px;
 }
 
 .codenode-cell-input-label {
@@ -85,7 +90,7 @@
     border: 1px dotted red;
 }
 
-.codenode-cell-input-bracket {
+.codenode-cell-bracket {
     border: 1px solid blue;
     border-left: none;
     position: absolute;
@@ -98,8 +103,22 @@
     cursor: pointer;
 }
 
-.codenode-cell-input-bracket:hover {
-    border-style: dotted;
-    border-left: none;
+.codenode-cell-triangle {
+    width: 0;
+    height: 0;
+    border-width: 3px;
+    border-style: solid;
+    border-left-color: white;
+    border-top-color: white;
+    border-right-color: blue;
+    border-bottom-color: blue;
+    position: absolute;
+    bottom: -1px;
+    right: 0;
+    visibility: hidden;
+}
+
+.codenode-cell-bracket:hover .codenode-cell-triangle {
+    visibility: visible;
 }
 
