@@ -34,17 +34,47 @@ Codenode.CellManager = function(config) {
         autoJustify: true,
         tabWidth: 4,
 
-        newInputCell: function(config) {
+        types: {
+            'input': 'InputCell',
+            'output': 'OutputCell',
+        },
+
+        newCell: function(config) {
             config = config || {};
 
-            var cell = new Codenode.InputCell({
+            if (!Ext.isDefined(config.type)) {
+                var ctype = this.types.input;
+            } else {
+                var ctype = this.types[config.type];
+            }
+
+            var cell = new Codenode[ctype]({
                 owner: this,
-                start: config.start,
+                content: config.content,
             });
 
             if (config.render !== false) {
-                cell.render(this.root, config.position);
-                this.root.scroll('bottom', 100);
+                if (Ext.isDefined(config.position)) {
+                    var id = config.position;
+                } else if (Ext.isDefined(config.before)) {
+                    var id = config.before.id;
+                } else if (Ext.isDefined(config.after)) {
+                    var next = config.after.getNextCell();
+
+                    if (next === null) {
+                        var id = undefined;
+                    } else {
+                        var id = next.id;
+                    }
+                } else {
+                    var id = undefined;
+                }
+
+                cell.render(this.root, id);
+
+                if (config.scroll !== false) {
+                    this.root.scroll('bottom', 100);
+                }
             }
 
             return cell;
@@ -66,16 +96,25 @@ Codenode.CellManager = function(config) {
             }
         },
 
-        getFirstCell: function() {
+        typeToCls: function(type) {
+            if (!Ext.isDefined(type)) {
+                return '.codenode-cell';
+            } else {
+                return '.codenode-cell-' + type;
+            }
+        },
+
+        getFirstCell: function(type) {
             return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:first", this.root.dom).id);
         },
 
-        getLastCell: function() {
+        getLastCell: function(type) {
             return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:last", this.root.dom).id);
         },
 
-        getNextCell: function(id) {
-            var elt = Ext.DomQuery.selectNode(".codenode-cell-input:prev(div[id=" + id + "])", this.root.dom);
+        getNextCell: function(id, type) {
+            var query = this.typeToCls(type) + ":prev(div[id=" + id + "])";
+            var elt = Ext.DomQuery.selectNode(query, this.root.dom);
 
             if (Ext.isDefined(elt)) {
                 return Ext.getCmp(elt.id);
@@ -84,8 +123,9 @@ Codenode.CellManager = function(config) {
             }
         },
 
-        getPrevCell: function(id) {
-            var elt = Ext.DomQuery.selectNode(".codenode-cell-input:next(div[id=" + id + "])", this.root.dom);
+        getPrevCell: function(id, type) {
+            var query = this.typeToCls(type) + ":next(div[id=" + id + "])";
+            var elt = Ext.DomQuery.selectNode(query, this.root.dom);
 
             if (Ext.isDefined(elt)) {
                 return Ext.getCmp(elt.id);
@@ -97,10 +137,9 @@ Codenode.CellManager = function(config) {
         justifyCells: function() {
             var len = ('In [' + this.evalIndex + ']: ').length;
 
-            var input = Ext.DomQuery.select(".codenode-cell-input", this.root.dom);
-            var output = Ext.DomQuery.select(".codenode-cell-output", this.root.dom);
+            var cells = Ext.DomQuery.select(".codenode-cell-io", this.root.dom);
 
-            Ext.each(input.concat(output), function(elt) {
+            Ext.each(cells, function(elt) {
                 var cell = Ext.getCmp(elt.id);
                 var label = cell.getLabel();
 
@@ -133,8 +172,16 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.addEvents('collapsing', 'collapsed', 'expanding', 'expanded');
     },
 
+    setupCellObserver: function() {
+        /* pass */
+    },
+
     setupCellEvents: function() {
         this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
+    },
+
+    setupCellKeyMap: function() {
+        /* pass */
     },
 
     onRender: function(container, position) {
@@ -151,7 +198,33 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
             },
         });
 
+        this.setupCellObserver();
         this.setupCellEvents();
+        this.setupCellKeyMap();
+    },
+
+    getFirstCell: function(type) {
+        return this.owner.getFirstCell(type);
+    },
+
+    getLastCell: function(type) {
+        return this.owner.getLastCell(type);
+    },
+
+    isFirstCell: function(type) {
+        return this.getFirstCell(type).id == this.id;
+    },
+
+    isLastCell: function(type) {
+        return this.getLastCell(type).id == this.id;
+    },
+
+    getNextCell: function(type) {
+        return this.owner.getNextCell(this.id, type);
+    },
+
+    getPrevCell: function(type) {
+        return this.owner.getPrevCell(this.id, type);
     },
 
     collapseCell: function() {
@@ -201,6 +274,48 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.fireEvent('expanded', this);
     },
+
+    focusCell: function() {
+        /* pass */
+    },
+
+    blurCell: function() {
+        /* pass */
+    },
+
+    nextCell: function(type) {
+        var cell = this.getNextCell(type);
+
+        if (cell === null) {
+            if (this.owner.cycleCells) {
+                cell = this.getFirstCell(type);
+            } else {
+                return null;
+            }
+        }
+
+        this.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
+
+    prevCell: function(type) {
+        var cell = this.getPrevCell(type);
+
+        if (cell === null) {
+            if (this.owner.cycleCells) {
+                var cell = this.getLastCell(type);
+            } else {
+                return null;
+            }
+        }
+
+        this.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
 });
 
 Codenode.IOCell = Ext.extend(Codenode.Cell, {
@@ -241,7 +356,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
                 alt: true,
                 scope: this,
                 stopEvent: true,
-                handler: this.insertCellBefore,
+                handler: this.insertInputCellBefore,
             },
             x_alt_down: {
                 key: Ext.EventObject.DOWN,
@@ -250,7 +365,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
                 alt: true,
                 scope: this,
                 stopEvent: true,
-                handler: this.insertCellAfter,
+                handler: this.insertInputCellAfter,
             },
             x_alt_left: {
                 key: Ext.EventObject.LEFT,
@@ -405,30 +520,6 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
         }
     },
 
-    getFirstCell: function() {
-        return this.owner.getFirstCell();
-    },
-
-    getLastCell: function() {
-        return this.owner.getLastCell();
-    },
-
-    isFirstCell: function() {
-        return this.getFirstCell().id == this.id;
-    },
-
-    isLastCell: function() {
-        return this.getLastCell().id == this.id;
-    },
-
-    getNextCell: function() {
-        return this.owner.getNextCell(this.id);
-    },
-
-    getPrevCell: function() {
-        return this.owner.getPrevCell(this.id);
-    },
-
     setupIOCellObserver: function() {
         /* pass */
     },
@@ -517,6 +608,8 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 
     focusCell: function() {
+       Codenode.IOCell.superclass.focusCell.apply(this, arguments);
+
         if (this.collapsed) {
             this.el_expander.focus();
             this.el.addClass('codenode-cell-collapsed-focus');
@@ -527,6 +620,8 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 
     blurCell: function() {
+       Codenode.IOCell.superclass.blurCell.apply(this, arguments);
+
         if (this.collapsed) {
             this.el.removeClass('codenode-cell-collapsed-focus');
             this.el_expander.blur();
@@ -536,60 +631,19 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
         }
     },
 
-    nextCell: function() {
-        var cell = this.getNextCell();
-
-        if (cell === null) {
-            if (this.owner.cycleCells) {
-                cell = this.getFirstCell();
-            } else {
-                return;
-            }
-        }
-
+    insertInputCellBefore: function() {
         this.blurCell();
+
+        var cell = this.owner.newCell({ type: 'input', before: this });
         cell.focusCell();
 
         return cell;
     },
 
-    prevCell: function() {
-        var cell = this.getPrevCell();
-
-        if (cell === null) {
-            if (this.owner.cycleCells) {
-                var cell = this.getLastCell();
-            } else {
-                return;
-            }
-        }
-
-        this.blurCell();
-        cell.focusCell();
-
-        return cell;
-    },
-
-    insertCellBefore: function() {
+    insertInputCellAfter: function() {
         this.blurCell();
 
-        var cell = this.owner.newInputCell({ position: this.id });
-        cell.focusCell();
-
-        return cell;
-    },
-
-    insertCellAfter: function() {
-        this.blurCell();
-
-        var next = this.getNextCell();
-
-        if (next === null) {
-            var cell = this.owner.newInputCell();
-        } else {
-            var cell = this.owner.newInputCell({ position: next.id });
-        }
-
+        var cell = this.owner.newCell({ type: 'input', after: this });
         cell.focusCell();
 
         return cell;
@@ -987,12 +1041,12 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         this.el_interrupt.removeClass('codenode-enabled');
 
         if (config.keepfocus === true) {
-            this.focusCell();
+            this.focusCell(); /* needed for 'evaluate' button */
         } else {
             if (this.owner.newCellOnEval || this.isLastCell()) {
-                this.insertCellAfter();
+                this.insertInputCellAfter();
             } else {
-                this.nextCell({ type: 'input' });
+                this.nextCell('input');
             }
         }
 
@@ -1033,7 +1087,7 @@ Codenode.Cells = Ext.extend(Ext.BoxComponent, {
     },
 
     addInputCell: function(config) {
-        this.cellMgr.newInputCell(config);
+        this.cellMgr.newCell({ type: 'input' });
     },
 });
 
@@ -1057,20 +1111,20 @@ function newWindow(title) {
 
     notebook.show();
 
-    cells.addInputCell({ start: true });
+    cells.addInputCell();
 }
 
 Ext.onReady(function() {
     var cells1 = new Codenode.CellManager({ root: 'cells1' });
 
     for (var i = 0; i < 3; i++) {
-        cells1.newInputCell({ start: !i ? true : false });
+        cells1.newCell({ type: 'input' });
     }
 
     var cells2 = new Codenode.CellManager({ root: 'cells2' });
 
     for (var i = 0; i < 3; i++) {
-        cells2.newInputCell({ start: !i ? true : false });
+        cells2.newCell({ type: 'input' });
     }
 
     newWindow(0);
