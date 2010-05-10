@@ -786,7 +786,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
                 var insert = '\n';
                 var i = pos;
 
-                while (i >= 0) {
+                while (i > 0) {
                     if (input[i-1] == '\n') {
                         break;
                     } else {
@@ -829,7 +829,30 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
                 return;
             }
 
-            input = input.slice(0, --pos) + input.slice(pos+1);
+            var i = pos, dirty = false;
+
+            loop: while (i > 0) {
+                switch (input[i-1]) {
+                    case ' ':
+                        i--;
+                        break;
+                    case '\n':
+                        break loop;
+                    default:
+                        dirty = true;
+                        break loop;
+                }
+            }
+
+            var end = pos;
+
+            if (dirty || i == pos) {
+                --pos;
+            } else {
+                pos = Ext.max([i, pos - this.owner.tabWidth])
+            }
+
+            input = input.slice(0, pos) + input.slice(end);
         } else {
             input = input.slice(0, selection.start) + input.slice(selection.end);
         }
