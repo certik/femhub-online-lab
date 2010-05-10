@@ -132,12 +132,16 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.addEvents('collapsing', 'collapsed', 'expanding', 'expanded');
     },
 
+    setupEvents: function() {
+        this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
+    },
+
     onRender: function(container, position) {
         Codenode.Cell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('codenode-cell');
 
-        this.el.createChild({
+        this.el_bracket = this.el.createChild({
             tag: 'div',
             cls: 'codenode-cell-bracket',
             children: {
@@ -146,8 +150,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
             },
         });
 
-        this.el_bracket = this.el.child('.codenode-cell-bracket');
-        this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
+        this.setupEvents();
     },
 
     collapseCell: function() {
