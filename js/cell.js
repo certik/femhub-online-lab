@@ -1,20 +1,4 @@
 
-Ext.BLANK_IMAGE_URL = "/static/external/ext/images/default/s.gif";
-
-var Codenode = {
-    version: [0, 0, 1],
-    icons: "/static/img/icons/",
-    json: "/desktop/json/",
-};
-
-Codenode.log = function(text) {
-    Ext.getBody().createChild({tag: 'h1', html: text});
-}
-
-Codenode.unique = function() {
-    return (new Date()).getTime() + Math.random().toString().substr(2, 8);
-}
-
 Codenode.CellManager = function(config) {
     config = config || {};
 
@@ -24,6 +8,7 @@ Codenode.CellManager = function(config) {
 
     return Ext.apply({
         id: Codenode.unique(),
+        url: null,
 
         evalIndex: 0,
 
@@ -1142,53 +1127,77 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         this.el_clear.removeClass('codenode-enabled');
         this.el_interrupt.addClass('codenode-enabled');
 
+        function evalSuccess(output) {
+            this.evaluating = false;
+
+            this.owner.nextEvalIndex();
+
+            this.setLabel();
+            this.autosize();
+            this.showLabel();
+
+            this.el_evaluate.addClass('codenode-enabled');
+            this.el_clear.addClass('codenode-enabled');
+            this.el_interrupt.removeClass('codenode-enabled');
+
+            var cell = this.getOutputCell();
+
+            if (cell === null) {
+                cell = this.owner.newCell({
+                    type: 'output',
+                    after: this,
+                    setup: {
+                        myInputCell: this,
+                    },
+                });
+            }
+
+            this.myOutputCell = cell;
+
+            cell.setLabel();
+            cell.setOutput(output);
+            cell.autosize();
+            cell.showLabel();
+
+            if (config.keepfocus === true) {
+                this.focusCell(); /* needed for 'evaluate' button */
+            } else {
+                if (this.owner.newCellOnEval || this.isLastCell('input')) {
+                    this.insertInputCellAfter();
+                } else {
+                    this.nextCell('input');
+                }
+            }
+
+            this.fireEvent('postevaluate', this, input, output);
+        }
+
+        function evalFailure(output) {
+            this.focusCell();
+            this.evaluating = false;
+            this.fireEvent('postevaluate', this, input, output);
+        }
+
         this.evaluating = true;
 
-        // XXX: evaluate here
-        var output = "";
-
-        this.evaluating = false;
-
-        this.owner.nextEvalIndex();
-
-        this.setLabel();
-        this.autosize();
-        this.showLabel();
-
-        this.el_evaluate.addClass('codenode-enabled');
-        this.el_clear.addClass('codenode-enabled');
-        this.el_interrupt.removeClass('codenode-enabled');
-
-        var cell = this.getOutputCell();
-
-        if (cell === null) {
-            cell = this.owner.newCell({
-                type: 'output',
-                after: this,
-                setup: {
-                    myInputCell: this,
-                },
-            });
-        }
-
-        this.myOutputCell = cell;
-
-        cell.setLabel();
-        cell.setOutput(output);
-        cell.autosize();
-        cell.showLabel();
-
-        if (config.keepfocus === true) {
-            this.focusCell(); /* needed for 'evaluate' button */
-        } else {
-            if (this.owner.newCellOnEval || this.isLastCell('input')) {
-                this.insertInputCellAfter();
-            } else {
-                this.nextCell('input');
-            }
-        }
-
-        this.fireEvent('postevaluate', this, input, output);
+        Ext.Ajax.request({
+            url: this.owner.url,
+            method: "POST",
+            params: Ext.encode({
+                method: 'evaluate',
+                cellid: this.id,
+                input: input,
+            }),
+            success: function(result, request) {
+                var result = Ext.decode(result.responseText);
+                evalSuccess(result);
+            },
+            failure: function(result, request) {
+                var result = Ext.decode(result.responseText);
+                evalFailure(result);
+            },
+            scope: this,
+        });
     },
 
     clearCell: function() {
