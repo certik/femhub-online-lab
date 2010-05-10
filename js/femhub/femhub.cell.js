@@ -1,5 +1,5 @@
 
-Codenode.CellManager = function(config) {
+FEMhub.CellManager = function(config) {
     config = config || {};
 
     if (Ext.isDefined(config.root)) {
@@ -7,7 +7,7 @@ Codenode.CellManager = function(config) {
     }
 
     return Ext.apply({
-        id: Codenode.unique(),
+        id: FEMhub.unique(),
         url: null,
 
         evalIndex: 0,
@@ -36,7 +36,7 @@ Codenode.CellManager = function(config) {
                 var ctype = this.types[config.type];
             }
 
-            var cell = new Codenode[ctype]({
+            var cell = new FEMhub[ctype]({
                 owner: this,
                 setup: config.setup,
             });
@@ -84,18 +84,18 @@ Codenode.CellManager = function(config) {
 
         typeToCls: function(type) {
             if (!Ext.isDefined(type)) {
-                return '.codenode-cell';
+                return '.femhub-cell';
             } else {
-                return '.codenode-cell-' + type;
+                return '.femhub-cell-' + type;
             }
         },
 
         getFirstCell: function(type) {
-            return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:first", this.root.dom).id);
+            return Ext.getCmp(Ext.DomQuery.selectNode(".femhub-cell-input:first", this.root.dom).id);
         },
 
         getLastCell: function(type) {
-            return Ext.getCmp(Ext.DomQuery.selectNode(".codenode-cell-input:last", this.root.dom).id);
+            return Ext.getCmp(Ext.DomQuery.selectNode(".femhub-cell-input:last", this.root.dom).id);
         },
 
         getNextCell: function(id, type) {
@@ -123,7 +123,7 @@ Codenode.CellManager = function(config) {
         justifyCells: function() {
             var len = ('In [' + this.evalIndex + ']: ').length;
 
-            var cells = Ext.DomQuery.select(".codenode-cell-io", this.root.dom);
+            var cells = Ext.DomQuery.select(".femhub-cell-io", this.root.dom);
 
             Ext.each(cells, function(elt) {
                 var cell = Ext.getCmp(elt.id);
@@ -142,7 +142,7 @@ Codenode.CellManager = function(config) {
     });
 }
 
-Codenode.Cell = Ext.extend(Ext.BoxComponent, {
+FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     collapsed: false,
     hiddenEl: null,
     bindings: {},
@@ -153,13 +153,13 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
             config.setup = undefined;
         }
 
-        config.id = Codenode.unique();
+        config.id = FEMhub.unique();
 
-        Codenode.Cell.superclass.constructor.apply(this, arguments);
+        FEMhub.Cell.superclass.constructor.apply(this, arguments);
     },
 
     initComponent: function() {
-        Codenode.Cell.superclass.initComponent.call(this);
+        FEMhub.Cell.superclass.initComponent.call(this);
 
         this.addEvents('collapsing', 'collapsed', 'expanding', 'expanded');
     },
@@ -177,16 +177,16 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     onRender: function(container, position) {
-        Codenode.Cell.superclass.onRender.apply(this, arguments);
+        FEMhub.Cell.superclass.onRender.apply(this, arguments);
 
-        this.el.addClass('codenode-cell');
+        this.el.addClass('femhub-cell');
 
         this.el_bracket = this.el.createChild({
             tag: 'div',
-            cls: 'codenode-cell-bracket',
+            cls: 'femhub-cell-bracket',
             children: {
                 tag: 'div',
-                cls: 'codenode-cell-triangle',
+                cls: 'femhub-cell-triangle',
             },
         });
 
@@ -205,7 +205,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
     focusCell: function() {
         if (this.collapsed) {
-            this.el.addClass('codenode-focus');
+            this.el.addClass('femhub-focus');
             this.el_expander.focus();
         } else {
             this.onFocusCell();
@@ -214,7 +214,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
     blurCell: function() {
         if (this.collapsed) {
-            this.el.removeClass('codenode-focus');
+            this.el.removeClass('femhub-focus');
             this.el_expander.blur();
         } else {
             this.onBlurCell();
@@ -264,11 +264,11 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.el_expand_triangle = this.el.createChild({
             tag: 'div',
-            cls: 'codenode-cell-triangle',
+            cls: 'femhub-cell-triangle',
         });
 
-        this.el.addClass('codenode-cell-collapsed');
-        this.el.addClass('codenode-enabled');
+        this.el.addClass('femhub-cell-collapsed');
+        this.el.addClass('femhub-enabled');
         this.collapsed = true;
 
         this.fireEvent('collapsed', this);
@@ -280,8 +280,8 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.el.un('click', this.expandCell, this);
         this.el_expand_triangle.remove();
 
-        this.el.removeClass('codenode-cell-collapsed');
-        this.el.removeClass('codenode-enabled');
+        this.el.removeClass('femhub-cell-collapsed');
+        this.el.removeClass('femhub-enabled');
         this.collapsed = false;
 
         Ext.each(this.hiddenEl, function(el) {
@@ -328,11 +328,11 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 });
 
-Codenode.IOCell = Ext.extend(Codenode.Cell, {
+FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     labelPrefix: null,
 
     initComponent: function() {
-        Codenode.IOCell.superclass.initComponent.call(this);
+        FEMhub.IOCell.superclass.initComponent.call(this);
 
         Ext.apply(this.bindings, {
             x_ctrl_up: {
@@ -568,30 +568,30 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 
     onRender: function(container, position) {
-        Codenode.IOCell.superclass.onRender.apply(this, arguments);
+        FEMhub.IOCell.superclass.onRender.apply(this, arguments);
 
-        this.el.addClass('codenode-cell-io');
+        this.el.addClass('femhub-cell-io');
 
         this.el_expander = this.el.createChild({
             tag: 'textarea',
-            cls: 'codenode-cell-expander',
+            cls: 'femhub-cell-expander',
         });
 
         this.el_expander.dom.setAttribute('readOnly','readonly');
 
         this.el_label = this.el.createChild({
             tag: 'div',
-            cls: 'codenode-cell-io-label',
+            cls: 'femhub-cell-io-label',
             html: this.labelPrefix + '[' + this.owner.evalIndex + ']: ',
         });
 
         this.el_content = this.el.createChild({
             tag: 'div',
-            cls: 'codenode-cell-io-content',
+            cls: 'femhub-cell-io-content',
         });
 
         var ta_form = "<textarea class='{0}' rows='{1}' cols='{2}' wrap='{3}' spellcheck='{4}'></textarea>";
-        var ta_args = ['codenode-cell-io-textarea', '1', '0', 'off', 'false'];
+        var ta_args = ['femhub-cell-io-textarea', '1', '0', 'off', 'false'];
         var ta_tmpl = new Ext.DomHelper.createTemplate(ta_form);
 
         this.el_textarea = ta_tmpl.append(this.el_content, ta_args, true);
@@ -604,14 +604,14 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 
     onFocusCell: function() {
-        Codenode.IOCell.superclass.onFocusCell.apply(this, arguments);
-        this.el_textarea.addClass('codenode-focus');
+        FEMhub.IOCell.superclass.onFocusCell.apply(this, arguments);
+        this.el_textarea.addClass('femhub-focus');
         this.el_textarea.focus();
     },
 
     onBlurCell: function() {
-        Codenode.IOCell.superclass.onBlurCell.apply(this, arguments);
-        this.el_textarea.removeClass('codenode-focus');
+        FEMhub.IOCell.superclass.onBlurCell.apply(this, arguments);
+        this.el_textarea.removeClass('femhub-focus');
         this.el_textarea.blur();
     },
 
@@ -669,12 +669,12 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 });
 
-Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
+FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     labelPrefix: 'Out',
     myInputCell: null,
 
     initComponent: function() {
-        Codenode.OutputCell.superclass.initComponent.call(this);
+        FEMhub.OutputCell.superclass.initComponent.call(this);
 
         Ext.apply(this.bindings, {
             x_backspace: {
@@ -734,11 +734,11 @@ Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
     },
 
     onRender: function(container, position) {
-        Codenode.OutputCell.superclass.onRender.apply(this, arguments);
+        FEMhub.OutputCell.superclass.onRender.apply(this, arguments);
 
-        this.el.addClass('codenode-cell-output');
+        this.el.addClass('femhub-cell-output');
 
-        this.el_textarea.addClass('codenode-cell-output-textarea');
+        this.el_textarea.addClass('femhub-cell-output-textarea');
         this.el_textarea.dom.setAttribute('readOnly','readonly');
 
         this.setupOutputCellObserver();
@@ -762,7 +762,7 @@ Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
     },
 });
 
-Codenode.InputCell = Ext.extend(Codenode.IOCell, {
+FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     labelPrefix: 'In ',
     myOutputCell: null,
 
@@ -772,7 +772,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     observationInterval: 250,
 
     initComponent: function() {
-        Codenode.InputCell.superclass.initComponent.call(this);
+        FEMhub.InputCell.superclass.initComponent.call(this);
 
         this.addEvents('preevaluate', 'postevaluate');
 
@@ -947,42 +947,42 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     },
 
     onRender: function(container, position) {
-        Codenode.InputCell.superclass.onRender.apply(this, arguments);
+        FEMhub.InputCell.superclass.onRender.apply(this, arguments);
 
-        this.el.addClass('codenode-cell-input');
-        this.el_textarea.addClass('codenode-cell-input-textarea');
+        this.el.addClass('femhub-cell-input');
+        this.el_textarea.addClass('femhub-cell-input-textarea');
 
         this.el_controls = this.el_content.createChild({
             tag: 'div',
-            cls: 'codenode-cell-input-controls',
+            cls: 'femhub-cell-input-controls',
             children: [
                 {
                     tag: 'div',
-                    cls: 'codenode-cell-input-control codenode-cell-input-evaluate codenode-enabled',
+                    cls: 'femhub-cell-input-control femhub-cell-input-evaluate femhub-enabled',
                     html: 'evaluate',
                 }, {
                     tag: 'div',
-                    cls: 'codenode-cell-input-control codenode-cell-input-clear codenode-enabled',
+                    cls: 'femhub-cell-input-control femhub-cell-input-clear femhub-enabled',
                     html: 'clear',
                 }, {
                     tag: 'div',
-                    cls: 'codenode-cell-input-control codenode-cell-input-interrupt',
+                    cls: 'femhub-cell-input-control femhub-cell-input-interrupt',
                     html: 'interrupt',
                 },
             ],
         });
 
         if (Ext.isChrome) {
-            this.el_controls.addClass('codenode-chrome');
+            this.el_controls.addClass('femhub-chrome');
         }
 
         if (this.owner.showInputControls) {
-            this.el_controls.addClass('codenode-enabled');
+            this.el_controls.addClass('femhub-enabled');
         }
 
-        this.el_evaluate = this.el_controls.child('.codenode-cell-input-evaluate');
-        this.el_clear = this.el_controls.child('.codenode-cell-input-clear');
-        this.el_interrupt = this.el_controls.child('.codenode-cell-input-interrupt');
+        this.el_evaluate = this.el_controls.child('.femhub-cell-input-evaluate');
+        this.el_clear = this.el_controls.child('.femhub-cell-input-clear');
+        this.el_interrupt = this.el_controls.child('.femhub-cell-input-interrupt');
 
         this.setupInputCellObserver();
         this.setupInputCellEvents();
@@ -994,18 +994,18 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     },
 
     onFocusCell: function() {
-        Codenode.InputCell.superclass.onFocusCell.apply(this, arguments);
+        FEMhub.InputCell.superclass.onFocusCell.apply(this, arguments);
 
         if (!this.owner.showInputControls) {
-            this.el_controls.addClass('codenode-enabled');
+            this.el_controls.addClass('femhub-enabled');
         }
     },
 
     onBlurCell: function() {
-        Codenode.InputCell.superclass.onBlurCell.apply(this, arguments);
+        FEMhub.InputCell.superclass.onBlurCell.apply(this, arguments);
 
         if (!this.owner.showInputControls) {
-            this.el_controls.removeClass('codenode-enabled');
+            this.el_controls.removeClass('femhub-enabled');
         }
     },
 
@@ -1107,7 +1107,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
 
     autocomplete: function() {
         var menu = new Ext.menu.Menu({
-            id: 'codenode-completion-menu',
+            id: 'femhub-completion-menu',
             items: [],
         });
 
@@ -1123,9 +1123,9 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
             return;
         }
 
-        this.el_evaluate.removeClass('codenode-enabled');
-        this.el_clear.removeClass('codenode-enabled');
-        this.el_interrupt.addClass('codenode-enabled');
+        this.el_evaluate.removeClass('femhub-enabled');
+        this.el_clear.removeClass('femhub-enabled');
+        this.el_interrupt.addClass('femhub-enabled');
 
         function evalSuccess(output) {
             this.evaluating = false;
@@ -1136,9 +1136,9 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
             this.autosize();
             this.showLabel();
 
-            this.el_evaluate.addClass('codenode-enabled');
-            this.el_clear.addClass('codenode-enabled');
-            this.el_interrupt.removeClass('codenode-enabled');
+            this.el_evaluate.addClass('femhub-enabled');
+            this.el_clear.addClass('femhub-enabled');
+            this.el_interrupt.removeClass('femhub-enabled');
 
             var cell = this.getOutputCell();
 
@@ -1283,23 +1283,23 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     },
 });
 
-Codenode.Cells = Ext.extend(Ext.BoxComponent, {
+FEMhub.Cells = Ext.extend(Ext.BoxComponent, {
 
     constructor: function(config) {
         this.config = config;
-        Codenode.Cells.superclass.constructor.apply(this, arguments);
+        FEMhub.Cells.superclass.constructor.apply(this, arguments);
     },
 
     initComponent: function() {
-        Codenode.Cells.superclass.initComponent.call(this);
+        FEMhub.Cells.superclass.initComponent.call(this);
     },
 
     onRender: function(container, position) {
-        Codenode.Cells.superclass.onRender.apply(this, arguments);
+        FEMhub.Cells.superclass.onRender.apply(this, arguments);
 
-        this.el.addClass('codenode-cells');
+        this.el.addClass('femhub-cells');
 
-        this.cellMgr = new Codenode.CellManager(
+        this.cellMgr = new FEMhub.CellManager(
             Ext.applyIf({ root: this.el }, this.config)
         );
     },
@@ -1309,18 +1309,18 @@ Codenode.Cells = Ext.extend(Ext.BoxComponent, {
     },
 });
 
-Ext.reg('x-codenode-cells', Codenode.Cells);
+Ext.reg('x-femhub-cells', FEMhub.Cells);
 
 function newWindow(title) {
     var notebook = new Ext.Window({
-        title: 'Codenode Notebook: ' + title,
+        title: 'FEMhub Notebook: ' + title,
         layout: 'fit',
         width: 300,
         height: 200,
         maximizable: true,
     })
 
-    var cells = new Codenode.Cells({
+    var cells = new FEMhub.Cells({
         tabWidth: 2,
     });
 
@@ -1333,13 +1333,13 @@ function newWindow(title) {
 }
 
 Ext.onReady(function() {
-    var cells1 = new Codenode.CellManager({ root: 'cells1' });
+    var cells1 = new FEMhub.CellManager({ root: 'cells1' });
 
     for (var i = 0; i < 3; i++) {
         cells1.newCell({ type: 'input' });
     }
 
-    var cells2 = new Codenode.CellManager({ root: 'cells2' });
+    var cells2 = new FEMhub.CellManager({ root: 'cells2' });
 
     for (var i = 0; i < 3; i++) {
         cells2.newCell({ type: 'input' });

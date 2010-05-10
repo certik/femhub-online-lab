@@ -8,7 +8,7 @@
  * CELL PANEL
  */
 
-.codenode-cells {
+.femhub-cells {
     background-color: white;
     position: relative;
     overflow-x: none;
@@ -16,7 +16,7 @@
     display: block;
 }
 
-.codenode-cells-demo {
+.femhub-cells-demo {
     float: left;
     width: 300px;
     height: 300px;
@@ -28,7 +28,7 @@
  * BASE CELL
  */
 
-.codenode-cell {
+.femhub-cell {
     position: relative;
     display: block;
     height: 30px;
@@ -36,7 +36,7 @@
     border: none;
 }
 
-.codenode-cell-bracket {
+.femhub-cell-bracket {
     border: 1px solid blue;
     border-left: none;
     position: absolute;
@@ -48,7 +48,7 @@
     cursor: pointer;
 }
 
-.codenode-cell-triangle {
+.femhub-cell-triangle {
     width: 0;
     height: 0;
     border-width: 3px;
@@ -64,7 +64,7 @@
     z-index: 1;
 }
 
-.codenode-cell-bracket:hover .codenode-cell-triangle {
+.femhub-cell-bracket:hover .femhub-cell-triangle {
     display: block;
 }
 
@@ -72,11 +72,11 @@
  * INPUT/OUTPUT CELL
  */
 
-.codenode-cell-io {
+.femhub-cell-io {
     height: auto;
 }
 
-.codenode-cell-io-label {
+.femhub-cell-io-label {
     width: auto;
     height: auto;
     position: absolute;
@@ -85,22 +85,22 @@
     visibility: hidden;
 }
 
-.codenode-cell-input .codenode-cell-io-label {
+.femhub-cell-input .femhub-cell-io-label {
     color: blue;
 }
 
-.codenode-cell-output .codenode-cell-io-label {
+.femhub-cell-output .femhub-cell-io-label {
     color: red;
 }
 
-.codenode-cell-io-content {
+.femhub-cell-io-content {
     margin-right: 22px; /* accomodate for W3C box model */
     display: block;
     margin-top: 0;
     margin-bottom: 0;
 }
 
-.codenode-cell-io-textarea {
+.femhub-cell-io-textarea {
     padding: 5px;
     width: 100%;
     white-space: pre;
@@ -117,13 +117,13 @@
  * OUTPUT CELL
  */
 
-.codenode-cell-output-textarea {
+.femhub-cell-output-textarea {
     background-color: #ffffcc;
     border-style: dotted;
     border-color: #999adf;
 }
 
-.codenode-cell-output-textarea.codenode-focus {
+.femhub-cell-output-textarea.femhub-focus {
     border-style: solid;
     border-color: #999adf;
 }
@@ -132,18 +132,18 @@
  * INPUT CELL
  */
 
-.codenode-cell-input-textarea {
+.femhub-cell-input-textarea {
     border-style: solid;
     border-color: #bfbfbf;
     -moz-box-shadow: 0 0 6px #bfbfbf;
     -webkit-box-shadow: 0 0 6px #bfbfbf;
 }
 
-.codenode-cell-input-textarea.codenode-focus {
+.femhub-cell-input-textarea.femhub-focus {
     border-color: #999adf;
 }
 
-.codenode-cell-input-controls {
+.femhub-cell-input-controls {
     margin: 2px 0 0 2px;
     width: 100%;
     font-size: 7pt;
@@ -151,26 +151,26 @@
     display: none;
 }
 
-.codenode-cell-input-controls.codenode-enabled {
+.femhub-cell-input-controls.femhub-enabled {
     display: block;
 }
 
-.codenode-cell-input-controls.codenode-chrome {
+.femhub-cell-input-controls.femhub-chrome {
     margin: -4px 0 0 2px;
 }
 
-.codenode-cell-input-control {
+.femhub-cell-input-control {
     padding-right: 5px;
     display: inline;
     cursor: pointer;
     color: #dddddd;
 }
 
-.codenode-cell-input-control.codenode-enabled {
+.femhub-cell-input-control.femhub-enabled {
     color: #bfbfbf;
 }
 
-.codenode-cell-input-control.codenode-enabled:hover {
+.femhub-cell-input-control.femhub-enabled:hover {
     color: blue;
 }
 
@@ -178,7 +178,7 @@
  * COLLAPSED CELLS
  */
 
-.codenode-cell-expander {
+.femhub-cell-expander {
     width: 100%;
     height: 4px;
     z-index: 0;
@@ -191,26 +191,26 @@
     overflow: hidden;
 }
 
-.codenode-cell-collapsed {
+.femhub-cell-collapsed {
     height: 5px !important;
     border-bottom: 1px dashed #bfbfbf;
 }
 
-.codenode-cell-collapsed.codenode-focus {
+.femhub-cell-collapsed.femhub-focus {
     border-bottom-style: solid;
 }
 
-.codenode-cell-collapsed.codenode-enabled:hover {
+.femhub-cell-collapsed.femhub-enabled:hover {
     border-bottom-color: blue;
 }
 
-.codenode-cell-collapsed .codenode-cell-triangle {
+.femhub-cell-collapsed .femhub-cell-triangle {
     display: block;
     border-right-color: #bfbfbf;
     border-bottom-color: #bfbfbf;
 }
 
-.codenode-cell-collapsed.codenode-enabled:hover .codenode-cell-triangle {
+.femhub-cell-collapsed.femhub-enabled:hover .femhub-cell-triangle {
     border-right-color: blue;
     border-bottom-color: blue;
 }

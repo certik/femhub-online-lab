@@ -1,17 +1,17 @@
 
 Ext.BLANK_IMAGE_URL = "/static/external/ext/images/default/s.gif";
 
-Codenode = {
+FEMhub = {
     version: [0, 0, 1],
     json: "/json/",
     icons: "/static/img/icons/",
 };
 
-Codenode.init = function(ready) {
-    var namespace = Codenode;
+FEMhub.init = function(ready) {
+    var namespace = FEMhub;
 
     Ext.Ajax.request({
-        url: Codenode.json,
+        url: FEMhub.json,
         method: "POST",
         params: Ext.encode({
             jsonrpc: "2.0",
@@ -24,16 +24,16 @@ Codenode.init = function(ready) {
 
             Ext.each(response.result.procs, function(proc) {
                 var items = proc.name.split(".");
-                var namespace = Codenode;
+                var namespace = FEMhub;
 
                 Ext.each(items, function(item, i) {
                     if (i == items.length - 1) {
                         if (!Ext.isDefined(namespace[item])) {
                             namespace[item] = function(params, handler) {
-                                return Codenode.call(proc.name, params, handler);
+                                return FEMhub.call(proc.name, params, handler);
                             }
                         } else {
-                            Codenode.log("'" + item + "' method name already in use");
+                            FEMhub.log("'" + item + "' method name already in use");
                         }
                     } else {
                         if (!Ext.isDefined(namespace[item])) {
@@ -48,14 +48,14 @@ Codenode.init = function(ready) {
             ready();
         },
         failure: function(result, request) {
-            Codenode.log(Ext.decode(result.responseText).error.message);
+            FEMhub.log(Ext.decode(result.responseText).error.message);
         },
     });
 }
 
-Codenode.call = function(method, params, handler) {
+FEMhub.call = function(method, params, handler) {
     Ext.Ajax.request({
-        url: Codenode.json,
+        url: FEMhub.json,
         method: "POST",
         params: Ext.encode({
             jsonrpc: "2.0",
@@ -67,16 +67,16 @@ Codenode.call = function(method, params, handler) {
             handler(Ext.decode(result.responseText).result);
         },
         failure: function(result, request) {
-            Codenode.log(Ext.decode(result.responseText).error.message);
+            FEMhub.log(Ext.decode(result.responseText).error.message);
         },
     });
 }
 
-Codenode.log = function(text) {
+FEMhub.log = function(text) {
     Ext.getBody().createChild({tag: 'h1', html: text});
 }
 
-Codenode.unique = function() {
+FEMhub.unique = function() {
     return (new Date()).getTime() + Math.random().toString().substr(2, 8);
 }
 
