@@ -127,9 +127,12 @@
 .codenode-cell-input-controls {
     margin: 2px 0 0 2px;
     width: 100%;
-    height: 10px;
-    font-size: 10px;
+    font-size: 7pt;
     font-family: monospace;
+}
+
+.codenode-cell-input-controls.chrome {
+    margin: -4px 0 0 2px;
 }
 
 .codenode-cell-input-control {

@@ -778,6 +778,10 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
             ],
         });
 
+        if (Ext.isChrome) {
+            this.el_controls.addClass('chrome');
+        }
+
         this.el_evaluate = this.el_controls.child('.codenode-cell-input-evaluate');
         this.el_clear = this.el_controls.child('.codenode-cell-input-clear');
         this.el_interrupt = this.el_controls.child('.codenode-cell-input-interrupt');
