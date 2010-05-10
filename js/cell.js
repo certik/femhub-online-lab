@@ -49,6 +49,8 @@ Codenode.CellManager = function(config) {
             return cell;
         },
 
+        // justify
+
         nextEvalIndex: function() {
             return ++this.evalIndex;
         },
@@ -851,21 +853,9 @@ Codenode.Cells = Ext.extend(Ext.BoxComponent, {
 
 Ext.reg('x-codenode-cells', Codenode.Cells);
 
-Ext.onReady(function() {
-    var cells1 = new Codenode.CellManager({ root: 'cells1' });
-
-    for (var i = 0; i < 3; i++) {
-        cells1.newCell({ start: !i ? true : false });
-    }
-
-    var cells2 = new Codenode.CellManager({ root: 'cells2' });
-
-    for (var i = 0; i < 3; i++) {
-        cells2.newCell({ start: !i ? true : false });
-    }
-
+function newWindow(title) {
     var notebook = new Ext.Window({
-        title: 'Codenode Notebook',
+        title: 'Codenode Notebook: ' + title,
         layout: 'fit',
         width: 300,
         height: 200,
@@ -882,5 +872,22 @@ Ext.onReady(function() {
     notebook.show();
 
     cells.addCell({ start: true });
+}
+
+Ext.onReady(function() {
+    var cells1 = new Codenode.CellManager({ root: 'cells1' });
+
+    for (var i = 0; i < 3; i++) {
+        cells1.newCell({ start: !i ? true : false });
+    }
+
+    var cells2 = new Codenode.CellManager({ root: 'cells2' });
+
+    for (var i = 0; i < 3; i++) {
+        cells2.newCell({ start: !i ? true : false });
+    }
+
+    newWindow(0);
+    newWindow(1);
 });
 
