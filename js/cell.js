@@ -585,8 +585,11 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
             cls: 'codenode-cell-io-content',
         });
 
-        var textarea = "<textarea class='codenode-cell-io-textarea' rows='1' cols='0' wrap='off'></textarea>";
-        this.el_textarea = (new Ext.DomHelper.createTemplate(textarea)).append(this.el_content, [], true);
+        var ta_form = "<textarea class='{0}' rows='{1}' cols='{2}' wrap='{3}' spellcheck='{4}'></textarea>";
+        var ta_args = ['codenode-cell-io-textarea', '1', '0', 'off', 'false'];
+        var ta_tmpl = new Ext.DomHelper.createTemplate(ta_form);
+
+        this.el_textarea = ta_tmpl.append(this.el_content, ta_args, true);
 
         this.autosize();
 
