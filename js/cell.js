@@ -1102,16 +1102,6 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         this.el_clear.addClass('codenode-enabled');
         this.el_interrupt.removeClass('codenode-enabled');
 
-        if (config.keepfocus === true) {
-            this.focusCell(); /* needed for 'evaluate' button */
-        } else {
-            if (this.owner.newCellOnEval || this.isLastCell('input')) {
-                this.insertInputCellAfter();
-            } else {
-                this.nextCell('input');
-            }
-        }
-
         var cell = this.getOutputCell();
 
         if (cell === null) {
@@ -1130,6 +1120,16 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         cell.setOutput(output);
         cell.autosize();
         cell.showLabel();
+
+        if (config.keepfocus === true) {
+            this.focusCell(); /* needed for 'evaluate' button */
+        } else {
+            if (this.owner.newCellOnEval || this.isLastCell('input')) {
+                this.insertInputCellAfter();
+            } else {
+                this.nextCell('input');
+            }
+        }
 
         this.fireEvent('postevaluate', this, input, output);
     },
