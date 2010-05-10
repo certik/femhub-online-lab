@@ -120,6 +120,7 @@ Codenode.CellManager = function(config) {
 Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     collapsed: false,
     hiddenEl: null,
+    bindings: {},
 
     constructor: function(config) {
         config.id = Codenode.unique();
@@ -203,10 +204,137 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 });
 
 Codenode.IOCell = Ext.extend(Codenode.Cell, {
-    labelPrefix: 'In ',
+    labelPrefix: null,
 
     initComponent: function() {
         Codenode.IOCell.superclass.initComponent.call(this);
+
+        Ext.apply(this.bindings, {
+            x_tab: {
+                key: Ext.EventObject.TAB,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: Ext.emptyFn,
+            },
+            x_shift_tab: {
+                key: Ext.EventObject.TAB,
+                shift: true,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: Ext.emptyFn,
+            },
+            x_ctrl_up: {
+                key: Ext.EventObject.UP,
+                shift: false,
+                ctrl: true,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: function() {
+                    var cell = this.prevCell();
+                    cell.setSelection('end');
+                },
+            },
+            x_ctrl_down: {
+                key: Ext.EventObject.DOWN,
+                shift: false,
+                ctrl: true,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: function() {
+                    var cell = this.nextCell();
+                    cell.setSelection('start');
+                },
+            },
+            x_alt_up: {
+                key: Ext.EventObject.UP,
+                shift: false,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.insertCellBefore,
+            },
+            x_alt_down: {
+                key: Ext.EventObject.DOWN,
+                shift: false,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.insertCellAfter,
+            },
+            x_alt_left: {
+                key: Ext.EventObject.LEFT,
+                shift: false,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.collapseCell,
+            },
+            x_alt_right: {
+                key: Ext.EventObject.RIGHT,
+                shift: false,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.expandCell,
+            },
+            x_up: {
+                key: Ext.EventObject.UP,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: false,
+                handler: function(key, ev) {
+                    var selection = this.getSelection();
+
+                    if (selection.start == selection.end) {
+                        var input = this.getInput();
+                        var index = input.indexOf('\n');
+
+                        if (index == -1 || selection.start <= index) {
+                            ev.stopEvent();
+
+                            var cell = this.prevCell();
+                            cell.setSelection('end');
+                        }
+                    }
+                },
+            },
+            x_down: {
+                key: Ext.EventObject.DOWN,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: false,
+                handler: function(key, ev) {
+                    var selection = this.getSelection();
+
+                    if (selection.start == selection.end) {
+                        var input = this.getInput();
+                        var index = input.lastIndexOf('\n');
+
+                        if (index == -1 || selection.start > index) {
+                            ev.stopEvent();
+
+                            var cell = this.nextCell();
+                            cell.setSelection('start');
+                        }
+                    }
+                },
+            },
+        });
     },
 
     copyFontStyles: function(from, to) {
@@ -340,7 +468,15 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 
     setupIOCellKeyMap: function() {
-        /* pass */
+        this.keymap_expander_stop = new Ext.KeyMap(this.el_expander, [
+            this.bindings.x_alt_right,
+            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
+            this.bindings.x_alt_up, this.bindings.x_alt_down,
+        ]);
+
+        this.keymap_expander_nostop = new Ext.KeyMap(this.el_expander, [
+            this.bindings.x_up, this.bindings.x_down,
+        ]);
     },
 
     onRender: function(container, position) {
@@ -484,6 +620,8 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
 });
 
 Codenode.InputCell = Ext.extend(Codenode.IOCell, {
+    labelPrefix: 'In ',
+
     evaluating: false,
 
     observedInputLength: 0,
@@ -493,6 +631,58 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         Codenode.InputCell.superclass.initComponent.call(this);
 
         this.addEvents('preevaluate', 'postevaluate');
+
+        Ext.apply(this.bindings, {
+            x_shift_enter: {
+                key: Ext.EventObject.ENTER,
+                shift: true,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: function() {
+                    this.evaluateCell({ keepfocus: false });
+                },
+            },
+            x_ctrl_enter: {
+                key: Ext.EventObject.ENTER,
+                shift: false,
+                ctrl: true,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: function() {
+                    this.evaluateCell({ keepfocus: true });
+                },
+            },
+            x_enter: {
+                key: Ext.EventObject.ENTER,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: this.newline,
+            },
+            x_backspace: {
+                key: Ext.EventObject.BACKSPACE,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: this.backspace,
+            },
+            x_ctrl_space: {
+                key: Ext.EventObject.SPACE,
+                shift: false,
+                ctrl: true,
+                alt: false,
+                scope: this,
+                stopEvent: false,
+                handler: this.autocomplete,
+            },
+        });
     },
 
     getInput: function() {
@@ -529,216 +719,18 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     },
 
     setupInputCellKeyMap: function() {
-        var x_tab = {
-            key: Ext.EventObject.TAB,
-            shift: false,
-            ctrl: false,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: Ext.emptyFn,
-        };
-
-        var x_shift_tab = {
-            key: Ext.EventObject.TAB,
-            shift: true,
-            ctrl: false,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: Ext.emptyFn,
-        };
-
-        var x_shift_enter = {
-            key: Ext.EventObject.ENTER,
-            shift: true,
-            ctrl: false,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: function() {
-                this.evaluateCell({ keepfocus: false });
-            },
-        };
-
-        var x_ctrl_enter = {
-            key: Ext.EventObject.ENTER,
-            shift: false,
-            ctrl: true,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: function() {
-                this.evaluateCell({ keepfocus: true });
-            },
-        };
-
-        var x_enter = {
-            key: Ext.EventObject.ENTER,
-            shift: false,
-            ctrl: false,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: this.newline,
-        };
-
-        var x_backspace = {
-            key: Ext.EventObject.BACKSPACE,
-            shift: false,
-            ctrl: false,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: this.backspace,
-        };
-
-        var x_ctrl_up = {
-            key: Ext.EventObject.UP,
-            shift: false,
-            ctrl: true,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: function() {
-                var cell = this.prevCell();
-                cell.setSelection('end');
-            },
-        };
-
-        var x_ctrl_down = {
-            key: Ext.EventObject.DOWN,
-            shift: false,
-            ctrl: true,
-            alt: false,
-            scope: this,
-            stopEvent: true,
-            handler: function() {
-                var cell = this.nextCell();
-                cell.setSelection('start');
-            },
-        };
-
-        var x_alt_up = {
-            key: Ext.EventObject.UP,
-            shift: false,
-            ctrl: false,
-            alt: true,
-            scope: this,
-            stopEvent: true,
-            handler: this.insertCellBefore,
-        };
-
-        var x_alt_down = {
-            key: Ext.EventObject.DOWN,
-            shift: false,
-            ctrl: false,
-            alt: true,
-            scope: this,
-            stopEvent: true,
-            handler: this.insertCellAfter,
-        };
-
-        var x_alt_left = {
-            key: Ext.EventObject.LEFT,
-            shift: false,
-            ctrl: false,
-            alt: true,
-            scope: this,
-            stopEvent: true,
-            handler: this.collapseCell,
-        };
-
-        var x_alt_right = {
-            key: Ext.EventObject.RIGHT,
-            shift: false,
-            ctrl: false,
-            alt: true,
-            scope: this,
-            stopEvent: true,
-            handler: this.expandCell,
-        };
-
-        var x_up = {
-            key: Ext.EventObject.UP,
-            shift: false,
-            ctrl: false,
-            alt: false,
-            scope: this,
-            stopEvent: false,
-            handler: function(key, ev) {
-                var selection = this.getSelection();
-
-                if (selection.start == selection.end) {
-                    var input = this.getInput();
-                    var index = input.indexOf('\n');
-
-                    if (index == -1 || selection.start <= index) {
-                        ev.stopEvent();
-
-                        var cell = this.prevCell();
-                        cell.setSelection('end');
-                    }
-                }
-            },
-        };
-
-        var x_down = {
-            key: Ext.EventObject.DOWN,
-            shift: false,
-            ctrl: false,
-            alt: false,
-            scope: this,
-            stopEvent: false,
-            handler: function(key, ev) {
-                var selection = this.getSelection();
-
-                if (selection.start == selection.end) {
-                    var input = this.getInput();
-                    var index = input.lastIndexOf('\n');
-
-                    if (index == -1 || selection.start > index) {
-                        ev.stopEvent();
-
-                        var cell = this.nextCell();
-                        cell.setSelection('start');
-                    }
-                }
-            },
-        };
-
-        var x_ctrl_space = {
-            key: Ext.EventObject.SPACE,
-            shift: false,
-            ctrl: true,
-            alt: false,
-            scope: this,
-            stopEvent: false,
-            handler: this.autocomplete,
-        };
-
         this.keymap_textarea_stop = new Ext.KeyMap(this.el_textarea, [
-            x_tab, x_shift_tab,
-            x_enter, x_backspace,
-            x_shift_enter, x_ctrl_enter,
-            x_ctrl_up, x_ctrl_down,
-            x_alt_up, x_alt_down,
-            x_alt_left,
-            x_ctrl_space,
+            this.bindings.x_tab, this.bindings.x_shift_tab,
+            this.bindings.x_enter, this.bindings.x_backspace,
+            this.bindings.x_shift_enter, this.bindings.x_ctrl_enter,
+            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
+            this.bindings.x_alt_up, this.bindings.x_alt_down,
+            this.bindings.x_alt_left,
+            this.bindings.x_ctrl_space,
         ]);
 
         this.keymap_textarea_nostop = new Ext.KeyMap(this.el_textarea, [
-            x_up, x_down,
-        ]);
-
-        this.keymap_expander_stop = new Ext.KeyMap(this.el_expander, [
-            x_alt_right,
-            x_ctrl_up, x_ctrl_down,
-            x_alt_up, x_alt_down,
-        ]);
-
-        this.keymap_expander_nostop = new Ext.KeyMap(this.el_expander, [
-            x_up, x_down,
+            this.bindings.x_up, this.bindings.x_down,
         ]);
     },
 
