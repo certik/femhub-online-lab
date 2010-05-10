@@ -64,14 +64,6 @@
     z-index: 1;
 }
 
-.codenode-cell-input-control.codenode-enabled {
-    color: #bfbfbf;
-}
-
-.codenode-cell-input-control.codenode-enabled:hover {
-    color: blue;
-}
-
 .codenode-cell-bracket:hover .codenode-cell-triangle {
     display: block;
 }
@@ -147,6 +139,14 @@
     display: inline;
     cursor: pointer;
     color: #dddddd;
+}
+
+.codenode-cell-input-control.codenode-enabled {
+    color: #bfbfbf;
+}
+
+.codenode-cell-input-control.codenode-enabled:hover {
+    color: blue;
 }
 
 /*
