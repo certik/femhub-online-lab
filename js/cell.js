@@ -29,7 +29,7 @@ Codenode.CellManager = function(config) {
 
         softEvalTimeout: null,
         hardEvalTimeout: null,
-        showInputControls: false,
+        showInputControls: true,
         moveForwardOnRemove: false,
         mergeOnBackspace: true,
         newCellOnEval: false,
