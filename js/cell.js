@@ -437,6 +437,9 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
         this.el_textarea.on('focus', this.focusCell, this);
         this.el_textarea.on('blur', this.blurCell, this);
 
+        this.el_expander.on('focus', this.focusCell, this);
+        this.el_expander.on('blur', this.blurCell, this);
+
         this.on('collapsed', function() {
             this.el_expander.show();
             this.focusCell();
