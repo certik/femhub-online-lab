@@ -200,6 +200,8 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 });
 
 Codenode.InputCell = Ext.extend(Codenode.Cell, {
+    labelPrefix: 'In ',
+
     evaluating: false,
 
     observedFontSize: 0,
@@ -234,12 +236,12 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         if (Ext.isDefined(value)) {
             this.el_label.update(value);
         } else {
-            this.el_label.update('In [' + this.owner.nextEvalIndex() + ']: ');
+            this.el_label.update(this.labelPrefix + '[' + this.owner.nextEvalIndex() + ']: ');
         }
     },
 
     clearLabel: function() {
-        this.el_label.update('In [' + this.owner.evalIndex + ']: ');
+        this.el_label.update(this.labelPrefix + '[' + this.owner.evalIndex + ']: ');
         this.hideLabel();
     },
 
@@ -596,7 +598,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         this.el_label = this.el.createChild({
             tag: 'div',
             cls: 'codenode-cell-input-label',
-            html: 'In [' + this.owner.evalIndex + ']: ',
+            html: this.labelPrefix + '[' + this.owner.evalIndex + ']: ',
         });
 
         this.el_content = this.el.createChild({
