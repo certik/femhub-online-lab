@@ -30,6 +30,7 @@ Codenode.CellManager = function(config) {
         softEvalTimeout: null,
         hardEvalTimeout: null,
         moveForwardOnRemove: false,
+        mergeOnBackspace: true,
         newCellOnEval: false,
         cycleCells: true,
         autoJustify: true,
@@ -867,6 +868,24 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
                 stopEvent: false,
                 handler: this.autocomplete,
             },
+            x_ctrl_alt_up: {
+                key: Ext.EventObject.UP,
+                shift: false,
+                ctrl: true,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.mergeCellBefore,
+            },
+            x_ctrl_alt_down: {
+                key: Ext.EventObject.DOWN,
+                shift: false,
+                ctrl: true,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.mergeCellAfter,
+            },
         });
     },
 
@@ -924,6 +943,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
             this.bindings.x_shift_enter, this.bindings.x_ctrl_enter,
             this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
             this.bindings.x_alt_up, this.bindings.x_alt_down,
+            this.bindings.x_ctrl_alt_up, this.bindings.x_ctrl_alt_down,
             this.bindings.x_alt_left,
             this.bindings.x_ctrl_space,
         ]);
@@ -1028,7 +1048,12 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
 
         if (selection.start == selection.end) {
             if (pos == 0) {
-                this.removeCell();
+                if (this.owner.mergeOnBackspace) {
+                    this.mergeCellBefore();
+                } else if (input.length == 0) {
+                    this.removeCell();
+                }
+
                 return;
             }
 
@@ -1168,6 +1193,55 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         cell.focusCell();
 
         return cell;
+    },
+
+    mergeCellBefore: function() {
+        var cell = this.getPrevCell('input');
+
+        if (cell !== null) {
+            var input = cell.getInput();
+
+            if (input.length != 0) {
+                input += '\n';
+            }
+
+            var length = input.length;
+            input += this.getInput();
+
+            var selection = this.getSelection();
+
+            selection.start += length;
+            selection.end += length;
+
+            cell.setInput(input);
+            cell.setSelection(selection);
+
+            cell.autosize();
+            cell.focusCell();
+            this.destroy();
+        }
+    },
+
+    mergeCellAfter: function() {
+        var cell = this.getNextCell('input');
+
+        if (cell !== null) {
+            var input = cell.getInput();
+
+            if (input.length != 0) {
+                input = '\n' + input;
+            }
+
+            input = this.getInput() + input;
+            var selection = this.getSelection();
+
+            cell.setInput(input);
+            cell.setSelection(selection);
+
+            cell.autosize();
+            cell.focusCell();
+            this.destroy();
+        }
     },
 });
 
