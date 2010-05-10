@@ -31,6 +31,7 @@ Codenode.CellManager = function(config) {
         hardEvalTimeout: null,
         newCellOnEval: false,
         cycleCells: true,
+        autoJustify: true,
         tabWidth: 4,
 
         newCell: function(config) {
@@ -49,10 +50,20 @@ Codenode.CellManager = function(config) {
             return cell;
         },
 
-        // justify
-
         nextEvalIndex: function() {
-            return ++this.evalIndex;
+            if (!this.autoJustify) {
+                return ++this.evalIndex;
+            } else {
+                var prev = "" + this.evalIndex;
+                this.evalIndex++;
+                var curr = "" + this.evalIndex;
+
+                if (prev.length != curr.length) {
+                    this.justifyCells();
+                }
+
+                return this.evalIndex;
+            }
         },
 
         getFirstCell: function() {
@@ -82,6 +93,25 @@ Codenode.CellManager = function(config) {
                 return null;
             }
         },
+
+        justifyCells: function() {
+            var len = ('In [' + this.evalIndex + ']: ').length;
+
+            var input = Ext.DomQuery.select(".codenode-cell-input", this.root.dom);
+            var output = Ext.DomQuery.select(".codenode-cell-output", this.root.dom);
+
+            Ext.each(input.concat(output), function(elt) {
+                var cell = Ext.getCmp(elt.id);
+                var label = cell.getLabel();
+
+                for (var i = 0; i < len - label.length; i++) {
+                    label += ' ';
+                }
+
+                cell.setLabel(label);
+                cell.autosize();
+            }, this);
+        }
     }, config, {
         root: Ext.getBody(),
     });
@@ -196,8 +226,16 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         this.el_label.hide();
     },
 
-    setupLabel: function() {
-        this.el_label.update('In [' + this.owner.nextEvalIndex() + ']: ');
+    getLabel: function() {
+        return this.el_label.dom.innerHTML;
+    },
+
+    setLabel: function(value) {
+        if (Ext.isDefined(value)) {
+            this.el_label.update(value);
+        } else {
+            this.el_label.update('In [' + this.owner.nextEvalIndex() + ']: ');
+        }
     },
 
     clearLabel: function() {
@@ -703,7 +741,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
         this.evaluating = false;
 
-        this.setupLabel();
+        this.setLabel();
         this.autosize();
         this.showLabel();
 
