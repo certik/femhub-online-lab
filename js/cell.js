@@ -603,6 +603,66 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 });
 
+Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
+    labelPrefix: 'Out',
+
+    initComponent: function() {
+        Codenode.OutputCell.superclass.initComponent.call(this);
+
+        Ext.apply(this.bindings, {
+            x_backspace: {
+                key: Ext.EventObject.BACKSPACE,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: this.removeCell,
+            },
+        });
+    },
+
+    getOutput: function() {
+        return this.getText();
+    },
+
+    setOutput: function(output) {
+        return this.setText(output);
+    },
+
+    setupOutputCellObserver: function() {
+        /* pass */
+    },
+
+    setupOutputCellEvents: function() {
+        /* pass */
+    },
+
+    setupOutputCellKeyMap: function() {
+        this.keymap_textarea_stop = new Ext.KeyMap(this.el_textarea, [
+            this.bindings.x_backspace,
+            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
+            this.bindings.x_alt_up, this.bindings.x_alt_down,
+            this.bindings.x_alt_left,
+            this.bindings.x_ctrl_space,
+        ]);
+
+        this.keymap_textarea_nostop = new Ext.KeyMap(this.el_textarea, [
+            this.bindings.x_up, this.bindings.x_down,
+        ]);
+    },
+
+    onRender: function(container, position) {
+        Codenode.OutputCell.superclass.onRender.apply(this, arguments);
+
+        this.el.addClass('codenode-cell-output');
+
+        this.setupOutputCellObserver();
+        this.setupOutputCellEvents();
+        this.setupOutputCellKeyMap();
+    },
+});
+
 Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     labelPrefix: 'In ',
 
@@ -929,7 +989,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
             if (this.owner.newCellOnEval || this.isLastCell()) {
                 this.insertCellAfter();
             } else {
-                this.nextCell();
+                this.nextCell({ type: 'input' });
             }
         }
 

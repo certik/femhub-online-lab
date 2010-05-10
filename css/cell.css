@@ -90,8 +90,15 @@
     position: absolute;
     white-space: pre;
     font-family: monospace;
-    color: blue;
     visibility: hidden;
+}
+
+.codenode-cell-input .codenode-cell-io-label {
+    color: blue;
+}
+
+.codenode-cell-output .codenode-cell-io-label {
+    color: red;
 }
 
 .codenode-cell-io-content {
