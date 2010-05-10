@@ -553,6 +553,16 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
             },
         };
 
+        var x_ctrl_space = {
+            key: Ext.EventObject.SPACE,
+            shift: false,
+            ctrl: true,
+            alt: false,
+            scope: this,
+            stopEvent: false,
+            handler: this.autocomplete,
+        };
+
         this.keymap_textarea_stop = new Ext.KeyMap(this.el_textarea, [
             x_tab, x_shift_tab,
             x_enter, x_backspace,
@@ -560,6 +570,7 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
             x_ctrl_up, x_ctrl_down,
             x_alt_up, x_alt_down,
             x_alt_left,
+            x_ctrl_space,
         ]);
 
         this.keymap_textarea_nostop = new Ext.KeyMap(this.el_textarea, [
@@ -721,6 +732,15 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         if (!this.collapsed) {
             this.setRowsCols(this.getInput());
         }
+    },
+
+    autocomplete: function() {
+        var menu = new Ext.menu.Menu({
+            id: 'codenode-completion-menu',
+            items: [],
+        });
+
+        menu.showAt([0, 0]);
     },
 
     evaluateCell: function(config) {
