@@ -321,7 +321,6 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
 Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     evaluating: false,
 
-    observedFontSize: 0,
     observedInputLength: 0,
     observationInterval: 250,
 
@@ -343,22 +342,10 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         var observer = {
             run: function() {
                 var input = this.getInput();
-                var autosized = false;
 
                 if (input.length != this.observedInputLength) {
                     this.observedInputLength = input.length;
                     this.autosize();
-                    autosized = true;
-                }
-
-                var size = this.el_textarea.getStyle('font-size');
-
-                if (size != this.observedFontSize) {
-                    this.observedFontSize = size;
-
-                    if (!autosized) {
-                        this.autosize();
-                    }
                 }
             },
             scope: this,
