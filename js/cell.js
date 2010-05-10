@@ -210,24 +210,6 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
         Codenode.IOCell.superclass.initComponent.call(this);
 
         Ext.apply(this.bindings, {
-            x_tab: {
-                key: Ext.EventObject.TAB,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: Ext.emptyFn,
-            },
-            x_shift_tab: {
-                key: Ext.EventObject.TAB,
-                shift: true,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: Ext.emptyFn,
-            },
             x_ctrl_up: {
                 key: Ext.EventObject.UP,
                 shift: false,
@@ -410,9 +392,11 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
         if (Ext.isDefined(dom.selectionStart)) {
             if (obj === 'start') {
                 dom.setSelectionRange(0, 0);
-            } else if (obj == 'end') {
+            } else if (obj === 'end') {
                 var end = this.getInput().length;
                 dom.setSelectionRange(end, end);
+            } else if (Ext.isNumber(obj)) {
+                dom.setSelectionRange(obj, obj);
             } else {
                 dom.setSelectionRange(obj.start, obj.end);
             }
@@ -633,6 +617,41 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         this.addEvents('preevaluate', 'postevaluate');
 
         Ext.apply(this.bindings, {
+            x_tab: {
+                key: Ext.EventObject.TAB,
+                shift: false,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: function() {
+                    var selection = this.getSelection();
+
+                    if (selection.start == selection.end) {
+                        var input = this.getInput();
+                        var pos = selection.start;
+
+                        var head = input.slice(0, pos);
+                        var tail = input.slice(pos);
+
+                        for (var i = 0; i < this.owner.tabWidth; i++) {
+                            head += ' ';
+                        }
+
+                        this.setInput(head + tail);
+                        this.setSelection(pos + this.owner.tabWidth);
+                    }
+                },
+            },
+            x_shift_tab: {
+                key: Ext.EventObject.TAB,
+                shift: true,
+                ctrl: false,
+                alt: false,
+                scope: this,
+                stopEvent: true,
+                handler: Ext.emptyFn,
+            },
             x_shift_enter: {
                 key: Ext.EventObject.ENTER,
                 shift: true,
