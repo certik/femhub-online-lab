@@ -29,6 +29,7 @@ Codenode.CellManager = function(config) {
 
         softEvalTimeout: null,
         hardEvalTimeout: null,
+        moveForwardOnRemove: false,
         newCellOnEval: false,
         cycleCells: true,
         autoJustify: true,
@@ -50,7 +51,7 @@ Codenode.CellManager = function(config) {
 
             var cell = new Codenode[ctype]({
                 owner: this,
-                content: config.content,
+                setup: config.setup,
             });
 
             if (config.render !== false) {
@@ -72,9 +73,7 @@ Codenode.CellManager = function(config) {
 
                 cell.render(this.root, id);
 
-                if (config.scroll !== false) {
-                    this.root.scroll('bottom', 100);
-                }
+                // TODO: fix visibility issue
             }
 
             return cell;
@@ -113,7 +112,7 @@ Codenode.CellManager = function(config) {
         },
 
         getNextCell: function(id, type) {
-            var query = this.typeToCls(type) + ":prev(div[id=" + id + "])";
+            var query = "div[id=" + id + "] ~ " + this.typeToCls(type) + ":first";
             var elt = Ext.DomQuery.selectNode(query, this.root.dom);
 
             if (Ext.isDefined(elt)) {
@@ -162,7 +161,13 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     bindings: {},
 
     constructor: function(config) {
+        if (Ext.isDefined(config.setup)) {
+            Ext.apply(this, config.setup);
+            config.setup = undefined;
+        }
+
         config.id = Codenode.unique();
+
         Codenode.Cell.superclass.constructor.apply(this, arguments);
     },
 
@@ -396,7 +401,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
                     var selection = this.getSelection();
 
                     if (selection.start == selection.end) {
-                        var input = this.getInput();
+                        var input = this.getText();
                         var index = input.indexOf('\n');
 
                         if (index == -1 || selection.start <= index) {
@@ -419,7 +424,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
                     var selection = this.getSelection();
 
                     if (selection.start == selection.end) {
-                        var input = this.getInput();
+                        var input = this.getText();
                         var index = input.lastIndexOf('\n');
 
                         if (index == -1 || selection.start > index) {
@@ -508,7 +513,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
             if (obj === 'start') {
                 dom.setSelectionRange(0, 0);
             } else if (obj === 'end') {
-                var end = this.getInput().length;
+                var end = this.getText().length;
                 dom.setSelectionRange(end, end);
             } else if (Ext.isNumber(obj)) {
                 dom.setSelectionRange(obj, obj);
@@ -567,7 +572,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
             cls: 'codenode-cell-expander',
         });
 
-        this.el_expander.dom.readonly = true;
+        this.el_expander.dom.setAttribute('readOnly','readonly');
 
         this.el_label = this.el.createChild({
             tag: 'div',
@@ -603,7 +608,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
         this.el_content.applyStyles({'margin-left': width});
 
         if (!this.collapsed) {
-            this.setRowsCols(this.getInput());
+            this.setRowsCols(this.getText());
         }
     },
 
@@ -650,10 +655,18 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     },
 
     removeCell: function() {
-        if (this.isLastCell()) {
-            this.prevCell();
+        if (this.owner.moveForwardOnRemove) {
+            if (this.isLastCell()) {
+                this.prevCell();
+            } else {
+                this.nextCell();
+            }
         } else {
-            this.nextCell();
+            if (this.isFirstCell()) {
+                this.nextCell();
+            } else {
+                this.prevCell();
+            }
         }
 
         this.destroy();
@@ -662,6 +675,7 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
 
 Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
     labelPrefix: 'Out',
+    myInputCell: null,
 
     initComponent: function() {
         Codenode.OutputCell.superclass.initComponent.call(this);
@@ -685,6 +699,20 @@ Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
 
     setOutput: function(output) {
         return this.setText(output);
+    },
+
+    getInputCell: function() {
+       if (this.myInputCell === null) {
+           return null;
+       } else {
+           var elt = Ext.get(this.myInputCell.id);
+
+           if (elt === null || !Ext.isDefined(elt)) {
+               return null;
+           } else {
+               return this.myInputCell;
+           }
+       }
     },
 
     setupOutputCellObserver: function() {
@@ -714,14 +742,32 @@ Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
 
         this.el.addClass('codenode-cell-output');
 
+        this.el_textarea.dom.setAttribute('readOnly','readonly');
+
         this.setupOutputCellObserver();
         this.setupOutputCellEvents();
         this.setupOutputCellKeyMap();
+    },
+
+    insertInputCellBefore: function() {
+        this.blurCell();
+
+        var before = this.getInputCell();
+
+        if (before === null) {
+            before = this;
+        }
+
+        var cell = this.owner.newCell({ type: 'input', before: before });
+        cell.focusCell();
+
+        return cell;
     },
 });
 
 Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     labelPrefix: 'In ',
+    myOutputCell: null,
 
     evaluating: false,
 
@@ -827,6 +873,20 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
 
     setInput: function(input) {
         return this.setText(input);
+    },
+
+    getOutputCell: function() {
+       if (this.myOutputCell === null) {
+           return null;
+       } else {
+           var elt = Ext.get(this.myOutputCell.id);
+
+           if (elt === null || !Ext.isDefined(elt)) {
+               return null;
+           } else {
+               return this.myOutputCell;
+           }
+       }
     },
 
     setupInputCellObserver: function() {
@@ -1017,7 +1077,9 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
 
         var input = this.getInput();
 
-        this.fireEvent('preevaluate', this, input);
+        if (this.fireEvent('preevaluate', this, input) === false) {
+            return;
+        }
 
         this.el_evaluate.removeClass('codenode-enabled');
         this.el_clear.removeClass('codenode-enabled');
@@ -1026,7 +1088,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         this.evaluating = true;
 
         // XXX: evaluate here
-        var output = null;
+        var output = "";
 
         this.evaluating = false;
 
@@ -1043,17 +1105,43 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         if (config.keepfocus === true) {
             this.focusCell(); /* needed for 'evaluate' button */
         } else {
-            if (this.owner.newCellOnEval || this.isLastCell()) {
+            if (this.owner.newCellOnEval || this.isLastCell('input')) {
                 this.insertInputCellAfter();
             } else {
                 this.nextCell('input');
             }
         }
 
+        var cell = this.getOutputCell();
+
+        if (cell === null) {
+            cell = this.owner.newCell({
+                type: 'output',
+                after: this,
+                setup: {
+                    myInputCell: this,
+                },
+            });
+        }
+
+        this.myOutputCell = cell;
+
+        cell.setLabel();
+        cell.setOutput(output);
+        cell.autosize();
+        cell.showLabel();
+
         this.fireEvent('postevaluate', this, input, output);
     },
 
     clearCell: function() {
+        var cell = this.getOutputCell();
+
+        if (cell !== null) {
+            this.myOutputCell = null;
+            cell.destroy();
+        }
+
         this.setInput('');
         this.clearLabel();
         this.autosize();
@@ -1062,6 +1150,21 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
 
     interruptCell: function() {
         /* pass */
+    },
+
+    insertInputCellAfter: function() {
+        this.blurCell();
+
+        var after = this.getOutputCell();
+
+        if (after === null) {
+            after = this;
+        }
+
+        var cell = this.owner.newCell({ type: 'input', after: after });
+        cell.focusCell();
+
+        return cell;
     },
 });
 
