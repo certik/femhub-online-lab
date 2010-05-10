@@ -4,6 +4,10 @@
     padding: 0;
 }
 
+/*
+ * CELL PANEL
+ */
+
 .codenode-cells {
     background-color: white;
     position: relative;
@@ -20,75 +24,16 @@
     border: 1px solid gray;
 }
 
+/*
+ * BASE CELL
+ */
+
 .codenode-cell {
     position: relative;
     display: block;
     height: 30px;
     margin: 10px;
     border: none;
-}
-
-.codenode-cell-input {
-    height: auto;
-}
-
-.codenode-cell-input-label {
-    width: auto;
-    height: auto;
-    position: absolute;
-    white-space: pre;
-    font-family: monospace;
-    color: blue;
-    visibility: hidden;
-}
-
-.codenode-cell-input-content {
-    margin-right: 22px; /* accomodate for W3C box model */
-    display: block;
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.codenode-cell-input-textarea {
-    padding: 5px;
-    width: 100%;
-    white-space: pre;
-    /*
-    overflow-x: auto;
-    overflow-y: hidden;
-    */
-    overflow: hidden;
-    font-size: 10pt;
-    border: 1px solid #bfbfbf;
-    -moz-box-shadow: 0 0 6px #bfbfbf;
-    -webkit-box-shadow: 0 0 6px #bfbfbf;
-}
-
-.codenode-cell-input-textarea-focus {
-    border: 1px solid #999adf;
-}
-
-.codenode-cell-input-controls {
-    margin: 2px 0 0 2px;
-    width: 100%;
-    height: 10px;
-    font-size: 10px;
-    font-family: monospace;
-}
-
-.codenode-cell-input-control {
-    padding-right: 5px;
-    display: inline;
-    cursor: pointer;
-    color: #dddddd;
-}
-
-.codenode-cell-input-control.codenode-enabled {
-    color: #bfbfbf;
-}
-
-.codenode-cell-input-control.codenode-enabled:hover {
-    color: blue;
 }
 
 .codenode-cell-bracket {
@@ -119,9 +64,84 @@
     z-index: 1;
 }
 
+.codenode-cell-input-control.codenode-enabled {
+    color: #bfbfbf;
+}
+
+.codenode-cell-input-control.codenode-enabled:hover {
+    color: blue;
+}
+
 .codenode-cell-bracket:hover .codenode-cell-triangle {
     display: block;
 }
+
+/*
+ * INPUT/OUTPUT CELL
+ */
+
+.codenode-cell-io {
+    height: auto;
+}
+
+.codenode-cell-io-label {
+    width: auto;
+    height: auto;
+    position: absolute;
+    white-space: pre;
+    font-family: monospace;
+    color: blue;
+    visibility: hidden;
+}
+
+.codenode-cell-io-content {
+    margin-right: 22px; /* accomodate for W3C box model */
+    display: block;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.codenode-cell-io-textarea {
+    padding: 5px;
+    width: 100%;
+    white-space: pre;
+    /*
+    overflow-x: auto;
+    overflow-y: hidden;
+    */
+    overflow: hidden;
+    font-size: 10pt;
+    border: 1px solid #bfbfbf;
+    -moz-box-shadow: 0 0 6px #bfbfbf;
+    -webkit-box-shadow: 0 0 6px #bfbfbf;
+}
+
+.codenode-cell-io-textarea-focus {
+    border: 1px solid #999adf;
+}
+
+/*
+ * INPUT CELL
+ */
+
+.codenode-cell-input-controls {
+    margin: 2px 0 0 2px;
+    width: 100%;
+    height: 10px;
+    font-size: 10px;
+    font-family: monospace;
+}
+
+.codenode-cell-input-control {
+    padding-right: 5px;
+    display: inline;
+    cursor: pointer;
+    color: #dddddd;
+}
+
+/*
+ * COLLAPSED CELLS
+ */
 
 .codenode-cell-expander {
     width: 100%;

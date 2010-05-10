@@ -34,7 +34,7 @@ Codenode.CellManager = function(config) {
         autoJustify: true,
         tabWidth: 4,
 
-        newCell: function(config) {
+        newInputCell: function(config) {
             config = config || {};
 
             var cell = new Codenode.InputCell({
@@ -132,7 +132,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.addEvents('collapsing', 'collapsed', 'expanding', 'expanded');
     },
 
-    _setupEvents: function() {
+    setupCellEvents: function() {
         this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
     },
 
@@ -150,7 +150,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
             },
         });
 
-        this._setupEvents();
+        this.setupCellEvents();
     },
 
     collapseCell: function() {
@@ -316,6 +316,171 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
     getPrevCell: function() {
         return this.owner.getPrevCell(this.id);
     },
+
+    setupIOCellObserver: function() {
+        /* pass */
+    },
+
+    setupIOCellEvents: function() {
+        this.el_textarea.on('focus', this.focusCell, this);
+        this.el_textarea.on('blur', this.blurCell, this);
+
+        this.on('collapsed', function() {
+            this.el_expander.show();
+            this.focusCell();
+        }, this);
+
+        this.on('expanding', function() {
+            this.el_expander.hide();
+        }, this);
+
+        this.on('expanded', function() {
+            this.focusCell();
+        }, this);
+    },
+
+    setupIOCellKeyMap: function() {
+        /* pass */
+    },
+
+    onRender: function(container, position) {
+        Codenode.IOCell.superclass.onRender.apply(this, arguments);
+
+        this.el.addClass('codenode-cell-io');
+
+        this.el_expander = this.el.createChild({
+            tag: 'textarea',
+            cls: 'codenode-cell-expander',
+        });
+
+        this.el_expander.dom.readonly = true;
+
+        this.el_label = this.el.createChild({
+            tag: 'div',
+            cls: 'codenode-cell-io-label',
+            html: this.labelPrefix + '[' + this.owner.evalIndex + ']: ',
+        });
+
+        this.el_content = this.el.createChild({
+            tag: 'div',
+            cls: 'codenode-cell-io-content',
+        });
+
+        var textarea = "<textarea class='codenode-cell-io-textarea' rows='1' cols='0' wrap='off'></textarea>";
+        this.el_textarea = (new Ext.DomHelper.createTemplate(textarea)).append(this.el_content, [], true);
+
+        this.autosize();
+
+        this.setupIOCellObserver();
+        this.setupIOCellEvents();
+        this.setupIOCellKeyMap();
+    },
+
+    autosize: function() {
+        this.copyFontStyles(this.el_textarea, this.el_label);
+
+        var x_border = this.el_textarea.getBorderWidth('t');
+        var x_padding = this.el_textarea.getPadding('t');
+
+        var margin_top = x_border + x_padding + 'px';
+        this.el_label.applyStyles({ 'margin-top': margin_top });
+
+        var width = this.el_label.getWidth() + 'px';
+        this.el_content.applyStyles({'margin-left': width});
+
+        if (!this.collapsed) {
+            this.setRowsCols(this.getInput());
+        }
+    },
+
+    focusCell: function() {
+        if (this.collapsed) {
+            this.el_expander.focus();
+            this.el.addClass('codenode-cell-collapsed-focus');
+        } else {
+            this.el_textarea.focus();
+            this.el_textarea.addClass('codenode-cell-io-textarea-focus');
+        }
+    },
+
+    blurCell: function() {
+        if (this.collapsed) {
+            this.el.removeClass('codenode-cell-collapsed-focus');
+            this.el_expander.blur();
+        } else {
+            this.el_textarea.removeClass('codenode-cell-io-textarea-focus');
+            this.el_textarea.blur();
+        }
+    },
+
+    nextCell: function() {
+        var cell = this.getNextCell();
+
+        if (cell === null) {
+            if (this.owner.cycleCells) {
+                cell = this.getFirstCell();
+            } else {
+                return;
+            }
+        }
+
+        this.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
+
+    prevCell: function() {
+        var cell = this.getPrevCell();
+
+        if (cell === null) {
+            if (this.owner.cycleCells) {
+                var cell = this.getLastCell();
+            } else {
+                return;
+            }
+        }
+
+        this.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
+
+    insertCellBefore: function() {
+        this.blurCell();
+
+        var cell = this.owner.newInputCell({ position: this.id });
+        cell.focusCell();
+
+        return cell;
+    },
+
+    insertCellAfter: function() {
+        this.blurCell();
+
+        var next = this.getNextCell();
+
+        if (next === null) {
+            var cell = this.owner.newInputCell();
+        } else {
+            var cell = this.owner.newInputCell({ position: next.id });
+        }
+
+        cell.focusCell();
+
+        return cell;
+    },
+
+    removeCell: function() {
+        if (this.isLastCell()) {
+            this.prevCell();
+        } else {
+            this.nextCell();
+        }
+
+        this.destroy();
+    },
 });
 
 Codenode.InputCell = Ext.extend(Codenode.IOCell, {
@@ -338,7 +503,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         return this.setText(input);
     },
 
-    setupObserver: function() {
+    setupInputCellObserver: function() {
         var observer = {
             run: function() {
                 var input = this.getInput();
@@ -355,32 +520,15 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         Ext.TaskMgr.start(observer);
     },
 
-    setupEvents: function() {
-        this.el_textarea.on('focus', this.focusCell, this);
-        this.el_textarea.on('blur', this.blurCell, this);
-
+    setupInputCellEvents: function() {
         this.el_evaluate.on('click', function() {
             this.evaluateCell({ keepfocus: true });
         }, this);
-
         this.el_clear.on('click', this.clearCell, this);
         this.el_interrupt.on('click', this.interruptCell, this);
-
-        this.on('collapsed', function() {
-            this.el_expander.show();
-            this.focusCell();
-        }, this);
-
-        this.on('expanding', function() {
-            this.el_expander.hide();
-        }, this);
-
-        this.on('expanded', function() {
-            this.focusCell();
-        }, this);
     },
 
-    setupKeyMap: function() {
+    setupInputCellKeyMap: function() {
         var x_tab = {
             key: Ext.EventObject.TAB,
             shift: false,
@@ -599,20 +747,6 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
 
         this.el.addClass('codenode-cell-input');
 
-        this.el_label = this.el.createChild({
-            tag: 'div',
-            cls: 'codenode-cell-input-label',
-            html: this.labelPrefix + '[' + this.owner.evalIndex + ']: ',
-        });
-
-        this.el_content = this.el.createChild({
-            tag: 'div',
-            cls: 'codenode-cell-input-content',
-        });
-
-        var textarea = "<textarea class='codenode-cell-input-textarea' rows='1' cols='0' wrap='off'></textarea>";
-        this.el_textarea = (new Ext.DomHelper.createTemplate(textarea)).append(this.el_content, [], true);
-
         this.el_controls = this.el_content.createChild({
             tag: 'div',
             cls: 'codenode-cell-input-controls',
@@ -633,22 +767,13 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
             ],
         });
 
-        this.el_evaluate = this.el.child('.codenode-cell-input-evaluate');
-        this.el_clear = this.el.child('.codenode-cell-input-clear');
-        this.el_interrupt = this.el.child('.codenode-cell-input-interrupt');
+        this.el_evaluate = this.el_controls.child('.codenode-cell-input-evaluate');
+        this.el_clear = this.el_controls.child('.codenode-cell-input-clear');
+        this.el_interrupt = this.el_controls.child('.codenode-cell-input-interrupt');
 
-        this.el_expander = this.el.createChild({
-            tag: 'textarea',
-            cls: 'codenode-cell-expander',
-        });
-
-        this.el_expander.dom.readonly = true;
-
-        this.autosize();
-
-        this.setupObserver();
-        this.setupEvents();
-        this.setupKeyMap();
+        this.setupInputCellObserver();
+        this.setupInputCellEvents();
+        this.setupInputCellKeyMap();
 
         if (this.start === true) {
             // TODO: this.el_textarea.update("Click here to start ...");
@@ -723,23 +848,6 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         this.setSelection({ start: pos, end: pos });
     },
 
-    autosize: function() {
-        this.copyFontStyles(this.el_textarea, this.el_label);
-
-        var x_border = this.el_textarea.getBorderWidth('t');
-        var x_padding = this.el_textarea.getPadding('t');
-
-        var margin_top = x_border + x_padding + 'px';
-        this.el_label.applyStyles({ 'margin-top': margin_top });
-
-        var width = this.el_label.getWidth() + 'px';
-        this.el_content.applyStyles({'margin-left': width});
-
-        if (!this.collapsed) {
-            this.setRowsCols(this.getInput());
-        }
-    },
-
     autocomplete: function() {
         var menu = new Ext.menu.Menu({
             id: 'codenode-completion-menu',
@@ -800,95 +908,6 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
     interruptCell: function() {
         /* pass */
     },
-
-    removeCell: function() {
-        if (this.isLastCell()) {
-            this.prevCell();
-        } else {
-            this.nextCell();
-        }
-
-        this.destroy();
-    },
-
-    focusCell: function() {
-        if (this.collapsed) {
-            this.el_expander.focus();
-            this.el.addClass('codenode-cell-collapsed-focus');
-        } else {
-            this.el_textarea.focus();
-            this.el_textarea.addClass('codenode-cell-input-textarea-focus');
-        }
-    },
-
-    blurCell: function() {
-        if (this.collapsed) {
-            this.el.removeClass('codenode-cell-collapsed-focus');
-            this.el_expander.blur();
-        } else {
-            this.el_textarea.removeClass('codenode-cell-input-textarea-focus');
-            this.el_textarea.blur();
-        }
-    },
-
-    nextCell: function() {
-        var cell = this.getNextCell();
-
-        if (cell === null) {
-            if (this.owner.cycleCells) {
-                cell = this.getFirstCell();
-            } else {
-                return;
-            }
-        }
-
-        this.blurCell();
-        cell.focusCell();
-
-        return cell;
-    },
-
-    prevCell: function() {
-        var cell = this.getPrevCell();
-
-        if (cell === null) {
-            if (this.owner.cycleCells) {
-                var cell = this.getLastCell();
-            } else {
-                return;
-            }
-        }
-
-        this.blurCell();
-        cell.focusCell();
-
-        return cell;
-    },
-
-    insertCellBefore: function() {
-        this.blurCell();
-
-        var cell = this.owner.newCell({ position: this.id });
-        cell.focusCell();
-
-        return cell;
-    },
-
-    insertCellAfter: function() {
-        this.blurCell();
-
-        var next = this.getNextCell();
-
-        if (next === null) {
-            var cell = this.owner.newCell();
-        } else {
-            var cell = this.owner.newCell({ position: next.id });
-        }
-
-        cell.focusCell();
-
-        return cell;
-    },
 });
 
 Codenode.Cells = Ext.extend(Ext.BoxComponent, {
@@ -912,8 +931,8 @@ Codenode.Cells = Ext.extend(Ext.BoxComponent, {
         );
     },
 
-    addCell: function(config) {
-        this.cellMgr.newCell(config);
+    addInputCell: function(config) {
+        this.cellMgr.newInputCell(config);
     },
 });
 
@@ -937,20 +956,20 @@ function newWindow(title) {
 
     notebook.show();
 
-    cells.addCell({ start: true });
+    cells.addInputCell({ start: true });
 }
 
 Ext.onReady(function() {
     var cells1 = new Codenode.CellManager({ root: 'cells1' });
 
     for (var i = 0; i < 3; i++) {
-        cells1.newCell({ start: !i ? true : false });
+        cells1.newInputCell({ start: !i ? true : false });
     }
 
     var cells2 = new Codenode.CellManager({ root: 'cells2' });
 
     for (var i = 0; i < 3; i++) {
-        cells2.newCell({ start: !i ? true : false });
+        cells2.newInputCell({ start: !i ? true : false });
     }
 
     newWindow(0);
