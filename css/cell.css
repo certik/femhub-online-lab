@@ -110,17 +110,37 @@
     */
     overflow: hidden;
     font-size: 10pt;
-    border: 1px solid #bfbfbf;
-    -moz-box-shadow: 0 0 6px #bfbfbf;
-    -webkit-box-shadow: 0 0 6px #bfbfbf;
+    border-width: 1px;
+}
+
+/*
+ * OUTPUT CELL
+ */
+
+.codenode-cell-output-textarea {
+    background-color: #ffffcc;
+    border-style: dotted;
+    border-color: #999adf;
+}
+
+.codenode-cell-output-textarea.codenode-focus {
+    border-style: solid;
+    border-color: #999adf;
 }
 
 /*
  * INPUT CELL
  */
 
-.codenode-cell-input-textarea-focus {
-    border: 1px solid #999adf;
+.codenode-cell-input-textarea {
+    border-style: solid;
+    border-color: #bfbfbf;
+    -moz-box-shadow: 0 0 6px #bfbfbf;
+    -webkit-box-shadow: 0 0 6px #bfbfbf;
+}
+
+.codenode-cell-input-textarea.codenode-focus {
+    border-color: #999adf;
 }
 
 .codenode-cell-input-controls {
@@ -131,7 +151,11 @@
     display: none;
 }
 
-.codenode-cell-input-controls.chrome {
+.codenode-cell-input-controls.codenode-enabled {
+    display: block;
+}
+
+.codenode-cell-input-controls.codenode-chrome {
     margin: -4px 0 0 2px;
 }
 
@@ -172,7 +196,7 @@
     border-bottom: 1px dashed #bfbfbf;
 }
 
-.codenode-cell-collapsed.codenode-cell-collapsed-focus {
+.codenode-cell-collapsed.codenode-focus {
     border-bottom-style: solid;
 }
 

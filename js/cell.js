@@ -29,6 +29,7 @@ Codenode.CellManager = function(config) {
 
         softEvalTimeout: null,
         hardEvalTimeout: null,
+        showInputControls: false,
         moveForwardOnRemove: false,
         mergeOnBackspace: true,
         newCellOnEval: false,
@@ -219,8 +220,8 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
     focusCell: function() {
         if (this.collapsed) {
+            this.el.addClass('codenode-focus');
             this.el_expander.focus();
-            this.el.addClass('codenode-cell-collapsed-focus');
         } else {
             this.onFocusCell();
         }
@@ -228,7 +229,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
 
     blurCell: function() {
         if (this.collapsed) {
-            this.el.removeClass('codenode-cell-collapsed-focus');
+            this.el.removeClass('codenode-focus');
             this.el_expander.blur();
         } else {
             this.onBlurCell();
@@ -619,11 +620,13 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
 
     onFocusCell: function() {
         Codenode.IOCell.superclass.onFocusCell.apply(this, arguments);
+        this.el_textarea.addClass('codenode-focus');
         this.el_textarea.focus();
     },
 
     onBlurCell: function() {
         Codenode.IOCell.superclass.onBlurCell.apply(this, arguments);
+        this.el_textarea.removeClass('codenode-focus');
         this.el_textarea.blur();
     },
 
@@ -750,6 +753,7 @@ Codenode.OutputCell = Ext.extend(Codenode.IOCell, {
 
         this.el.addClass('codenode-cell-output');
 
+        this.el_textarea.addClass('codenode-cell-output-textarea');
         this.el_textarea.dom.setAttribute('readOnly','readonly');
 
         this.setupOutputCellObserver();
@@ -961,6 +965,7 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         Codenode.InputCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('codenode-cell-input');
+        this.el_textarea.addClass('codenode-cell-input-textarea');
 
         this.el_controls = this.el_content.createChild({
             tag: 'div',
@@ -983,7 +988,11 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         });
 
         if (Ext.isChrome) {
-            this.el_controls.addClass('chrome');
+            this.el_controls.addClass('codenode-chrome');
+        }
+
+        if (this.owner.showInputControls) {
+            this.el_controls.addClass('codenode-enabled');
         }
 
         this.el_evaluate = this.el_controls.child('.codenode-cell-input-evaluate');
@@ -1001,12 +1010,18 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
 
     onFocusCell: function() {
         Codenode.InputCell.superclass.onFocusCell.apply(this, arguments);
-        this.el_textarea.addClass('codenode-cell-input-textarea-focus');
+
+        if (!this.owner.showInputControls) {
+            this.el_controls.addClass('codenode-enabled');
+        }
     },
 
     onBlurCell: function() {
         Codenode.InputCell.superclass.onBlurCell.apply(this, arguments);
-        this.el_textarea.removeClass('codenode-cell-input-textarea-focus');
+
+        if (!this.owner.showInputControls) {
+            this.el_controls.removeClass('codenode-enabled');
+        }
     },
 
     newline: function() {
