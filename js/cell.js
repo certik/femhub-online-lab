@@ -209,6 +209,32 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.setupCellKeyMap();
     },
 
+    onFocusCell: function() {
+         /* pass */
+    },
+
+    onBlurCell: function() {
+         /* pass */
+    },
+
+    focusCell: function() {
+        if (this.collapsed) {
+            this.el_expander.focus();
+            this.el.addClass('codenode-cell-collapsed-focus');
+        } else {
+            this.onFocusCell();
+        }
+    },
+
+    blurCell: function() {
+        if (this.collapsed) {
+            this.el.removeClass('codenode-cell-collapsed-focus');
+            this.el_expander.blur();
+        } else {
+            this.onBlurCell();
+        }
+    },
+
     getFirstCell: function(type) {
         return this.owner.getFirstCell(type);
     },
@@ -279,14 +305,6 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.hiddenEl = null;
 
         this.fireEvent('expanded', this);
-    },
-
-    focusCell: function() {
-        /* pass */
-    },
-
-    blurCell: function() {
-        /* pass */
     },
 
     nextCell: function(type) {
@@ -599,6 +617,16 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
         this.setupIOCellKeyMap();
     },
 
+    onFocusCell: function() {
+        Codenode.IOCell.superclass.onFocusCell.apply(this, arguments);
+        this.el_textarea.focus();
+    },
+
+    onBlurCell: function() {
+        Codenode.IOCell.superclass.onBlurCell.apply(this, arguments);
+        this.el_textarea.blur();
+    },
+
     autosize: function() {
         this.copyFontStyles(this.el_textarea, this.el_label);
 
@@ -613,30 +641,6 @@ Codenode.IOCell = Ext.extend(Codenode.Cell, {
 
         if (!this.collapsed) {
             this.setRowsCols(this.getText());
-        }
-    },
-
-    focusCell: function() {
-       Codenode.IOCell.superclass.focusCell.apply(this, arguments);
-
-        if (this.collapsed) {
-            this.el_expander.focus();
-            this.el.addClass('codenode-cell-collapsed-focus');
-        } else {
-            this.el_textarea.focus();
-            this.el_textarea.addClass('codenode-cell-io-textarea-focus');
-        }
-    },
-
-    blurCell: function() {
-       Codenode.IOCell.superclass.blurCell.apply(this, arguments);
-
-        if (this.collapsed) {
-            this.el.removeClass('codenode-cell-collapsed-focus');
-            this.el_expander.blur();
-        } else {
-            this.el_textarea.removeClass('codenode-cell-io-textarea-focus');
-            this.el_textarea.blur();
         }
     },
 
@@ -993,6 +997,16 @@ Codenode.InputCell = Ext.extend(Codenode.IOCell, {
         if (this.start === true) {
             // TODO: this.el_textarea.update("Click here to start ...");
         }
+    },
+
+    onFocusCell: function() {
+        Codenode.InputCell.superclass.onFocusCell.apply(this, arguments);
+        this.el_textarea.addClass('codenode-cell-input-textarea-focus');
+    },
+
+    onBlurCell: function() {
+        Codenode.InputCell.superclass.onBlurCell.apply(this, arguments);
+        this.el_textarea.removeClass('codenode-cell-input-textarea-focus');
     },
 
     newline: function() {

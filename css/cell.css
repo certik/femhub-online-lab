@@ -115,19 +115,20 @@
     -webkit-box-shadow: 0 0 6px #bfbfbf;
 }
 
-.codenode-cell-io-textarea-focus {
-    border: 1px solid #999adf;
-}
-
 /*
  * INPUT CELL
  */
+
+.codenode-cell-input-textarea-focus {
+    border: 1px solid #999adf;
+}
 
 .codenode-cell-input-controls {
     margin: 2px 0 0 2px;
     width: 100%;
     font-size: 7pt;
     font-family: monospace;
+    display: none;
 }
 
 .codenode-cell-input-controls.chrome {
