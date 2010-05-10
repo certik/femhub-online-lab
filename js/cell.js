@@ -132,7 +132,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
         this.addEvents('collapsing', 'collapsed', 'expanding', 'expanded');
     },
 
-    setupEvents: function() {
+    _setupEvents: function() {
         this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
     },
 
@@ -150,7 +150,7 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
             },
         });
 
-        this.setupEvents();
+        this._setupEvents();
     },
 
     collapseCell: function() {
@@ -202,19 +202,11 @@ Codenode.Cell = Ext.extend(Ext.BoxComponent, {
     },
 });
 
-Codenode.InputCell = Ext.extend(Codenode.Cell, {
+Codenode.IOCell = Ext.extend(Codenode.Cell, {
     labelPrefix: 'In ',
 
-    evaluating: false,
-
-    observedFontSize: 0,
-    observedInputLength: 0,
-    observationInterval: 250,
-
     initComponent: function() {
-        Codenode.InputCell.superclass.initComponent.call(this);
-
-        this.addEvents('preevaluate', 'postevaluate');
+        Codenode.IOCell.superclass.initComponent.call(this);
     },
 
     copyFontStyles: function(from, to) {
@@ -239,22 +231,27 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         if (Ext.isDefined(value)) {
             this.el_label.update(value);
         } else {
-            this.el_label.update(this.labelPrefix + '[' + this.owner.nextEvalIndex() + ']: ');
+            this.el_label.update(this.labelPrefix + '[' + this.owner.evalIndex + ']: ');
         }
     },
 
     clearLabel: function() {
-        this.el_label.update(this.labelPrefix + '[' + this.owner.evalIndex + ']: ');
+        this.setLabel();
         this.hideLabel();
     },
 
-    getInput: function() {
+    getText: function() {
         return this.el_textarea.getValue();
     },
 
-    setRowsCols: function(input) {
-        var rows = input.replace(/[^\n]/g, '').length + 1;
-        var cols = input.split();
+    setText: function(text) {
+        this.setRowsCols(text);
+        this.el_textarea.dom.value = text;
+    },
+
+    setRowsCols: function(text) {
+        var rows = text.replace(/[^\n]/g, '').length + 1;
+        var cols = text.split();
 
         for (var i = 0; i < cols.length; i++) {
             cols[i] = cols[i].length;
@@ -264,11 +261,6 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
         this.el_textarea.dom.rows = rows;
         this.el_textarea.dom.cols = cols;
-    },
-
-    setInput: function(input) {
-        this.setRowsCols(input);
-        this.el_textarea.dom.value = input;
     },
 
     getSelection: function() {
@@ -323,6 +315,28 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
 
     getPrevCell: function() {
         return this.owner.getPrevCell(this.id);
+    },
+});
+
+Codenode.InputCell = Ext.extend(Codenode.IOCell, {
+    evaluating: false,
+
+    observedFontSize: 0,
+    observedInputLength: 0,
+    observationInterval: 250,
+
+    initComponent: function() {
+        Codenode.InputCell.superclass.initComponent.call(this);
+
+        this.addEvents('preevaluate', 'postevaluate');
+    },
+
+    getInput: function() {
+        return this.getText();
+    },
+
+    setInput: function(input) {
+        return this.setText(input);
     },
 
     setupObserver: function() {
@@ -765,6 +779,8 @@ Codenode.InputCell = Ext.extend(Codenode.Cell, {
         var output = null;
 
         this.evaluating = false;
+
+        this.owner.nextEvalIndex();
 
         this.setLabel();
         this.autosize();
