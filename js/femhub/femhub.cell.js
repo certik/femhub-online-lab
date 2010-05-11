@@ -195,6 +195,8 @@ FEMhub.CellManager = function(config) {
 }
 
 FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
+    ctype: 'base',
+
     collapsed: false,
     hiddenEl: null,
     bindings: {},
@@ -381,6 +383,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 });
 
 FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
+    ctype: 'io',
     labelPrefix: null,
 
     initComponent: function() {
@@ -396,7 +399,10 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 stopEvent: true,
                 handler: function() {
                     var cell = this.prevCell();
-                    cell.setSelection('end');
+
+                    if (cell.ctype == 'input') {
+                        cell.setSelection('end');
+                    }
                 },
             },
             x_ctrl_down: {
@@ -408,7 +414,10 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 stopEvent: true,
                 handler: function() {
                     var cell = this.nextCell();
-                    cell.setSelection('start');
+
+                    if (cell.ctype == 'input') {
+                        cell.setSelection('start');
+                    }
                 },
             },
             x_alt_up: {
@@ -455,17 +464,28 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 scope: this,
                 stopEvent: false,
                 handler: function(key, ev) {
-                    var selection = this.getSelection();
+                    if (this.collapsed || this.ctype != 'input') {
+                        var cell = this.prevCell();
 
-                    if (selection.start == selection.end) {
-                        var input = this.getText();
-                        var index = input.indexOf('\n');
-
-                        if (index == -1 || selection.start <= index) {
-                            ev.stopEvent();
-
-                            var cell = this.prevCell();
+                        if (cell.ctype == 'input') {
                             cell.setSelection('end');
+                        }
+                    } else {
+                        var selection = this.getSelection();
+
+                        if (selection.start == selection.end) {
+                            var input = this.getText();
+                            var index = input.indexOf('\n');
+
+                            if (index == -1 || selection.start <= index) {
+                                ev.stopEvent();
+
+                                var cell = this.prevCell();
+
+                                if (cell.ctype == 'input') {
+                                    cell.setSelection('end');
+                                }
+                            }
                         }
                     }
                 },
@@ -478,17 +498,28 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 scope: this,
                 stopEvent: false,
                 handler: function(key, ev) {
-                    var selection = this.getSelection();
+                    if (this.collapsed || this.ctype != 'input') {
+                        var cell = this.nextCell();
 
-                    if (selection.start == selection.end) {
-                        var input = this.getText();
-                        var index = input.lastIndexOf('\n');
-
-                        if (index == -1 || selection.start > index) {
-                            ev.stopEvent();
-
-                            var cell = this.nextCell();
+                        if (cell.ctype == 'input') {
                             cell.setSelection('start');
+                        }
+                    } else {
+                        var selection = this.getSelection();
+
+                        if (selection.start == selection.end) {
+                            var input = this.getText();
+                            var index = input.lastIndexOf('\n');
+
+                            if (index == -1 || selection.start > index) {
+                                ev.stopEvent();
+
+                                var cell = this.nextCell();
+
+                                if (cell.ctype == 'input') {
+                                    cell.setSelection('start');
+                                }
+                            }
                         }
                     }
                 },
@@ -587,9 +618,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     },
 
     setupIOCellEvents: function() {
-        this.el_textarea.on('focus', this.focusCell, this);
-        this.el_textarea.on('blur', this.blurCell, this);
-
         this.el_expander.on('focus', this.focusCell, this);
         this.el_expander.on('blur', this.blurCell, this);
 
@@ -641,20 +669,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
             tag: 'div',
             cls: 'femhub-cell-io-content',
         });
-
-        if (this.owner.wrapOutputText) {
-            var wrap = 'wrap';
-        } else {
-            var wrap = 'off';
-        }
-
-        var ta_form = "<textarea class='{0}' rows='{1}' cols='{2}' wrap='{3}' spellcheck='{4}'></textarea>";
-        var ta_args = ['femhub-cell-io-textarea', '1', '0', wrap, 'false'];
-        var ta_tmpl = new Ext.DomHelper.createTemplate(ta_form);
-
-        this.el_textarea = ta_tmpl.append(this.el_content, ta_args, true);
-
-        this.autosize();
 
         this.setupIOCellObserver();
         this.setupIOCellEvents();
@@ -724,6 +738,8 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
 });
 
 FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
+    ctype: 'output',
+
     labelPrefix: 'Out',
     myInputCell: null,
 
@@ -744,11 +760,23 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     getOutput: function() {
-        return this.getText();
+        var output = this.el_textarea.dom.innerHTML;
+
+        output = output.replace(/&amp;/g, '&');
+
+        output = output.replace(/&lt;/g, '<');
+        output = output.replace(/&gt;/g, '<');
+
+        return output;
     },
 
     setOutput: function(output) {
-        return this.setText(output);
+        output = output.replace(/&/g, '&amp;');
+
+        output = output.replace(/</g, '&lt;');
+        output = output.replace(/>/g, '&gt;');
+
+        this.el_textarea.dom.innerHTML = output;
     },
 
     getInputCell: function() {
@@ -770,7 +798,8 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     setupOutputCellEvents: function() {
-        /* pass */
+        this.el_textarea.on('focus', this.focusCell, this);
+        this.el_textarea.on('blur', this.blurCell, this);
     },
 
     setupOutputCellKeyMap: function() {
@@ -792,8 +821,14 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
 
         this.el.addClass('femhub-cell-output');
 
-        this.el_textarea.addClass('femhub-cell-output-textarea');
-        this.el_textarea.dom.setAttribute('readOnly','readonly');
+        this.el_textarea = this.el_content.createChild({
+            tag: 'div',
+            cls: 'femhub-cell-io-textarea femhub-cell-output-textarea',
+        });
+
+        this.el_textarea.dom.setAttribute('tabIndex', '0');
+
+        this.autosize();
 
         this.setupOutputCellObserver();
         this.setupOutputCellEvents();
@@ -817,6 +852,8 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
 });
 
 FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
+    ctype: 'input',
+
     labelPrefix: 'In ',
     myOutputCell: null,
 
@@ -976,6 +1013,9 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     setupInputCellEvents: function() {
+        this.el_textarea.on('focus', this.focusCell, this);
+        this.el_textarea.on('blur', this.blurCell, this);
+
         this.el_evaluate.on('click', function() {
             this.evaluateCell({ keepfocus: true });
         }, this);
@@ -1004,7 +1044,12 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         FEMhub.InputCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-input');
-        this.el_textarea.addClass('femhub-cell-input-textarea');
+
+        var ta_form = "<textarea class='{0}' rows='{1}' cols='{2}' wrap='{3}' spellcheck='{4}'></textarea>";
+        var ta_args = ['femhub-cell-io-textarea femhub-cell-input-textarea', '1', '0', 'off', 'false'];
+        var ta_tmpl = new Ext.DomHelper.createTemplate(ta_form);
+
+        this.el_textarea = ta_tmpl.append(this.el_content, ta_args, true);
 
         this.el_controls = this.el_content.createChild({
             tag: 'div',
@@ -1038,6 +1083,8 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         this.el_clear = this.el_controls.child('.femhub-cell-input-clear');
         this.el_interrupt = this.el_controls.child('.femhub-cell-input-interrupt');
 
+        this.autosize();
+
         this.setupInputCellObserver();
         this.setupInputCellEvents();
         this.setupInputCellKeyMap();
@@ -1067,7 +1114,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         FEMhub.InputCell.superclass.autosize.apply(this, arguments);
 
         if (!this.collapsed) {
-            this.setRowsCols(this.getText());
+            this.setRowsCols(this.getInput());
         }
     },
 

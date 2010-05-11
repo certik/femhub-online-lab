@@ -98,19 +98,24 @@
     display: block;
     margin-top: 0;
     margin-bottom: 0;
+    position: relative;
 }
 
 .femhub-cell-io-textarea {
-    padding: 5px;
     width: 100%;
-    white-space: pre;
-    /*
-    overflow-x: auto;
-    overflow-y: hidden;
-    */
+    padding: 5px;
     overflow: hidden;
     font-size: 10pt;
+    font-family: monospace;
     border-width: 1px;
+    border-style: solid;
+    border-color: #bfbfbf;
+    -moz-box-shadow: 0 0 6px #bfbfbf;
+    -webkit-box-shadow: 0 0 6px #bfbfbf;
+}
+
+.femhub-cell-io-textarea.femhub-focus {
+    border-color: #999adf;
 }
 
 /*
@@ -118,20 +123,10 @@
  */
 
 .femhub-cell-output-textarea {
-    /*
-    border-style: dotted;
-    border-color: #999adf;
-    */
+    height: auto;
+    outline: none;
+    white-space: pre-wrap;
     background-color: #ffffcc;
-    border-style: solid;
-    border-color: #bfbfbf;
-    -moz-box-shadow: 0 0 6px #bfbfbf;
-    -webkit-box-shadow: 0 0 6px #bfbfbf;
-}
-
-.femhub-cell-output-textarea.femhub-focus {
-    border-style: solid;
-    border-color: #999adf;
 }
 
 /*
@@ -139,14 +134,8 @@
  */
 
 .femhub-cell-input-textarea {
-    border-style: solid;
-    border-color: #bfbfbf;
-    -moz-box-shadow: 0 0 6px #bfbfbf;
-    -webkit-box-shadow: 0 0 6px #bfbfbf;
-}
-
-.femhub-cell-input-textarea.femhub-focus {
-    border-color: #999adf;
+    height: 100%;
+    white-space: pre;
 }
 
 .femhub-cell-input-controls {
