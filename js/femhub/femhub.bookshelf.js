@@ -85,23 +85,81 @@ FEMhub.Bookshelf.init = function() {
     });
 }
 
-FEMhub.Bookshelf.newNotebook = function(engine) {
-    FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
-        this.notebook = new Ext.Window({
-            id: data.id,
-            title: "FEMhub Notebook",
-            layout: 'fit',
-            width: 1000,
-            height: 800,
-            maximizable: true,
+FEMhub.Notebook = Ext.extend(Ext.Window, {
+    title: "FEMhub Notebook",
+    maximizable: true,
+    layout: 'fit',
+
+    cells: null,
+
+    constructor: function() {
+        FEMhub.Notebook.superclass.constructor.apply(this, arguments);
+    },
+
+    initComponent: function() {
+        this.tbar = new Ext.Toolbar({
+            items: [
+                {
+                    icon: FEMhub.icons + 'page_go.png',
+                    cls: 'x-btn-text-icon',
+                    text: 'Share',
+                }, '-', {
+                    icon: FEMhub.icons + 'textfield_rename.png',
+                    cls: 'x-btn-text-icon',
+                    text: 'Rename',
+                    handler: function() {
+
+                    },
+                    scope: this,
+                }, {
+                    icon: FEMhub.icons + 'page_save.png',
+                    cls: 'x-btn-text-icon',
+                    text: 'Save',
+                    handler: function() {
+
+                    },
+                    scope: this,
+                }, {
+                    cls: 'x-btn-text',
+                    text: 'Save & Close',
+                    handler: function() {
+                        /* pass */
+                    },
+                    scope: this,
+                }, '-', {
+                    icon: FEMhub.icons + 'cross.png',
+                    cls: 'x-btn-text-icon',
+                    text: 'Kill',
+                    handler: function() {
+                        this.cells.getCellsManager().killBackend();
+                    },
+                    scope: this,
+                },
+            ],
         });
+
+        FEMhub.Notebook.superclass.initComponent.call(this);
+    },
+
+    onRender: function() {
+        FEMhub.Notebook.superclass.onRender.apply(this, arguments);
 
         this.cells = new FEMhub.Cells({
-            notebook: data.id,
+            notebook: this.id,
         });
 
-        notebook.add(cells);
-        notebook.doLayout();
+        this.add(this.cells);
+    },
+});
+
+FEMhub.Bookshelf.newNotebook = function(engine) {
+    FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
+        var notebook = new FEMhub.Notebook({
+            id: data.id,
+            width: 1000,
+            height: 800,
+        });
+
         notebook.show();
     });
 }
