@@ -118,9 +118,15 @@
  */
 
 .femhub-cell-output-textarea {
-    background-color: #ffffcc;
+    /*
     border-style: dotted;
     border-color: #999adf;
+    */
+    background-color: #ffffcc;
+    border-style: solid;
+    border-color: #bfbfbf;
+    -moz-box-shadow: 0 0 6px #bfbfbf;
+    -webkit-box-shadow: 0 0 6px #bfbfbf;
 }
 
 .femhub-cell-output-textarea.femhub-focus {
