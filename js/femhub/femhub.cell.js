@@ -8,7 +8,6 @@ FEMhub.CellManager = function(config) {
 
     return Ext.apply({
         id: FEMhub.unique(),
-        url: null,
 
         evalIndex: 0,
 
@@ -1126,13 +1125,13 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         var input = this.getInput();
 
-        if (this.fireEvent('preevaluate', this, input) === false) {
-            return;
-        }
+        this.fireEvent('preevaluate', this, input);
 
         this.el_evaluate.removeClass('femhub-enabled');
         this.el_clear.removeClass('femhub-enabled');
         this.el_interrupt.addClass('femhub-enabled');
+
+        this.evaluating = true;
 
         function evalSuccess(output) {
             this.evaluating = false;
@@ -1147,24 +1146,30 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.el_clear.addClass('femhub-enabled');
             this.el_interrupt.removeClass('femhub-enabled');
 
-            var cell = this.getOutputCell();
+            if (output.length > 0) {
+                if (/\n$/.test(output)) {
+                    output = output.slice(0, output.length-1);
+                }
 
-            if (cell === null) {
-                cell = this.owner.newCell({
-                    type: 'output',
-                    after: this,
-                    setup: {
-                        myInputCell: this,
-                    },
-                });
+                var cell = this.getOutputCell();
+
+                if (cell === null) {
+                    cell = this.owner.newCell({
+                        type: 'output',
+                        after: this,
+                        setup: {
+                            myInputCell: this,
+                        },
+                    });
+                }
+
+                this.myOutputCell = cell;
+
+                cell.setLabel();
+                cell.setOutput(output);
+                cell.autosize();
+                cell.showLabel();
             }
-
-            this.myOutputCell = cell;
-
-            cell.setLabel();
-            cell.setOutput(output);
-            cell.autosize();
-            cell.showLabel();
 
             if (config.keepfocus === true) {
                 this.focusCell(); /* needed for 'evaluate' button */
@@ -1180,15 +1185,11 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
 
         function evalFailure(output) {
-            this.focusCell();
             this.evaluating = false;
-            this.fireEvent('postevaluate', this, input, output);
         }
 
-        this.evaluating = true;
-
         Ext.Ajax.request({
-            url: this.owner.url,
+            url: '/asyncnotebook/' + this.owner.notebook + '/',
             method: "POST",
             params: Ext.encode({
                 method: 'evaluate',
@@ -1197,11 +1198,11 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             }),
             success: function(result, request) {
                 var result = Ext.decode(result.responseText);
-                evalSuccess(result);
+                evalSuccess.call(this, result.out + result.err);
             },
             failure: function(result, request) {
                 var result = Ext.decode(result.responseText);
-                evalFailure(result);
+                evalFailure.call(this, result.out + result.err);
             },
             scope: this,
         });

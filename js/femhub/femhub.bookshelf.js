@@ -97,6 +97,7 @@ FEMhub.Bookshelf.newNotebook = function(engine) {
         });
 
         var cells = new FEMhub.Cells({
+            notebook: data.id,
             tabWidth: 4,
         });
 
