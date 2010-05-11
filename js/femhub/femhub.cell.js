@@ -136,7 +136,59 @@ FEMhub.CellManager = function(config) {
                 cell.setLabel(label);
                 cell.autosize();
             }, this);
-        }
+        },
+
+        getDataURL: function() {
+            return '/notebook/' + this.notebook + '/';
+        },
+
+        getAsyncURL: function() {
+            return '/asyncnotebook/' + this.notebook + '/';
+        },
+
+        initBackend: function() {
+            Ext.Ajax.request({
+                url: this.getDataURL() + 'nbobject',
+                method: "GET",
+                success: function(result, request) {
+                    var result = Ext.decode(result.responseText);
+
+                    if (result.orderlist == 'orderlist') {
+                        this.newCell({ type: 'input', setup: { start: true } });
+                    }
+                },
+                failure: Ext.emptyFn,
+                scope: this,
+            });
+
+            Ext.Ajax.request({
+                url: this.getAsyncURL(),
+                method: "POST",
+                params: Ext.encode({
+                    method: 'start',
+                }),
+                success: Ext.emptyFn,
+                failure: Ext.emptyFn,
+                scope: this,
+            });
+        },
+
+        killBackend: function() {
+            Ext.Ajax.request({
+                url: this.getAsyncURL(),
+                method: "POST",
+                params: Ext.encode({
+                    method: 'interrupt',
+                }),
+                success: Ext.emptyFn,
+                failure: Ext.emptyFn,
+                scope: this,
+            });
+        },
+
+        saveCells: function() {
+
+        },
     }, config, {
         root: Ext.getBody(),
     });
@@ -1199,7 +1251,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
 
         Ext.Ajax.request({
-            url: '/asyncnotebook/' + this.owner.notebook + '/',
+            url: this.owner.getAsyncURL(),
             method: "POST",
             params: Ext.encode({
                 method: 'evaluate',
@@ -1237,11 +1289,10 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
 
         Ext.Ajax.request({
-            url: '/asyncnotebook/' + this.owner.notebook + '/',
+            url: this.owner.getAsyncURL(),
             method: "POST",
             params: Ext.encode({
                 method: 'interrupt',
-                cellid: this.id,
             }),
             success: function(result, request) {
                 this.evaluating = false;
@@ -1323,6 +1374,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 });
 
 FEMhub.Cells = Ext.extend(Ext.BoxComponent, {
+    cellsMgr: null,
 
     constructor: function(config) {
         this.config = config;
@@ -1338,61 +1390,24 @@ FEMhub.Cells = Ext.extend(Ext.BoxComponent, {
 
         this.el.addClass('femhub-cells');
 
-        this.cellMgr = new FEMhub.CellManager(
+        this.cellsMgr = new FEMhub.CellManager(
             Ext.applyIf({ root: this.el }, this.config)
         );
+
+        this.cellsMgr.initBackend();
+    },
+
+    getCellsManager: function() {
+        return this.cellsMrg;
     },
 
     addInputCell: function(config) {
-        this.cellMgr.newCell({ type: 'input' });
+        this.cellsMgr.newCell({ type: 'input' });
     },
 });
 
-Ext.reg('x-femhub-cells', FEMhub.Cells);
-
-function newWindow(title) {
-    var notebook = new Ext.Window({
-        title: 'FEMhub Notebook: ' + title,
-        layout: 'fit',
-        width: 300,
-        height: 200,
-        maximizable: true,
-    })
-
-    var cells = new FEMhub.Cells({
-        tabWidth: 2,
-    });
-
-    notebook.add(cells);
-    notebook.doLayout();
-
-    notebook.show();
-
-    cells.addInputCell();
-}
-
 Ext.onReady(function() {
-    var cells1 = new FEMhub.CellManager({ root: 'cells1' });
-
-    for (var i = 0; i < 3; i++) {
-        cells1.newCell({ type: 'input' });
-    }
-
-    var cells2 = new FEMhub.CellManager({ root: 'cells2' });
-
-    for (var i = 0; i < 3; i++) {
-        cells2.newCell({ type: 'input' });
-    }
-
-    newWindow(0);
-    newWindow(1);
-
     FEMhub.init(function() {
-        /*
-        FEMhub.RPC.hello({}, function(text) {
-            FEMhub.log(text);
-        });
-        */
         FEMhub.Bookshelf.init();
     });
 });

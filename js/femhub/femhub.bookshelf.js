@@ -87,7 +87,7 @@ FEMhub.Bookshelf.init = function() {
 
 FEMhub.Bookshelf.newNotebook = function(engine) {
     FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
-        var notebook = new Ext.Window({
+        this.notebook = new Ext.Window({
             id: data.id,
             title: "FEMhub Notebook",
             layout: 'fit',
@@ -96,16 +96,13 @@ FEMhub.Bookshelf.newNotebook = function(engine) {
             maximizable: true,
         });
 
-        var cells = new FEMhub.Cells({
+        this.cells = new FEMhub.Cells({
             notebook: data.id,
-            tabWidth: 4,
         });
 
         notebook.add(cells);
         notebook.doLayout();
         notebook.show();
-
-        cells.addInputCell();
     });
 }
 
