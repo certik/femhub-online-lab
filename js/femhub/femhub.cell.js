@@ -632,10 +632,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
 
         var width = this.el_label.getWidth() + 'px';
         this.el_content.applyStyles({'margin-left': width});
-
-        if (!this.collapsed) {
-            this.setRowsCols(this.getText());
-        }
     },
 
     insertInputCellBefore: function() {
@@ -1012,6 +1008,14 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         if (!this.owner.showInputControls) {
             this.el_controls.removeClass('femhub-enabled');
+        }
+    },
+
+    autosize: function() {
+        FEMhub.InputCell.superclass.autosize.apply(this, arguments);
+
+        if (!this.collapsed) {
+            this.setRowsCols(this.getText());
         }
     },
 
