@@ -20,6 +20,7 @@ FEMhub.CellManager = function(config) {
         newCellOnEval: false,
         cycleCells: true,
         autoJustify: true,
+        wrapOutputText: true,
         tabWidth: 4,
 
         types: {
@@ -590,8 +591,14 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
             cls: 'femhub-cell-io-content',
         });
 
+        if (this.owner.wrapOutputText) {
+            var wrap = 'wrap';
+        } else {
+            var wrap = 'off';
+        }
+
         var ta_form = "<textarea class='{0}' rows='{1}' cols='{2}' wrap='{3}' spellcheck='{4}'></textarea>";
-        var ta_args = ['femhub-cell-io-textarea', '1', '0', 'off', 'false'];
+        var ta_args = ['femhub-cell-io-textarea', '1', '0', wrap, 'false'];
         var ta_tmpl = new Ext.DomHelper.createTemplate(ta_form);
 
         this.el_textarea = ta_tmpl.append(this.el_content, ta_args, true);
