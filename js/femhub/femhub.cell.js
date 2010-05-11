@@ -1186,6 +1186,12 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         function evalFailure(output) {
             this.evaluating = false;
+
+            this.el_evaluate.addClass('femhub-enabled');
+            this.el_clear.addClass('femhub-enabled');
+            this.el_interrupt.removeClass('femhub-enabled');
+
+            FEMhub.log(output);
         }
 
         Ext.Ajax.request({
@@ -1201,8 +1207,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 evalSuccess.call(this, result.out + result.err);
             },
             failure: function(result, request) {
-                var result = Ext.decode(result.responseText);
-                evalFailure.call(this, result.out + result.err);
+                evalFailure.call(this, result.statusText);
             },
             scope: this,
         });
