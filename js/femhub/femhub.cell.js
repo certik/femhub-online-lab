@@ -1136,15 +1136,15 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         function evalSuccess(output) {
             this.evaluating = false;
 
+            this.el_evaluate.addClass('femhub-enabled');
+            this.el_clear.addClass('femhub-enabled');
+            this.el_interrupt.removeClass('femhub-enabled');
+
             this.owner.nextEvalIndex();
 
             this.setLabel();
             this.autosize();
             this.showLabel();
-
-            this.el_evaluate.addClass('femhub-enabled');
-            this.el_clear.addClass('femhub-enabled');
-            this.el_interrupt.removeClass('femhub-enabled');
 
             if (output.length > 0) {
                 if (/\n$/.test(output)) {
@@ -1193,7 +1193,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             method: "POST",
             params: Ext.encode({
                 method: 'evaluate',
-                cellid: this.id,
+                cellid: this.id,    // XXX: currently not supported
                 input: input,
             }),
             success: function(result, request) {
@@ -1223,7 +1223,29 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     interruptCell: function() {
-        /* pass */
+        if (!this.evaluating) {
+            return;
+        }
+
+        Ext.Ajax.request({
+            url: '/asyncnotebook/' + this.owner.notebook + '/',
+            method: "POST",
+            params: Ext.encode({
+                method: 'interrupt',
+                cellid: this.id,
+            }),
+            success: function(result, request) {
+                this.evaluating = false;
+
+                this.el_evaluate.addClass('femhub-enabled');
+                this.el_clear.addClass('femhub-enabled');
+                this.el_interrupt.removeClass('femhub-enabled');
+
+                this.focusCell();
+            },
+            failure: Ext.emptyFn,
+            scope: this,
+        });
     },
 
     insertInputCellAfter: function() {
