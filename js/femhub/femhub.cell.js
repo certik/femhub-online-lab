@@ -1347,5 +1347,14 @@ Ext.onReady(function() {
 
     newWindow(0);
     newWindow(1);
+
+    FEMhub.init(function() {
+        /*
+        FEMhub.RPC.hello({}, function(text) {
+            FEMhub.log(text);
+        });
+        */
+        FEMhub.Bookshelf.init();
+    });
 });
 
