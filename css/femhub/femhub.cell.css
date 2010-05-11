@@ -81,7 +81,10 @@
     height: auto;
     position: absolute;
     white-space: pre;
+    font-size: 10pt;
     font-family: monospace;
+    border-top: 1px solid white;
+    padding-top: 5px;
     visibility: hidden;
 }
 

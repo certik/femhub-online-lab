@@ -527,12 +527,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         });
     },
 
-    copyFontStyles: function(from, to) {
-        var styles = from.getStyles(
-            'line-height', 'font-size', 'font-family', 'font-weight', 'font-style');
-        to.applyStyles(styles);
-    },
-
     showLabel: function() {
         this.el_label.show();
     },
@@ -688,14 +682,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     },
 
     autosize: function() {
-        this.copyFontStyles(this.el_textarea, this.el_label);
-
-        var x_border = this.el_textarea.getBorderWidth('t');
-        var x_padding = this.el_textarea.getPadding('t');
-
-        var margin_top = x_border + x_padding + 'px';
-        this.el_label.applyStyles({ 'margin-top': margin_top });
-
         var width = this.el_label.getWidth() + 'px';
         this.el_content.applyStyles({'margin-left': width});
     },
