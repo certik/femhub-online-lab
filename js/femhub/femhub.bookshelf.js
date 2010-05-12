@@ -2,18 +2,6 @@
 FEMhub.Bookshelf = {}
 
 FEMhub.Bookshelf.init = function() {
-    var root = new Ext.tree.TreeNode({
-        text: 'My Folders',
-    });
-
-    var folders = new Ext.tree.TreePanel({
-        region: "west",
-        width: 200,
-        split: true,
-        rootVisible: true,
-        root: root,
-    });
-
     var notebooks = new Ext.grid.GridPanel({
         border:false,
         ds: new Ext.data.Store({
@@ -22,7 +10,6 @@ FEMhub.Bookshelf.init = function() {
                 { name: 'engine' },
                 { name: 'date', type: 'date' },
             ]),
-            data: [],
         }),
         cm: new Ext.grid.ColumnModel([
             new Ext.grid.RowNumberer(),
@@ -36,9 +23,59 @@ FEMhub.Bookshelf.init = function() {
         region: "center",
     });
 
+    notebooks.on('cellclick', function(grid, row, col) {
+        var record = grid.getStore().getAt(row);
+        FEMhub.Bookshelf.openNotebook(record.id, record.data.title);
+    }, this);
+
+    var root = new Ext.tree.TreeNode({
+        id: 'root-' + FEMhub.unique(),
+        text: 'My Folders',
+    });
+
+    var folders = new Ext.tree.TreePanel({
+        region: "west",
+        width: 200,
+        split: true,
+        rootVisible: true,
+        root: root,
+    });
+
+    folders.on('click', function(node) {
+        if (/^root-/.test(node.id)) {
+            var id = 'root';
+        } else {
+            var id = node.id;
+        }
+
+        Ext.Ajax.request({
+            url: '/bookshelf/load?location=' + id + '&order=title&sort=asc',
+            method: "GET",
+            success: function(result, request) {
+                var result = Ext.decode(result.responseText);
+                notebooks.getStore().removeAll();
+
+                Ext.each(result, function(notebook) {
+                    var rec = Ext.data.Record.create(['title', 'engine', 'date']);
+
+                    notebooks.getStore().add(new rec({
+                        title: notebook[1],
+                        engine: notebook[2],
+                        date: notebook[3],
+                    }, notebook[0]));
+                }, this);
+            },
+            failure: Ext.emptyFn,
+            scope: this,
+        });
+    }, this);
+
     var engines_menu = new Ext.menu.Menu();
+    var default_engine = null;
 
     FEMhub.RPC.getEngines({}, function(engines) {
+        default_engine = engines[0].id;
+
         Ext.each(engines, function(engine) {
             engines_menu.addMenuItem({
                 engine: engine.id,
@@ -53,9 +90,10 @@ FEMhub.Bookshelf.init = function() {
     var bookshelf = new Ext.Window({
         title: "FEMhub Bookshelf",
         layout: "border",
-        width: 900,
-        height: 700,
+        width: 700,
+        height: 500,
         maximizable: true,
+        onEsc: Ext.emptyFn,
         tbar: [
             {
                 xtype: 'tbsplit',
@@ -63,7 +101,7 @@ FEMhub.Bookshelf.init = function() {
                 icon: FEMhub.icons + 'page_go.png',
                 text: 'New Notebook',
                 handler: function() {
-                    FEMhub.Bookshelf.newNotebook();
+                    FEMhub.Bookshelf.newNotebook(default_engine);
                 },
                 menu: engines_menu,
             },
@@ -86,7 +124,6 @@ FEMhub.Bookshelf.init = function() {
 }
 
 FEMhub.Notebook = Ext.extend(Ext.Window, {
-    title: "FEMhub Notebook",
     maximizable: true,
     layout: 'fit',
 
@@ -154,13 +191,24 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
 
 FEMhub.Bookshelf.newNotebook = function(engine) {
     FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
-        var notebook = new FEMhub.Notebook({
-            id: data.id,
-            width: 1000,
-            height: 800,
-        });
-
-        notebook.show();
+        FEMhub.Bookshelf.openNotebook(data.id);
     });
+}
+
+FEMhub.Bookshelf.openNotebook = function(id, title) {
+    var baseTitle = "FEMhub Notebook";
+
+    if (Ext.isDefined(title)) {
+        baseTitle += ' - ' + title;
+    }
+
+    var notebook = new FEMhub.Notebook({
+        id: id,
+        title: baseTitle,
+        width: 600,
+        height: 400,
+    });
+
+    notebook.show();
 }
 

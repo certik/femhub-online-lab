@@ -82,20 +82,26 @@ FEMhub.CellManager = function(config) {
             }
         },
 
-        typeToCls: function(type) {
+        typeToCls: function(type, dot) {
             if (!Ext.isDefined(type)) {
-                return '.femhub-cell';
+                var cls = 'femhub-cell';
             } else {
-                return '.femhub-cell-' + type;
+                var cls = 'femhub-cell-' + type;
+            }
+
+            if (dot === false) {
+                return cls;
+            } else {
+                return '.' + cls;
             }
         },
 
         getFirstCell: function(type) {
-            return Ext.getCmp(Ext.DomQuery.selectNode(".femhub-cell-input:first", this.root.dom).id);
+            return Ext.getCmp(Ext.DomQuery.selectNode(this.typeToCls(type) + ":first", this.root.dom).id);
         },
 
         getLastCell: function(type) {
-            return Ext.getCmp(Ext.DomQuery.selectNode(".femhub-cell-input:last", this.root.dom).id);
+            return Ext.getCmp(Ext.DomQuery.selectNode(this.typeToCls(type) + ":last", this.root.dom).id);
         },
 
         getNextCell: function(id, type) {
@@ -110,13 +116,21 @@ FEMhub.CellManager = function(config) {
         },
 
         getPrevCell: function(id, type) {
-            var query = this.typeToCls(type) + ":next(div[id=" + id + "])";
-            var elt = Ext.DomQuery.selectNode(query, this.root.dom);
+            var cls = this.typeToCls(type, false);
 
-            if (Ext.isDefined(elt)) {
-                return Ext.getCmp(elt.id);
-            } else {
-                return null;
+            while (1) {
+                var query = ".femhub-cell:next(div[id=" + id + "])";
+                var elt = Ext.DomQuery.selectNode(query, this.root.dom);
+
+                if (Ext.isDefined(elt)) {
+                    if (Ext.get(elt).hasClass(cls)) {
+                        return Ext.getCmp(elt.id);
+                    } else {
+                        id = elt.id;
+                    }
+                } else {
+                    return null;
+                }
             }
         },
 
@@ -155,6 +169,17 @@ FEMhub.CellManager = function(config) {
 
                     if (result.orderlist == 'orderlist') {
                         this.newCell({ type: 'input', setup: { start: true } });
+                    } else {
+                        Ext.each(Ext.decode(result.orderlist), function(id) {
+                            var data = result.cells[id];
+
+                            if (data.cellstyle == 'outputtext') {
+                                data.cellstyle = 'output';
+                            }
+
+                            var cell = this.newCell({ type: data.cellstyle });
+                            cell.setText(data.content);
+                        }, this);
                     }
                 },
                 failure: Ext.emptyFn,
@@ -552,15 +577,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         this.hideLabel();
     },
 
-    getText: function() {
-        return this.el_textarea.getValue();
-    },
-
-    setText: function(text) {
-        this.setRowsCols(text);
-        this.el_textarea.dom.value = text;
-    },
-
     setRowsCols: function(text) {
         var rows = text.replace(/[^\n]/g, '').length + 1;
         var cols = text.split();
@@ -765,6 +781,14 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
         this.el_textarea.dom.innerHTML = output;
     },
 
+    getText: function() {
+        return this.getOutput();
+    },
+
+    setText: function(output) {
+        return this.setOutput(output);
+    },
+
     getInputCell: function() {
        if (this.myInputCell === null) {
            return null;
@@ -960,16 +984,31 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     getInput: function() {
-        return this.getText();
+        return this.el_textarea.getValue();
     },
 
-    setInput: function(input) {
-        return this.setText(input);
+    setInput: function(text) {
+        this.setRowsCols(text);
+        this.el_textarea.dom.value = text;
+    },
+
+    getText: function() {
+        return this.getInput();
+    },
+
+    setText: function(input) {
+        return this.setInput(input);
     },
 
     getOutputCell: function() {
        if (this.myOutputCell === null) {
-           return null;
+           var cmp = Ext.getCmp(this.id + 'o');
+
+           if (cmp === null || !Ext.isDefined(cmp)) {
+               return null;
+           } else {
+               return cmp;
+           }
        } else {
            var elt = Ext.get(this.myOutputCell.id);
 
