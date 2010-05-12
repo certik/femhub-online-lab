@@ -17,6 +17,7 @@ FEMhub.CellManager = function(config) {
         moveForwardOnRemove: false,
         mergeOnBackspace: true,
         newCellOnEval: false,
+        autoLoadOutputCells: false,
         cycleCells: true,
         autoJustify: true,
         wrapOutputText: true,
@@ -173,7 +174,11 @@ FEMhub.CellManager = function(config) {
                             var data = result.cells[id];
 
                             if (data.cellstyle == 'outputtext') {
-                                data.cellstyle = 'output';
+                                if (this.autoLoadOutputCells) {
+                                    data.cellstyle = 'output';
+                                } else {
+                                    return;
+                                }
                             }
 
                             var cell = this.newCell({ type: data.cellstyle, setup: { id: id } });
