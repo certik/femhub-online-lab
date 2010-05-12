@@ -36,10 +36,9 @@ FEMhub.CellManager = function(config) {
                 var ctype = this.types[config.type];
             }
 
-            var cell = new FEMhub[ctype]({
+            var cell = new FEMhub[ctype](Ext.apply({
                 owner: this,
-                setup: config.setup,
-            });
+            }, config.setup));
 
             if (config.render !== false) {
                 if (Ext.isDefined(config.position)) {
@@ -177,7 +176,7 @@ FEMhub.CellManager = function(config) {
                                 data.cellstyle = 'output';
                             }
 
-                            var cell = this.newCell({ type: data.cellstyle });
+                            var cell = this.newCell({ type: data.cellstyle, setup: { id: id } });
                             cell.setText(data.content);
                         }, this);
                     }
@@ -232,7 +231,9 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
             config.setup = undefined;
         }
 
-        config.id = FEMhub.unique();
+        if (!Ext.isDefined(config.id)) {
+            config.id = FEMhub.unique();
+        }
 
         FEMhub.Cell.superclass.constructor.apply(this, arguments);
     },
