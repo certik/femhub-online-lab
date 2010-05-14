@@ -17,7 +17,7 @@ FEMhub.CellManager = function(config) {
         moveForwardOnRemove: false,
         mergeOnBackspace: true,
         newCellOnEval: false,
-        autoLoadOutputCells: false,
+        autoLoadOutputCells: true,
         cycleCells: true,
         autoJustify: true,
         wrapOutputText: true,
@@ -26,6 +26,7 @@ FEMhub.CellManager = function(config) {
         types: {
             'input': 'InputCell',
             'output': 'OutputCell',
+            'image': 'ImageCell',
         },
 
         newCell: function(config) {
@@ -181,6 +182,14 @@ FEMhub.CellManager = function(config) {
                                 }
                             }
 
+                            if (data.cellstyle == 'outputimage') {
+                                if (this.autoLoadOutputCells) {
+                                    data.cellstyle = 'image';
+                                } else {
+                                    return;
+                                }
+                            }
+
                             var cell = this.newCell({ type: data.cellstyle, setup: { id: id } });
                             cell.setText(data.content);
                         }, this);
@@ -202,6 +211,10 @@ FEMhub.CellManager = function(config) {
             });
         },
 
+        saveBackend: function() {
+            /* pass */
+        },
+
         killBackend: function() {
             Ext.Ajax.request({
                 url: this.getAsyncURL(),
@@ -213,10 +226,6 @@ FEMhub.CellManager = function(config) {
                 failure: Ext.emptyFn,
                 scope: this,
             });
-        },
-
-        saveCells: function() {
-
         },
     }, config, {
         root: Ext.getBody(),
@@ -867,6 +876,36 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     },
 });
 
+FEMhub.ImageCell = Ext.extend(FEMhub.OutputCell, {
+    ctype: 'image',
+    imageURL: null,
+
+    initComponent: function() {
+        FEMhub.ImageCell.superclass.initComponent.call(this);
+    },
+
+    getOutput: function() {
+        return this.imageURL;
+    },
+
+    setOutput: function(url) {
+        this.el_image.dom.setAttribute('src', '/data/' + url);
+        this.imageURL = url;
+    },
+
+    onRender: function(container, position) {
+        FEMhub.ImageCell.superclass.onRender.apply(this, arguments);
+
+        this.el.addClass('femhub-cell-image');
+        this.el_textarea.addClass('femhub-cell-image-textarea');
+
+        this.el_image = this.el_textarea.createChild({
+            tag: 'img',
+            cls: 'femhub-cell-image-image',
+        });
+    },
+});
+
 FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     ctype: 'input',
 
@@ -1267,7 +1306,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         this.evaluating = true;
 
-        function evalSuccess(output) {
+        function evalSuccess(ctype, output) {
             this.evaluating = false;
 
             this.el_evaluate.addClass('femhub-enabled');
@@ -1287,9 +1326,14 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
                 var cell = this.getOutputCell();
 
+                if (cell !== null && cell.ctype !== ctype) {
+                    cell.destroy();
+                    cell = null;
+                }
+
                 if (cell === null) {
                     cell = this.owner.newCell({
-                        type: 'output',
+                        type: ctype,
                         after: this,
                         setup: {
                             myInputCell: this,
@@ -1338,7 +1382,19 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             }),
             success: function(result, request) {
                 var result = Ext.decode(result.responseText);
-                evalSuccess.call(this, result.out + result.err);
+
+                switch (result.cellstyle) {
+                    case 'outputtext':
+                        var ctype = 'output';
+                        break;
+                    case 'outputimage':
+                        var ctype = 'image';
+                        break;
+                    default:
+                        return evalFailure('unsupported type of cell');
+                }
+
+                evalSuccess.call(this, ctype, result.out + result.err);
             },
             failure: function(result, request) {
                 evalFailure.call(this, result.statusText);

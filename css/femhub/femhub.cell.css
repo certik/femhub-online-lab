@@ -133,6 +133,23 @@
 }
 
 /*
+ * IMAGE CELL
+ */
+
+.femhub-cell-image-textarea {
+    background-color: white;
+    overflow: auto;
+}
+
+.femhub-cell-image-image {
+    width: auto;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*
  * INPUT CELL
  */
 
