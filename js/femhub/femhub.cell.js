@@ -211,6 +211,10 @@ FEMhub.CellManager = function(config) {
             });
         },
 
+        isSavedToBackend: function() {
+            return false; /* pass */
+        },
+
         saveBackend: function() {
             /* pass */
         },
@@ -1532,7 +1536,7 @@ FEMhub.Cells = Ext.extend(Ext.BoxComponent, {
     },
 
     getCellsManager: function() {
-        return this.cellsMrg;
+        return this.cellsMgr;
     },
 
     addInputCell: function(config) {

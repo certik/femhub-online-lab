@@ -93,6 +93,7 @@ FEMhub.Bookshelf.init = function() {
         width: 700,
         height: 500,
         maximizable: true,
+        closable: false,
         onEsc: Ext.emptyFn,
         tbar: [
             {
@@ -133,6 +134,10 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         FEMhub.Notebook.superclass.constructor.apply(this, arguments);
     },
 
+    getCellsManager: function() {
+        return this.cells.getCellsManager();
+    },
+
     initComponent: function() {
         this.tbar = new Ext.Toolbar({
             items: [
@@ -145,7 +150,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     cls: 'x-btn-text-icon',
                     text: 'Rename',
                     handler: function() {
-
+                        /* pass */
                     },
                     scope: this,
                 }, {
@@ -153,14 +158,15 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     cls: 'x-btn-text-icon',
                     text: 'Save',
                     handler: function() {
-
+                        this.getCellsManager().saveBackend();
                     },
                     scope: this,
                 }, {
                     cls: 'x-btn-text',
                     text: 'Save & Close',
                     handler: function() {
-                        /* pass */
+                        this.getCellsManager().saveBackend();
+                        this.close();
                     },
                     scope: this,
                 }, '-', {
@@ -168,7 +174,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     cls: 'x-btn-text-icon',
                     text: 'Kill',
                     handler: function() {
-                        this.cells.getCellsManager().killBackend();
+                        this.getCellsManager().killBackend();
                     },
                     scope: this,
                 },
@@ -186,6 +192,33 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         });
 
         this.add(this.cells);
+    },
+
+    close: function() {
+        var cells = this.getCellsManager();
+
+        if (cells.isSavedToBackend()) {
+            FEMhub.Notebook.superclass.close.call(this);
+        } else {
+            Ext.MessageBox.show({
+                title: 'Save changes?',
+                msg: 'There are unsaved cells in your notebook. Would you like to save your changes?',
+                buttons: Ext.Msg.YESNOCANCEL,
+                fn: function(button) {
+                    switch (button) {
+                        case 'yes':
+                            cells.saveBackend();
+                        case 'no':
+                            FEMhub.Notebook.superclass.close.call(this);
+                            break;
+                        case 'cancel':
+                            break;
+                    }
+                },
+                icon: Ext.MessageBox.QUESTION,
+                scope: this,
+            });
+        }
     },
 });
 
