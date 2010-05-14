@@ -127,6 +127,7 @@
 
 .femhub-cell-output-textarea {
     height: auto;
+    cursor: text;
     outline: none;
     white-space: pre-wrap;
     background-color: #ffffcc;
@@ -138,6 +139,7 @@
 
 .femhub-cell-image-textarea {
     background-color: white;
+    cursor: default;
     overflow: auto;
 }
 
