@@ -158,14 +158,14 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     cls: 'x-btn-text-icon',
                     text: 'Save',
                     handler: function() {
-                        this.getCellsManager().saveBackend();
+                        this.getCellsManager().saveToBackend();
                     },
                     scope: this,
                 }, {
                     cls: 'x-btn-text',
                     text: 'Save & Close',
                     handler: function() {
-                        this.getCellsManager().saveBackend();
+                        this.getCellsManager().saveToBackend();
                         this.close();
                     },
                     scope: this,
@@ -208,7 +208,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 fn: function(button) {
                     switch (button) {
                         case 'yes':
-                            cells.saveBackend();
+                            cells.saveToBackend();
                         case 'no':
                             FEMhub.Notebook.superclass.close.call(this);
                             break;

@@ -218,6 +218,19 @@ FEMhub.CellManager = function(config) {
             });
         },
 
+        killBackend: function() {
+            Ext.Ajax.request({
+                url: this.getAsyncURL(),
+                method: "POST",
+                params: Ext.encode({
+                    method: 'interrupt',
+                }),
+                success: Ext.emptyFn,
+                failure: Ext.emptyFn,
+                scope: this,
+            });
+        },
+
         isSavedToBackend: function() {
             var cells = this.getAllCells();
 
@@ -230,7 +243,7 @@ FEMhub.CellManager = function(config) {
             return true;
         },
 
-        saveBackend: function() {
+        saveToBackend: function() {
             var cells = this.getAllCells();
 
             var orderlist = [];
@@ -290,19 +303,6 @@ FEMhub.CellManager = function(config) {
                 failure: function(response) {
                     FEMhub.log("Failed to save cells for: " + this.nbid);
                 },
-                scope: this,
-            });
-        },
-
-        killBackend: function() {
-            Ext.Ajax.request({
-                url: this.getAsyncURL(),
-                method: "POST",
-                params: Ext.encode({
-                    method: 'interrupt',
-                }),
-                success: Ext.emptyFn,
-                failure: Ext.emptyFn,
                 scope: this,
             });
         },
