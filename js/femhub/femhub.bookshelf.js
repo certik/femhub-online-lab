@@ -129,13 +129,25 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     layout: 'fit',
 
     cells: null,
+    baseTitle: 'FEMhub Notebook',
 
-    constructor: function() {
+    constructor: function(config) {
+        config.title = config.name;
         FEMhub.Notebook.superclass.constructor.apply(this, arguments);
     },
 
     getCellsManager: function() {
         return this.cells.getCellsManager();
+    },
+
+    setTitle: function(text) {
+        var title = this.baseTitle;
+
+        if (Ext.isDefined(text) && text !== null) {
+            title += ' - ' + text;
+        }
+
+        FEMhub.Notebook.superclass.setTitle.apply(this, [title]);
     },
 
     initComponent: function() {
@@ -150,7 +162,20 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     cls: 'x-btn-text-icon',
                     text: 'Rename',
                     handler: function() {
-                        /* pass */
+                        Ext.MessageBox.prompt(
+                            'Rename Notebook',
+                            'Please enter new title:',
+                            function(button, text) {
+                                if (button == 'ok') {
+                                    this.getCellsManager().renameAtBackend(text);
+                                    this.setTitle(text);
+
+                                    // TODO: notify bookshelf about this change
+                                }
+                            },
+                            this,
+                            false,
+                            this.getCellsManager().name);
                     },
                     scope: this,
                 }, {
@@ -230,16 +255,9 @@ FEMhub.Bookshelf.newNotebook = function(engine) {
 }
 
 FEMhub.Bookshelf.openNotebook = function(id, title) {
-    var baseTitle = "FEMhub Notebook";
-
-    if (Ext.isDefined(title)) {
-        baseTitle += ' - ' + title;
-    }
-
     var notebook = new FEMhub.Notebook({
         id: id,
         name: title,
-        title: baseTitle,
         width: 600,
         height: 400,
     });
