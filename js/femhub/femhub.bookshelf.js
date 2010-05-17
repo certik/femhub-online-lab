@@ -188,7 +188,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         FEMhub.Notebook.superclass.onRender.apply(this, arguments);
 
         this.cells = new FEMhub.Cells({
-            notebook: this.id,
+            nbid: this.id,
+            name: this.name,
         });
 
         this.add(this.cells);
@@ -237,6 +238,7 @@ FEMhub.Bookshelf.openNotebook = function(id, title) {
 
     var notebook = new FEMhub.Notebook({
         id: id,
+        name: title,
         title: baseTitle,
         width: 600,
         height: 400,

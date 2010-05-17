@@ -7,7 +7,8 @@ FEMhub.CellManager = function(config) {
     }
 
     return Ext.apply({
-        id: FEMhub.unique(),
+        nbid: null,      // config.nbid
+        name: null,      // config.name
 
         evalIndex: 0,
 
@@ -158,11 +159,11 @@ FEMhub.CellManager = function(config) {
         },
 
         getDataURL: function() {
-            return '/notebook/' + this.notebook + '/';
+            return '/notebook/' + this.nbid + '/';
         },
 
         getAsyncURL: function() {
-            return '/asyncnotebook/' + this.notebook + '/';
+            return '/asyncnotebook/' + this.nbid + '/';
         },
 
         initBackend: function() {
@@ -287,7 +288,7 @@ FEMhub.CellManager = function(config) {
                     });
                 },
                 failure: function(response) {
-                    FEMhub.log("Failed to save cells for: " + this.notebook);
+                    FEMhub.log("Failed to save cells for: " + this.nbid);
                 },
                 scope: this,
             });
