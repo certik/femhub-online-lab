@@ -1432,6 +1432,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                         type: ctype,
                         after: this,
                         setup: {
+                            id: this.id + 'o',
                             myInputCell: this,
                         },
                     });
