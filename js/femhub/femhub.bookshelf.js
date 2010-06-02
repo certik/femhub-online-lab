@@ -250,7 +250,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
 
 FEMhub.Bookshelf.newNotebook = function(engine) {
     FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
-        FEMhub.Bookshelf.openNotebook(data.id);
+        FEMhub.Bookshelf.openNotebook(data.id, 'untitled');
     });
 }
 
