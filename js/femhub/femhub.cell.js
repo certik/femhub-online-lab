@@ -878,7 +878,7 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
         output = output.replace(/&amp;/g, '&');
 
         output = output.replace(/&lt;/g, '<');
-        output = output.replace(/&gt;/g, '<');
+        output = output.replace(/&gt;/g, '>');
 
         return output;
     },
