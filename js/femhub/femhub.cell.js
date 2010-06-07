@@ -11,6 +11,7 @@ FEMhub.CellManager = function(config) {
         name: null,      // config.name
 
         evalIndex: 0,
+        statusSaved: true,
 
         softEvalTimeout: null,
         hardEvalTimeout: null,
@@ -42,6 +43,8 @@ FEMhub.CellManager = function(config) {
             var cell = new FEMhub[ctype](Ext.apply({
                 owner: this,
             }, config.setup));
+
+            this.statusSaved = false;
 
             if (config.render !== false) {
                 if (Ext.isDefined(config.position)) {
@@ -174,7 +177,12 @@ FEMhub.CellManager = function(config) {
                     var result = Ext.decode(result.responseText);
 
                     if (result.orderlist == 'orderlist') {
-                        this.newCell({ type: 'input', setup: { start: true } });
+                        this.newCell({
+                            type: 'input',
+                            setup: {
+                                start: true,
+                            },
+                        });
                     } else {
                         Ext.each(Ext.decode(result.orderlist), function(id) {
                             var data = result.cells[id];
@@ -195,11 +203,18 @@ FEMhub.CellManager = function(config) {
                                 }
                             }
 
-                            var cell = this.newCell({ type: data.cellstyle, setup: { id: id } });
+                            var cell = this.newCell({
+                                type: data.cellstyle,
+                                setup: {
+                                    id: id,
+                                    saved: true,
+                                },
+                            });
 
                             cell.setText(data.content);
-                            cell.saved = true;
                         }, this);
+
+                        this.statusSaved = true;
                     }
                 },
                 failure: Ext.emptyFn,
@@ -240,7 +255,7 @@ FEMhub.CellManager = function(config) {
                 }
             }
 
-            return true;
+            return this.statusSaved;
         },
 
         saveToBackend: function() {
@@ -299,6 +314,8 @@ FEMhub.CellManager = function(config) {
                     Ext.each(savedlist, function(cell) {
                         cell.saved = true;
                     });
+
+                    this.statusSaved = true;
                 },
                 failure: function(response) {
                     FEMhub.log("Failed to save cells for: " + this.nbid);
@@ -847,6 +864,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         }
 
         this.destroy();
+        this.owner.statusSaved = false;
     },
 });
 
@@ -1103,18 +1121,18 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 stopEvent: false,
                 handler: this.autocomplete,
             },
-            x_ctrl_alt_up: {
+            x_shift_ctrl_alt_up: {
                 key: Ext.EventObject.UP,
-                shift: false,
+                shift: true,
                 ctrl: true,
                 alt: true,
                 scope: this,
                 stopEvent: true,
                 handler: this.mergeCellBefore,
             },
-            x_ctrl_alt_down: {
+            x_shift_ctrl_alt_down: {
                 key: Ext.EventObject.DOWN,
-                shift: false,
+                shift: true,
                 ctrl: true,
                 alt: true,
                 scope: this,
@@ -1161,6 +1179,14 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
        }
     },
 
+    destroyOutputCellIfCan: function() {
+        var cell = this.getOutputCell();
+
+        if (cell !== null) {
+            cell.destroy();
+        }
+    },
+
     setupInputCellObserver: function() {
         var observer = {
             run: function() {
@@ -1196,7 +1222,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.bindings.x_shift_enter, this.bindings.x_ctrl_enter,
             this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
             this.bindings.x_alt_up, this.bindings.x_alt_down,
-            this.bindings.x_ctrl_alt_up, this.bindings.x_ctrl_alt_down,
+            this.bindings.x_shift_ctrl_alt_up, this.bindings.x_shift_ctrl_alt_down,
             this.bindings.x_alt_left,
             this.bindings.x_ctrl_space,
         ]);
@@ -1338,8 +1364,12 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         if (selection.start == selection.end) {
             if (pos == 0) {
                 if (this.owner.mergeOnBackspace) {
-                    this.mergeCellBefore();
-                } else if (input.length == 0) {
+                    var result = this.mergeCellBefore();
+                } else {
+                    var result = false;
+                }
+
+                if (!result && (input.length == 0)) {
                     this.removeCell();
                 }
 
@@ -1560,50 +1590,67 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     mergeCellBefore: function() {
         var cell = this.getPrevCell('input');
 
-        if (cell !== null) {
-            var input = cell.getInput();
-
-            if (input.length != 0) {
-                input += '\n';
-            }
-
-            var length = input.length;
-            input += this.getInput();
-
-            var selection = this.getSelection();
-
-            selection.start += length;
-            selection.end += length;
-
-            cell.setInput(input);
-            cell.setSelection(selection);
-
-            cell.autosize();
-            cell.focusCell();
-            this.destroy();
+        if (cell === null) {
+            return false;
         }
+
+        var input = cell.getInput();
+
+        if (input.length != 0) {
+            input += '\n';
+        }
+
+        var length = input.length;
+        input += this.getInput();
+
+        var selection = this.getSelection();
+
+        selection.start += length;
+        selection.end += length;
+
+        cell.setInput(input);
+        cell.setSelection(selection);
+
+        this.destroyOutputCellIfCan();
+
+        cell.autosize();
+        cell.focusCell();
+        this.destroy();
+
+        return true;
     },
 
     mergeCellAfter: function() {
         var cell = this.getNextCell('input');
 
-        if (cell !== null) {
-            var input = cell.getInput();
-
-            if (input.length != 0) {
-                input = '\n' + input;
-            }
-
-            input = this.getInput() + input;
-            var selection = this.getSelection();
-
-            cell.setInput(input);
-            cell.setSelection(selection);
-
-            cell.autosize();
-            cell.focusCell();
-            this.destroy();
+        if (cell === null) {
+            return false;
         }
+
+        var input = cell.getInput();
+
+        if (input.length != 0) {
+            input = '\n' + input;
+        }
+
+        input = this.getInput() + input;
+        var selection = this.getSelection();
+
+        cell.setInput(input);
+        cell.setSelection(selection);
+
+        this.destroyOutputCellIfCan();
+
+        cell.autosize();
+        cell.focusCell();
+        this.destroy();
+
+        return true;
+    },
+
+    removeCell: function() {
+        this.destroyOutputCellIfCan();
+        FEMhub.InputCell.superclass.removeCell.apply(this, arguments);
     },
 });
 
