@@ -33,12 +33,14 @@ git branch --track devel origin/devel
 cd ../codenode-unr
 git branch --track femhub origin/femhub
 
+bin/link-femhub /home/user/path/online-labs/femhub-online-lab/
+
+(this must be full path, don't use ..)
+
 cd devel
 ./make-devel-env femhub-env
 
  (say 'yes' and setup admin username, e-mail and password)
-
-../../femhub-online-lab/bin/create-links femhub-env
 
 3. Running Online Labs
 
