@@ -21,6 +21,7 @@ FEMhub.CellManager = function(config) {
         newCellOnEval: false,
         autoLoadOutputCells: true,
         cycleCells: true,
+        startEmpty: true,
         autoJustify: true,
         wrapOutputText: true,
         tabWidth: 4,
@@ -177,12 +178,14 @@ FEMhub.CellManager = function(config) {
                     var result = Ext.decode(result.responseText);
 
                     if (result.orderlist == 'orderlist') {
-                        this.newCell({
-                            type: 'input',
-                            setup: {
-                                start: true,
-                            },
-                        });
+                        if (this.startEmpty !== false) {
+                            this.newCell({
+                                type: 'input',
+                                setup: {
+                                    start: true,
+                                },
+                            });
+                        }
                     } else {
                         Ext.each(Ext.decode(result.orderlist), function(id) {
                             var data = result.cells[id];

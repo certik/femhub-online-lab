@@ -105,6 +105,26 @@ FEMhub.Bookshelf.init = function() {
                     FEMhub.Bookshelf.newNotebook(default_engine);
                 },
                 menu: engines_menu,
+                scope: this,
+            }, {
+                xtype: 'button',
+                cls: 'x-btn-text',
+                text: 'Import',
+                handler: function() {
+                    Ext.MessageBox.prompt(
+                        'Import Notebook',
+                        'Please enter plain text:',
+                        function(button, text) {
+                            if (button == 'ok') {
+                                FEMhub.Bookshelf.newNotebook(default_engine, function(notebook) {
+                                    notebook.importCells(text);
+                                });
+                            }
+                        },
+                        this,
+                        true);
+                },
+                scope: this,
             },
         ],
         items: [folders, notebooks],
@@ -122,6 +142,28 @@ FEMhub.Bookshelf.init = function() {
 
         root.expand();
     });
+}
+
+FEMhub.Bookshelf.newNotebook = function(engine, handler) {
+    FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
+        var notebook = FEMhub.Bookshelf.openNotebook(data.id, 'untitled');
+
+        if (Ext.isDefined(handler)) {
+            handler(notebook);
+        }
+    });
+}
+
+FEMhub.Bookshelf.openNotebook = function(id, title) {
+    var notebook = new FEMhub.Notebook({
+        id: id,
+        name: title,
+        width: 600,
+        height: 400,
+    });
+
+    notebook.show();
+    return notebook;
 }
 
 FEMhub.Notebook = Ext.extend(Ext.Window, {
@@ -246,22 +288,73 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
             });
         }
     },
+
+    importCells: function(text) {
+        var cells = this.getCellsManager();
+
+        var TEXT = 0;
+        var INPUT = 1;
+        var OUTPUT = 2;
+
+        var lines = text.split('\n');
+        var state = TEXT;
+
+        var text = [];
+        var input = [];
+        var output = [];
+
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+
+            switch (state) {
+            case TEXT:
+                if (/^{{{/.test(line)) {
+                    state = INPUT;
+                    input = [];
+                } else {
+                    text.push(line);
+                }
+                break;
+            case INPUT:
+                if (/^\/\/\//.test(line)) {
+                    state = OUTPUT;
+                    output = [];
+                } else {
+                    input.push(line);
+                }
+                break;
+            case OUTPUT:
+                if (/^}}}/.test(line)) {
+                    var strInput = input.join('\n');
+                    var strOutput = output.join('\n');
+
+                    var icell = cells.newCell({
+                        type: 'input',
+                        setup: {
+                        },
+                    });
+
+                    icell.setText(strInput);
+
+                    if (output.length != 0) {
+                        var ocell = cells.newCell({
+                            type: 'output',
+                            setup: {
+                                id: icell.id + 'o',
+                            },
+                        });
+
+                        ocell.setText(strOutput);
+                    }
+
+                    state = TEXT;
+                    text = [];
+                } else {
+                    output.push(line);
+                }
+                break;
+            }
+        }
+    },
 });
-
-FEMhub.Bookshelf.newNotebook = function(engine) {
-    FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
-        FEMhub.Bookshelf.openNotebook(data.id, 'untitled');
-    });
-}
-
-FEMhub.Bookshelf.openNotebook = function(id, title) {
-    var notebook = new FEMhub.Notebook({
-        id: id,
-        name: title,
-        width: 600,
-        height: 400,
-    });
-
-    notebook.show();
-}
 
