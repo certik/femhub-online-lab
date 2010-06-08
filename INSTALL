@@ -1,0 +1,76 @@
+
+1. Online Labs prerequisites
+
+* >= Twisted-9.0.0 (base, runner, web)
+* >= Django-1.0.0
+* Simplejson
+* Woosh
+* Sphinx
+* Nose
+* django_nose
+* django_compress
+* django_extensions
+
+If any of this packages is not available in the default
+package manager, then one can use easy_install, e.g.:
+
+easy_install -Z --prefix=~/.local django_compress
+
+(-Z means uncompress and --prefix=~/.local requires at
+ least Python 2.6)
+
+2. Installing Online Labs
+
+mkdir online-labs
+cd online-labs
+
+git clone git://github.com/mattpap/femhub-online-lab.git
+git clone git://github.com/mattpap/codenode-unr.git
+
+cd femhum-online-lab
+git branch --track devel origin/devel
+
+cd ../codenode-unr
+git branch --track femhub origin/femhub
+
+cd devel
+./make-devel-env femhub-env
+
+ (say 'yes' and setup admin username, e-mail and password)
+
+../../femhub-online-lab/bin/create-links femhub-env
+
+3. Running Online Labs
+
+Now open two terminals in parallel and run the following commands:
+
+./backend-devel femhub-env
+./frontend-devel femhub-env
+
+These will start two servers listening on localhost (8337, 8000).
+
+Go to http://localhost:8000 and login. The site will redirect to
+original Codenode interface at http://localhost:8000/bookshelf/.
+
+Now go to 'settings' (top right corner) and redirect to 'Click
+here for advanced settings' (only available for superusers). Go
+to 'Backend servers' and click 'Add backend server'. Enter a name,
+e.g. 'FEMhub', and address http://localhost:8337, and click save.
+
+Redirect to http://localhost:8000/femhub. Now new Online Labs are
+useble. Click 'New Notebook' to start work or 'Import' to import
+a Sage notebook.
+
+4. Importing Sage notebooks
+
+Go to http://localhost:8000/femhub and click 'Import'. Copy plain
+text from Sage notebook, e.g.:
+
+{{{id=0|
+some code
+///
+output
+}}}
+
+and click 'OK'. A new window will start with all cells imported.
+
