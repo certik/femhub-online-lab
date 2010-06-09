@@ -27,7 +27,7 @@ cd online-labs
 git clone git://github.com/mattpap/femhub-online-lab.git
 git clone git://github.com/mattpap/codenode-unr.git
 
-cd femhum-online-lab
+cd femhub-online-lab
 git branch --track devel origin/devel
 git checkout devel
 
