@@ -99,7 +99,7 @@ FEMhub.Bookshelf.init = function() {
             {
                 xtype: 'tbsplit',
                 cls: 'x-btn-text-icon',
-                icon: FEMhub.icons + 'page_go.png',
+                icon: FEMhub.icons + 'page_add.png',
                 text: 'New Notebook',
                 handler: function() {
                     FEMhub.Bookshelf.newNotebook(default_engine);
@@ -108,8 +108,9 @@ FEMhub.Bookshelf.init = function() {
                 scope: this,
             }, {
                 xtype: 'button',
-                cls: 'x-btn-text',
-                text: 'Import',
+                cls: 'x-btn-text-icon',
+                icon: FEMhub.icons + 'page_attach.png',
+                text: 'Import Notebook',
                 handler: function() {
                     Ext.MessageBox.prompt(
                         'Import Notebook',
