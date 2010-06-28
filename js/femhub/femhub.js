@@ -80,3 +80,7 @@ FEMhub.unique = function() {
     return (new Date()).getTime() + Math.random().toString().substr(2, 8);
 }
 
+FEMhub.hasArg = function(args, arg) {
+    return Ext.isDefined(args) && Ext.isDefined(args[arg]);
+}
+

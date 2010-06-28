@@ -232,8 +232,10 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     cls: 'x-btn-text',
                     text: 'Save & Close',
                     handler: function() {
-                        this.getCellsManager().saveToBackend();
-                        this.close();
+                        this.getCellsManager().saveToBackend({
+                            postsave: this.close,
+                            scope: this,
+                        });
                     },
                     scope: this,
                 }, '-', {

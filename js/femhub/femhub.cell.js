@@ -261,7 +261,7 @@ FEMhub.CellManager = function(config) {
             return this.statusSaved;
         },
 
-        saveToBackend: function() {
+        saveToBackend: function(args) {
             var cells = this.getAllCells();
 
             var orderlist = [];
@@ -319,6 +319,10 @@ FEMhub.CellManager = function(config) {
                     });
 
                     this.statusSaved = true;
+
+                    if (FEMhub.hasArg(args, 'postsave')) {
+                        args.postsave.call(args.scope);
+                    }
                 },
                 failure: function(response) {
                     FEMhub.log("Failed to save cells for: " + this.nbid);
