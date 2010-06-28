@@ -23,7 +23,7 @@ FEMhub.Bookshelf.init = function() {
         region: "center",
     });
 
-    notebooks.on('cellclick', function(grid, row, col) {
+    notebooks.on('celldblclick', function(grid, row, col) {
         var record = grid.getStore().getAt(row);
         FEMhub.Bookshelf.openNotebook(record.id, record.data.title);
     }, this);
