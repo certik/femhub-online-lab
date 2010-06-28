@@ -621,6 +621,8 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 stopEvent: false,
                 handler: function(key, ev) {
                     if (this.collapsed || this.ctype != 'input') {
+                        ev.stopEvent();
+
                         var cell = this.prevCell();
 
                         if (cell.ctype == 'input') {
@@ -655,6 +657,8 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 stopEvent: false,
                 handler: function(key, ev) {
                     if (this.collapsed || this.ctype != 'input') {
+                        ev.stopEvent();
+
                         var cell = this.nextCell();
 
                         if (cell.ctype == 'input') {
