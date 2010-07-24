@@ -23,9 +23,38 @@ FEMhub.Bookshelf.init = function() {
         region: "center",
     });
 
-    notebooks.on('celldblclick', function(grid, row, col) {
+    notebooks.on('celldblclick', function(grid, row, col, evt) {
         var record = grid.getStore().getAt(row);
         FEMhub.Bookshelf.openNotebook(record.id, record.data.title);
+    }, this);
+
+    notebooks.on('cellcontextmenu', function(grid, row, col, evt) {
+        var context = new Ext.menu.Menu();
+
+        context.add([
+            new Ext.menu.Item({
+                text: 'Share',
+                handler: function(node) {
+                    FEMhub.log("share");
+                },
+            }),
+            new Ext.menu.Separator(),
+            new Ext.menu.Item({
+                text: 'Rename',
+                handler: function(node) {
+                    FEMhub.log("rename");
+                },
+            }),
+            new Ext.menu.Item({
+                text: 'Delete',
+                handler: function(node) {
+                    FEMhub.log("delete");
+                },
+            }),
+        ]);
+
+        context.showAt(evt.getXY());
+        evt.stopEvent();
     }, this);
 
     var root = new Ext.tree.TreeNode({
@@ -40,6 +69,41 @@ FEMhub.Bookshelf.init = function() {
         rootVisible: true,
         root: root,
     });
+
+    folders.on('contextmenu', function(node, evt) {
+        var context = new Ext.menu.Menu();
+
+        context.add([
+            new Ext.menu.Item({
+                text: 'New notebook',
+                handler: function(node) {
+                    FEMhub.log("new notebook");
+                },
+            }),
+            new Ext.menu.Item({
+                text: 'New folder',
+                handler: function(node) {
+                    FEMhub.log("new folder");
+                },
+            }),
+            new Ext.menu.Separator(),
+            new Ext.menu.Item({
+                text: 'Rename',
+                handler: function(node) {
+                    FEMhub.log("rename");
+                },
+            }),
+            new Ext.menu.Item({
+                text: 'Delete',
+                handler: function(node) {
+                    FEMhub.log("delete");
+                },
+            }),
+        ]);
+
+        context.showAt(evt.getXY());
+        evt.stopEvent();
+    }, this);
 
     folders.on('click', function(node) {
         if (/^root-/.test(node.id)) {
