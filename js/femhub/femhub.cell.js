@@ -1700,9 +1700,3 @@ FEMhub.Cells = Ext.extend(Ext.BoxComponent, {
     },
 });
 
-Ext.onReady(function() {
-    FEMhub.init(function() {
-        FEMhub.Bookshelf.init();
-    });
-});
-

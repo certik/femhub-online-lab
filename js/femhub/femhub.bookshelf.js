@@ -68,6 +68,9 @@ FEMhub.Bookshelf.init = function() {
         split: true,
         rootVisible: true,
         root: root,
+        animate: true,
+        enableDD: true,
+        containerScroll: true,
     });
 
     folders.on('contextmenu', function(node, evt) {

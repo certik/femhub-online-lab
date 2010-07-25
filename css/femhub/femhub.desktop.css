@@ -1,0 +1,206 @@
+
+body {
+    overflow: hidden;
+}
+
+#femhub-desktop {
+    width: 100%;
+    height: 100%;
+    border: 0 none;
+    position: relative;
+    background: #3d71b8 url(/static/img/femhub/background/desktop.jpg) no-repeat left top;
+}
+
+#femhub-taskbar {
+    height: 30px;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 12001;
+    background: #000000 url(/static/img/femhub/taskbar/taskbar-bg.gif) repeat-x left top;
+}
+
+.femhub-taskbar-wrapper {
+    width: 100%;
+    height: 30px;
+    overflow: hidden;
+    position: relative;
+}
+
+.femhub-taskbar-elements {
+    display: block;
+    width: 5000px;
+}
+
+.femhub-taskbar-elements li {
+    float: left;
+    margin-left: 2px;
+}
+
+.femhub-taskbar-terminator {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 none !important;
+    font-size: 1px !important;
+    line-height: 1px !important;
+    overflow: hidden;
+    background: transparent !important;
+    width: 1px;
+}
+
+.femhub-taskbar-clear {
+    clear: both;
+    height: 0;
+    overflow: hidden;
+    line-height: 0;
+    font-size: 0;
+}
+
+.femhub-taskbar-scrolling .femhub-taskbar-wrapper {
+    margin-left: 18px;
+    margin-right: 18px;
+}
+
+#femhub-taskbar .x-btn {
+    margin: 1px 0 0 1px;
+}
+
+#femhub-taskbar button {
+    text-align: left;
+    color: #ffffff;
+}
+
+.x-btn-icon .femhub-taskbutton-center .x-btn-text {
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 0;
+}
+.x-btn-icon .ux-taskbutton-center {
+    padding: 1px;
+}
+
+.x-btn-text-icon .femhub-taskbutton-center .x-btn-text {
+    background-position: 0 6px;
+    background-repeat: no-repeat;
+    padding: 7px 0px 7px 20px;
+}
+
+.femhub-taskbutton-left, .femhub-taskbutton-right {
+    font-size: 1px;
+    line-height: 1px;
+}
+
+.femhub-taskbutton-left {
+    width: 4px;
+    height: 28px;
+    background: url(/static/img/femhub/taskbar/taskbutton.gif) no-repeat 0 0;
+}
+
+.femhub-taskbutton-right {
+    width: 4px;
+    height: 28px;
+    background: url(/static/img/femhub/taskbar/taskbutton.gif) no-repeat 0 -28px;
+}
+
+.femhub-taskbutton-left i, .femhub-taskbutton-right i {
+    display: block;
+    width: 4px;
+    overflow: hidden;
+    font-size: 1px;
+    line-height: 1px;
+}
+
+.femhub-taskbutton-center {
+    background: url(/static/img/femhub/taskbar/taskbutton.gif) repeat-x 0 -56px;
+    vertical-align: middle;
+    text-align: center;
+    padding: 0 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.x-btn-over .femhub-taskbutton-left {
+    background-position: 0 -252px;
+}
+
+.x-btn-over .femhub-taskbutton-right {
+    background-position: 0 -280px;
+}
+
+.x-btn-over .femhub-taskbutton-center {
+    background-position: 0 -308px;
+}
+
+.x-btn-click .femhub-taskbutton-left {
+    background-position: 0 -168px;
+}
+
+.x-btn-click .femhub-taskbutton-right {
+    background-position: 0 -196px;
+}
+
+.x-btn-click .femhub-taskbutton-center {
+    background-position: 0 -224px;
+}
+
+.active-win .femhub-taskbutton-left {
+    background-position: 0 -84px;
+}
+
+.active-win .femhub-taskbutton-right {
+    background-position: 0 -112px;
+}
+
+.active-win .femhub-taskbutton-center {
+    background-position: 0 -140px;
+}
+
+.active-win .femhub-taskbutton-center button {
+    color: #fff;
+}
+
+.femhub-taskbar-scroller {
+    width: 18px;
+    position: absolute;
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.femhub-taskbar-scroller.femhub-left {
+    background: transparent url(/static/img/femhub/taskbar/scroll-left.gif) no-repeat -18px 0;
+    left: 0;
+}
+
+.femhub-taskbar-scroller.femhub-right {
+    background: transparent url(/static/img/femhub/taskbar/scroll-right.gif) no-repeat 0 0;
+    right: 0;
+}
+
+.femhub-taskbar-scroller.femhub-disabled {
+    cursor: default;
+    filter: alpha(opacity=50);
+    -moz-opacity: 0.5;
+    opacity: 0.5;
+}
+
+.femhub-taskbar-scroller.femhub-left.femhub-disabled {
+    background-position: -18px 0;
+}
+
+.femhub-taskbar-scroller.femhub-right.femhub-disabled {
+    background-position: 0 0;
+}
+
+.femhub-taskbar-scroller.femhub-left.femhub-highlight {
+    background-position: 0 0;
+}
+
+.femhub-taskbar-scroller.femhub-right.femhub-highlight {
+    background-position: -18px 0;
+}
+

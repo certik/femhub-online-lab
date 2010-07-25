@@ -7,7 +7,7 @@ FEMhub = {
     icons: "/static/img/icons/",
 };
 
-FEMhub.init = function(ready) {
+FEMhub.init = function(ready, scope) {
     var namespace = FEMhub;
 
     Ext.Ajax.request({
@@ -45,7 +45,7 @@ FEMhub.init = function(ready) {
                 });
             });
 
-            ready();
+            ready.call(scope || this);
         },
         failure: function(result, request) {
             FEMhub.log(Ext.decode(result.responseText).error.message);
