@@ -168,12 +168,12 @@ FEMhub.Desktop = function(lab) {
     layout();
 
     /*
-    if(shortcuts) {
+    if (shortcuts) {
         shortcuts.on('click', function(e, t) {
-            if(t = e.getTarget('dt', shortcuts)) {
+            if (t = e.getTarget('dt', shortcuts)) {
                 e.stopEvent();
                 var module = lab.getModule(t.id.replace('-shortcut', ''));
-                if(module) {
+                if (module) {
                     module.createWindow();
                 }
             }

@@ -10,9 +10,9 @@ FEMhub.TaskButton = function(win, el) {
         handler: function() {
             if (win.minimized || win.hidden) {
                 win.show();
-            }else if (win == win.manager.getActive()) {
+            } else if (win == win.manager.getActive()) {
                 win.minimize();
-            }else{
+            } else {
                 win.toFront();
             }
         },
@@ -38,7 +38,7 @@ Ext.extend(FEMhub.TaskButton, Ext.Button, {
                 handler: function() {
                     if (!this.win.isVisible()) {
                         this.win.show();
-                    }else{
+                    } else {
                         this.win.restore();
                     }
                 },
