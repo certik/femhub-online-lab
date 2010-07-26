@@ -180,9 +180,5 @@ FEMhub.Desktop = function(lab) {
         });
     }
     */
-
-    for (var i = 0; i < 10; i++) {
-        this.createWindow({title: "Some: " + i});
-    }
 };
 

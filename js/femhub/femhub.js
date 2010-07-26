@@ -29,8 +29,8 @@ FEMhub.init = function(ready, scope) {
                 Ext.each(items, function(item, i) {
                     if (i == items.length - 1) {
                         if (!Ext.isDefined(namespace[item])) {
-                            namespace[item] = function(params, handler) {
-                                return FEMhub.call(proc.name, params, handler);
+                            namespace[item] = function(params, handler, _scope) {
+                                return FEMhub.call(proc.name, params, handler, _scope);
                             }
                         } else {
                             FEMhub.log("'" + item + "' method name already in use");
@@ -53,7 +53,7 @@ FEMhub.init = function(ready, scope) {
     });
 }
 
-FEMhub.call = function(method, params, handler) {
+FEMhub.call = function(method, params, handler, scope) {
     Ext.Ajax.request({
         url: FEMhub.json,
         method: "POST",
@@ -64,7 +64,7 @@ FEMhub.call = function(method, params, handler) {
             id: 0,
         }),
         success: function(result, request) {
-            handler(Ext.decode(result.responseText).result);
+            handler.call(scope || this, Ext.decode(result.responseText).result);
         },
         failure: function(result, request) {
             FEMhub.log(Ext.decode(result.responseText).error.message);
