@@ -20,6 +20,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             layout: 'border',
             width: 700,
             height: 500,
+            iconCls: 'femhub-bookshelf-icon',
             maximizable: true,
             minimizable: true,
             closable: true,
@@ -264,5 +265,14 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         notebook.show();
         return notebook;
     },
+});
+
+FEMhub.Modules.Bookshelf = Ext.extend(FEMhub.Module, {
+    launcher: {
+        text: "FEMhub Bookshelf",
+        icon: FEMhub.icons + '128x128/folder.png',
+        /*iconCls: 'femhub-bookshelf-launcher-icon',*/
+    },
+    winCls: FEMhub.Bookshelf,
 });
 

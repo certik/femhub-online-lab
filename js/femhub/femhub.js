@@ -4,7 +4,7 @@ Ext.BLANK_IMAGE_URL = "/static/external/ext/images/default/s.gif";
 FEMhub = {
     version: [0, 0, 1],
     json: "/femhub/json/",
-    icons: "/static/img/icons/",
+    icons: "/static/img/femhub/icons/",
 };
 
 FEMhub.init = function(ready, scope) {

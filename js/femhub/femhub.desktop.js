@@ -2,7 +2,6 @@
 FEMhub.Desktop = function(lab) {
     this.taskbar = new FEMhub.TaskBar(lab);
     this.taskbar.render();
-    //this.taskbar.addButton(
     this.xTickSize = this.yTickSize = 1;
     var taskbar = this.taskbar;
     var desktopEl = Ext.get('femhub-desktop');
@@ -10,6 +9,8 @@ FEMhub.Desktop = function(lab) {
     //var shortcuts = Ext.get('x-shortcuts');
     var windows = new Ext.WindowGroup();
     var activeWindow;
+
+    this.launchers = {};
 
     function minimizeWin(win) {
         win.minimized = true;
@@ -45,15 +46,17 @@ FEMhub.Desktop = function(lab) {
     Ext.EventManager.onWindowResize(layout);
     this.layout = layout;
 
-    this.createWindow = function(config, cls) {
-        var win = new (cls||Ext.Window)(
-            Ext.applyIf(config||{}, {
-                renderTo: desktopEl,
-                manager: windows,
-                minimizable: true,
-                maximizable: true
-            })
-        );
+    this.createWindow = function(cls, config) {
+        config = config || {};
+
+        Ext.applyIf(config, {
+            renderTo: desktopEl,
+            manager: windows,
+            minimizable: true,
+            maximizable: true
+        });
+
+        var win = new cls(config);
 
         win.dd.xTickSize = this.xTickSize;
         win.dd.yTickSize = this.yTickSize;
@@ -167,18 +170,22 @@ FEMhub.Desktop = function(lab) {
 
     layout();
 
-    /*
-    if (shortcuts) {
-        shortcuts.on('click', function(e, t) {
-            if (t = e.getTarget('dt', shortcuts)) {
-                e.stopEvent();
-                var module = lab.getModule(t.id.replace('-shortcut', ''));
-                if (module) {
-                    module.createWindow();
-                }
-            }
+    this.addLauncher = function(module) {
+        var launcher = new FEMhub.Launcher(module.launcher)
+        //this.launchers.push(launcher);
+        this.launchers[launcher] = module;
+        launcher.render(desktopEl);
+        launcher.el.on('click', function() {
+            module.start();
         });
-    }
-    */
+    };
+
+    this.getDesktopEl = function() {
+        return Ext.get('femhub-desktop');
+    };
+
+    this.getTaskBarEl = function() {
+        return Ext.get('femhub-taskbar');
+    };
 };
 

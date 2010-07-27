@@ -15,6 +15,7 @@ FEMhub.Lab = function(config) {
 Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     isReady: false,
     desktop: null,
+    modules: null,
 
     init: function() {
         /* pass */
@@ -24,6 +25,13 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
         this.desktop = new FEMhub.Desktop(this);
 
         this.init();
+
+        if (Ext.isArray(this.modules)) {
+            for (var i = 0; i < this.modules.length; i++) {
+                this.modules[i] = new this.modules[i]({ lab: this });
+                this.desktop.addLauncher(this.modules[i]);
+            }
+        }
 
         Ext.EventManager.on(window, 'beforeunload', this.onUnload, this);
 
