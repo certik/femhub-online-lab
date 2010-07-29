@@ -837,7 +837,7 @@ ul.x-tab-strip li.x-tab-edge {
 }
 
 .x-tab-scrolling {
-    position:relative;    
+    position:relative;
 }
 
 .x-tab-panel-bbar .x-toolbar {
@@ -926,9 +926,15 @@ textarea {
 /* --- TODO --- */
 
 /* 2.0.2 style */
-.x-form-check-wrap {
+/*.x-form-check-wrap {
     line-height:18px;
     height: auto;
+}
+*/
+
+.x-form-check-wrap {
+    padding-bottom: 2px;
+    line-height: 18px;
 }
 
 .ext-ie .x-form-check-wrap input {
@@ -1450,7 +1456,7 @@ fieldset.x-panel-collapsed .x-fieldset-bwrap {
 
 .x-btn-text {
     cursor:pointer;
-	white-space: nowrap;
+    white-space: nowrap;
     padding:0;
 }
 
@@ -2265,7 +2271,7 @@ div.x-toolbar-no-items {
 }
 
 .ext-strict .x-grid3-header-pop-inner {
-    width:14px; 
+    width:14px;
 }
 
 .x-grid3-header-inner {
@@ -4465,7 +4471,7 @@ body.ext-ie6.x-body-masked .x-window select {
 
 .x-html-editor-tb .x-edit-bold, .x-menu-item img.x-edit-bold {
     background-position:0 0;
-    background-image:url(../images/default/editor/tb-sprite.gif);    
+    background-image:url(../images/default/editor/tb-sprite.gif);
 }
 
 .x-html-editor-tb .x-edit-italic, .x-menu-item img.x-edit-italic {
@@ -5023,7 +5029,7 @@ body.ext-ie6.x-body-masked .x-window select {
     -khtml-user-select:none;
     -webkit-user-select:ignore;
 	display:block;
-	overflow:hidden;  
+	overflow:hidden;
 }
 
 /* Horizontal styles */
@@ -5189,7 +5195,7 @@ body.ext-ie6.x-body-masked .x-window select {
     background-color: #deecfd;
 }
 
-.x-color-palette em:hover, .x-color-palette span:hover{   
+.x-color-palette em:hover, .x-color-palette span:hover{
     background-color: #deecfd;
 }
 
@@ -6466,7 +6472,7 @@ a.x-menu-item {
 
 .x-panel-header {
     color:#15428b;
-	font-weight:bold; 
+	font-weight:bold;
     font-size: 11px;
     font-family: tahoma,arial,verdana,sans-serif;
     border-color:#99bbe8;
@@ -6787,3 +6793,4 @@ body.x-body-masked .x-window-plain .x-window-mc {
 .x-window-dlg .ext-mb-error {
     background-image:url(../images/default/window/icon-error.gif);
 }
+
