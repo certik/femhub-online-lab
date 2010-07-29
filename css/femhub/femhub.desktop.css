@@ -212,3 +212,21 @@ body {
     background-image: url(/static/img/femhub/icons/128x128/folder.png);
 }
 
+.femhub-login-body {
+    padding-top: 82px;
+    background: #ffffff url(/static/img/femhub/femhub.jpg) no-repeat left top;
+}
+
+.femhub-login-head {
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    display: block;
+}
+
+.femhub-login-text {
+    text-align: justify;
+    font-size: 12px;
+    display: block;
+}
+
