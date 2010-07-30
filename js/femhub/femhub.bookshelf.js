@@ -269,9 +269,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
 FEMhub.Modules.Bookshelf = Ext.extend(FEMhub.Module, {
     launcher: {
-        text: "FEMhub Bookshelf",
-        icon: FEMhub.icons + '128x128/folder.png',
-        /*iconCls: 'femhub-bookshelf-launcher-icon',*/
+        text: 'Bookshelf',
+        icon: 'femhub-bookshelf-launcher-icon',
     },
     winCls: FEMhub.Bookshelf,
 });

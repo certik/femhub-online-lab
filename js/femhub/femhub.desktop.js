@@ -10,7 +10,7 @@ FEMhub.Desktop = function(lab) {
     var windows = new Ext.WindowGroup();
     var activeWindow;
 
-    this.launchers = {};
+    this.launchers = [];
 
     function minimizeWin(win) {
         win.minimized = true;
@@ -171,12 +171,20 @@ FEMhub.Desktop = function(lab) {
     layout();
 
     this.addLauncher = function(module) {
-        var launcher = new FEMhub.Launcher(module.launcher)
-        //this.launchers.push(launcher);
-        this.launchers[launcher] = module;
+        var launcher = new FEMhub.Launcher({
+            launcherText: module.launcher.text,
+            launcherIcon: module.launcher.icon,
+        });
+
+        this.launchers.push(launcher);
         launcher.render(desktopEl);
-        launcher.el.on('click', function() {
+
+        launcher.on('dblclick', function(obj) {
             module.start();
+        });
+
+        launcher.on('contextmenu', function(obj) {
+            /* pass */
         });
     };
 

@@ -1,0 +1,48 @@
+
+.femhub-launcher-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 96px;
+    height: auto;
+    text-align: center;
+}
+
+.femhub-launcher-link {
+    text-decoration: none;
+    color: #000000;
+    outline: none;
+}
+
+.femhub-launcher-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    background-color: transparent;
+}
+
+.femhub-launcher-text {
+    display: inline;
+    font-size: 14px;
+    padding: 2px;
+}
+
+.femhub-launcher-link:hover .femhub-launcher-icon {
+    opacity: 0.9;
+    -moz-opacity: 0.9;
+    filter: alpha(opacity=90);
+}
+
+.femhub-launcher-link.femhub-highlight .femhub-launcher-text {
+    background-color: #000000;
+    color: #3d71b8;
+}
+
+.femhub-launcher-drag {
+    text-align: center;
+    opacity: 0.4;
+    -moz-opacity: 0.4;
+    filter: alpha(opacity=40);
+    cursor: default !important;
+}
+
