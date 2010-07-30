@@ -16,6 +16,10 @@ FEMhub.Login = Ext.extend(Ext.Window, {
     constructor: function(config) {
         config = config || {};
 
+        this.addEvents({
+            'loginsuccess': true,
+        });
+
         var langs = new Ext.data.ArrayStore({
             fields: ['name', 'code'],
             data: [
@@ -125,7 +129,7 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                     },
                     scope: this,
                 }, '-', {
-                    text: '  Sign In  ',
+                    text: 'Sign In',
                     handler: function() {
                         this.login();
                     },
@@ -137,8 +141,17 @@ FEMhub.Login = Ext.extend(Ext.Window, {
         FEMhub.Login.superclass.constructor.call(this, config);
 
         this.on('show', function() {
-            Ext.getCmp('femhub-login-username').focus();
-        });
+            this.focusUsername();
+        }, this);
+    },
+
+    clearFields: function() {
+        Ext.getCmp('femhub-login-username').setValue('');
+        Ext.getCmp('femhub-login-password').setValue('');
+    },
+
+    focusUsername: function() {
+        Ext.getCmp('femhub-login-username').focus();
     },
 
     login: function() {
@@ -148,13 +161,39 @@ FEMhub.Login = Ext.extend(Ext.Window, {
         var remember = Ext.getCmp('femhub-login-remember');
 
         var params = {
-            username: username,
-            password: password,
-            remember: remember,
+            username: username.getValue(),
+            password: password.getValue(),
         }
 
         FEMhub.RPC.Account.login(params, function(result) {
-            /* pass */
+            if (result.ok === true) {
+                this.fireEvent('loginsuccess');
+                this.close();
+            } else {
+                switch (result.reason) {
+                case 'disabled':
+                    Ext.MessageBox.show({
+                        title: 'Login failed',
+                        msg: 'Your account has been disabled.',
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.WARNING,
+                    });
+                    break;
+                case 'failed':
+                    Ext.MessageBox.show({
+                        title: 'Login failed',
+                        msg: 'You have entered wrong username or password!',
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.ERROR,
+                        fn: function() {
+                            this.clearFields();
+                            this.focusUsername();
+                        },
+                        scope: this,
+                    });
+                    break;
+                }
+            }
         }, this);
     },
 });

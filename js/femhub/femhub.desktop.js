@@ -1,12 +1,21 @@
 
 FEMhub.Desktop = function(lab) {
+    var body = Ext.getBody();
+
+    var desktopEl = body.createChild({
+        tag: 'div',
+        id: 'femhub-desktop',
+    });
+
+    var taskbarEl = body.createChild({
+        tag: 'div',
+        id: 'femhub-taskbar',
+    });
+
     this.taskbar = new FEMhub.TaskBar(lab);
     this.taskbar.render();
     this.xTickSize = this.yTickSize = 1;
     var taskbar = this.taskbar;
-    var desktopEl = Ext.get('femhub-desktop');
-    var taskbarEl = Ext.get('femhub-taskbar');
-    //var shortcuts = Ext.get('x-shortcuts');
     var windows = new Ext.WindowGroup();
     var activeWindow;
 

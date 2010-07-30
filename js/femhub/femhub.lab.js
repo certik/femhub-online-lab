@@ -22,9 +22,28 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     },
 
     initLab: function() {
-        this.desktop = new FEMhub.Desktop(this);
-
         this.init();
+
+        FEMhub.RPC.Account.isAuthenticated({}, function(result) {
+            if (result.auth !== true) {
+                var login = new FEMhub.Login({
+                    listeners: {
+                        loginsuccess: {
+                            fn: this.afterLogin,
+                            scope: this,
+                        },
+                    },
+                });
+
+                login.show();
+            } else {
+                this.afterLogin();
+            }
+        }, this);
+     },
+
+     afterLogin: function() {
+        this.desktop = new FEMhub.Desktop(this);
 
         if (Ext.isArray(this.modules)) {
             for (var i = 0; i < this.modules.length; i++) {
