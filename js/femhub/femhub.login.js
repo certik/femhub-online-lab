@@ -1,6 +1,5 @@
 
 FEMhub.Login = Ext.extend(Ext.Window, {
-
     loginHtml: '<div class="femhub-login-head">The FEMhub Online Laboratory</div>' +
                '<div class="femhub-login-text">' +
                'The goal of the FEMhub online lab is to make scientific computing ' +
@@ -12,6 +11,8 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                'with substantial computing power of the <a href="http://unr.edu/"> ' +
                'University of Nevada, Reno</a>, that the University gives you free ' +
                'of charge.</div>',
+
+               // XXX: add more info link (centered) -> window
 
     constructor: function(config) {
         config = config || {};
@@ -43,54 +44,51 @@ FEMhub.Login = Ext.extend(Ext.Window, {
         });
 
         var login = new Ext.form.FormPanel({
-            bodyStyle: 'padding: 10px',
             labelWidth: 65,
             border: false,
-            items: [
-                {
-                    id: 'femhub-login-username',
-                    fieldLabel: 'Username',
-                    xtype: 'textfield',
-                    spellCheck: false,
-                    width: 150,
-                    listeners: {
-                        specialkey: {
-                            fn: function(obj, evt) {
-                                if (evt.getKey() == evt.ENTER) {
-                                    Ext.getCmp('femhub-login-password').focus();
-                                }
-                            },
-                            scope: this,
+            padding: 10,
+            items: [{
+                id: 'femhub-login-username',
+                fieldLabel: 'Username',
+                xtype: 'textfield',
+                width: 150,
+                listeners: {
+                    specialkey: {
+                        fn: function(obj, evt) {
+                            if (evt.getKey() == evt.ENTER) {
+                                Ext.getCmp('femhub-login-password').focus();
+                            }
                         },
+                        scope: this,
                     },
-                }, {
-                    id: 'femhub-login-password',
-                    fieldLabel: 'Password',
-                    xtype: 'textfield',
-                    inputType: 'password',
-                    width: 150,
-                    listeners: {
-                        specialkey: {
-                            fn: function(obj, evt) {
-                                if (evt.getKey() == evt.ENTER) {
-                                    this.login();
-                                }
-                            },
-                            scope: this,
-                        },
-                    },
-                }, {
-                    id: 'femhub-login-language',
-                    fieldLabel: 'Language',
-                    border: false,
-                    items: combo,
-                    width: 150,
-                }, {
-                    id: 'femhub-login-remember',
-                    xtype: 'checkbox',
-                    boxLabel: 'remember me',
                 },
-            ],
+            }, {
+                id: 'femhub-login-password',
+                fieldLabel: 'Password',
+                xtype: 'textfield',
+                inputType: 'password',
+                width: 150,
+                listeners: {
+                    specialkey: {
+                        fn: function(obj, evt) {
+                            if (evt.getKey() == evt.ENTER) {
+                                this.login();
+                            }
+                        },
+                        scope: this,
+                    },
+                },
+            }, {
+                id: 'femhub-login-language',
+                fieldLabel: 'Language',
+                border: false,
+                items: combo,
+                width: 150,
+            }, {
+                id: 'femhub-login-remember',
+                xtype: 'checkbox',
+                boxLabel: 'remember me',
+            }],
         });
 
         Ext.apply(config, {
@@ -113,36 +111,34 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 },
                 login,
             ],
-            buttons: [
-                {
-                    text: 'Create account',
-                    minWidth: 110,
-                    handler: function() {
-                        /* pass */
-                    },
-                    scope: this,
-                }, {
-                    text: 'Forgot password?',
-                    minWidth: 110,
-                    handler: function() {
-                        /* pass */
-                    },
-                    scope: this,
-                }, '-', {
-                    text: 'Sign In',
-                    handler: function() {
-                        this.login();
-                    },
-                    scope: this,
-                }
-            ],
+            buttons: [{
+                text: 'Create account',
+                minWidth: 110,
+                handler: function() {
+                    var win = new FEMhub.CreateAccount(this);
+                    this.hide();
+                    win.show();
+                },
+                scope: this,
+            }, {
+                text: 'Forgot password?',
+                minWidth: 110,
+                handler: function() {
+                    var win = new FEMhub.RemindPassword(this);
+                    this.hide();
+                    win.show();
+                },
+                scope: this,
+            }, '-', {
+                text: 'Sign In',
+                handler: function() {
+                    this.login();
+                },
+                scope: this,
+            }],
         });
 
         FEMhub.Login.superclass.constructor.call(this, config);
-
-        this.on('show', function() {
-            this.focusUsername();
-        }, this);
     },
 
     clearFields: function() {
@@ -167,8 +163,8 @@ FEMhub.Login = Ext.extend(Ext.Window, {
 
         FEMhub.RPC.Account.login(params, function(result) {
             if (result.ok === true) {
-                this.fireEvent('loginsuccess');
                 this.close();
+                this.fireEvent('loginsuccess');
             } else {
                 switch (result.reason) {
                 case 'disabled':
@@ -195,6 +191,150 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 }
             }
         }, this);
+    },
+});
+
+FEMhub.CreateAccount = Ext.extend(Ext.Window, {
+    constructor: function(login, config) {
+        this.login = login;
+        config = config || {};
+
+        Ext.apply(config, {
+            title: 'Create accout',
+            bodyStyle: 'background-color: white',
+            padding: 10,
+            layout: 'form',
+            layoutConfig: {
+                labelWidth: 80,
+            },
+            closable: false,
+            resizable: false,
+            items: [{
+                id: 'femhub-create-username',
+                fieldLabel: 'Username',
+                xtype: 'textfield',
+                width: 150,
+                listeners: {
+                    specialkey: {
+                        fn: function(obj, evt) {
+                            if (evt.getKey() == evt.ENTER) {
+                                Ext.getCmp('femhub-create-password-1').focus();
+                            }
+                        },
+                        scope: this,
+                    },
+                },
+            }, {
+                id: 'femhub-create-password-1',
+                fieldLabel: 'Create password',
+                xtype: 'textfield',
+                width: 150,
+            }, {
+                id: 'femhub-create-password-2',
+                fieldLabel: 'Re-type password',
+                xtype: 'textfield',
+                width: 150,
+            }],
+            buttons: [{
+                text: 'OK',
+                handler: function() {
+                    this.createAccount();
+                    this.closeAndReturn();
+                },
+                scope: this,
+            }, {
+                text: 'Cancel',
+                handler: function() {
+                    this.closeAndReturn();
+                },
+                scope: this,
+            }],
+        });
+
+        FEMhub.CreateAccount.superclass.constructor.call(this, config);
+    },
+
+    createAccount: function() {
+        var params = {};
+
+        FEMhub.RPC.Account.createAccount(params, function(result) {
+            /* pass */
+        });
+    },
+
+    closeAndReturn: function() {
+        this.close();
+        this.login.show();
+    },
+});
+
+FEMhub.RemindPassword = Ext.extend(Ext.Window, {
+    constructor: function(login, config) {
+        this.login = login;
+        config = config || {};
+
+        Ext.apply(config, {
+            title: 'Remind password',
+            bodyStyle: 'background-color: white',
+            padding: 10,
+            layout: 'form',
+            layoutConfig: {
+                labelWidth: 80,
+            },
+            closable: false,
+            resizable: false,
+            buttons: [{
+                text: 'OK',
+                handler: function() {
+                    this.remindPassword();
+                    this.closeAndReturn();
+                },
+                scope: this,
+            }, {
+                text: 'Cancel',
+                handler: function() {
+                    this.closeAndReturn();
+                },
+                scope: this,
+            }],
+        });
+
+        FEMhub.RemindPassword.superclass.constructor.call(this, config);
+    },
+
+    remindPassword: function() {
+        var params = {};
+
+        FEMhub.RPC.Account.remindPassword(params, function(result) {
+            /* pass */
+        });
+    },
+
+    closeAndReturn: function() {
+        this.close();
+        this.login.show();
+    },
+});
+
+FEMhub.Modules.Logout = Ext.extend(FEMhub.Module, {
+    launcher: {
+        text: 'Logout',
+        icon: 'femhub-logout-launcher-icon',
+    },
+    start: function() {
+        Ext.MessageBox.show({
+            title: 'Logout',
+            msg: 'Do you really want to logout from FEMhub Online Lab?',
+            buttons: Ext.MessageBox.YESNO,
+            icon: Ext.MessageBox.QUESTION,
+            fn: function(button) {
+                if (button === 'yes') {
+                    FEMhub.RPC.Account.logout({}, function() {
+                        FEMhub.lab.restartLab();
+                    }, this);
+                }
+            },
+        });
     },
 });
 

@@ -204,5 +204,10 @@ FEMhub.Desktop = function(lab) {
     this.getTaskBarEl = function() {
         return Ext.get('femhub-taskbar');
     };
+
+    this.destroy = function() {
+        this.taskbar.destroy();
+        this.getDesktopEl().remove();
+    };
 };
 

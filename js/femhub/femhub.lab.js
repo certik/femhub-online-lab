@@ -24,25 +24,39 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     initLab: function() {
         this.init();
 
+        Ext.EventManager.on(window, 'beforeunload', this.onUnload, this);
+
+        this.fireEvent('ready', this);
+        this.isReady = true;
+
         FEMhub.RPC.Account.isAuthenticated({}, function(result) {
             if (result.auth !== true) {
-                var login = new FEMhub.Login({
-                    listeners: {
-                        loginsuccess: {
-                            fn: this.afterLogin,
-                            scope: this,
-                        },
-                    },
-                });
-
-                login.show();
+                this.startLogin();
             } else {
                 this.afterLogin();
             }
         }, this);
-     },
+    },
 
-     afterLogin: function() {
+    restartLab: function() {
+        this.desktop.destroy();
+        this.startLogin();
+    },
+
+    startLogin: function() {
+        var login = new FEMhub.Login({
+            listeners: {
+                loginsuccess: {
+                    fn: this.afterLogin,
+                    scope: this,
+                },
+            },
+        });
+
+        login.show();
+    },
+
+    afterLogin: function() {
         this.desktop = new FEMhub.Desktop(this);
 
         if (Ext.isArray(this.modules)) {
@@ -51,11 +65,6 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
                 this.desktop.addLauncher(this.modules[i]);
             }
         }
-
-        Ext.EventManager.on(window, 'beforeunload', this.onUnload, this);
-
-        this.fireEvent('ready', this);
-        this.isReady = true;
     },
 
     onReady: function(handler, scope) {
