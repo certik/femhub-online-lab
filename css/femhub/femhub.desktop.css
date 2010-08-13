@@ -212,6 +212,14 @@ body {
     background-image: url(/static/img/femhub/icons/64x64/folder.png);
 }
 
+.femhub-console-icon {
+    background-image: url(/static/img/femhub/icons/16x16/console.png);
+}
+
+.femhub-console-launcher-icon {
+    background-image: url(/static/img/femhub/icons/64x64/console.png);
+}
+
 .femhub-logout-launcher-icon {
     background-image: url(/static/img/femhub/icons/64x64/logout.png);
 }

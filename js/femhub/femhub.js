@@ -5,6 +5,7 @@ FEMhub = {
     version: [0, 0, 1],
     json: "/femhub/json/",
     icons: "/static/img/femhub/icons/",
+    logs: [],
 };
 
 FEMhub.init = function(ready, scope) {
@@ -73,7 +74,11 @@ FEMhub.call = function(method, params, handler, scope) {
 }
 
 FEMhub.log = function(text) {
-    Ext.getBody().createChild({tag: 'h1', html: text});
+    FEMhub.logs.push([text, new Date()]);
+}
+
+FEMhub.clearLogs = function() {
+    FEMhub.logs = [];
 }
 
 FEMhub.unique = function() {
