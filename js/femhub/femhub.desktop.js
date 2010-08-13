@@ -204,7 +204,7 @@ FEMhub.Desktop = function(lab) {
         var height = desktop.getHeight();
 
         var x = 0;
-        var y = 0;
+        var y = 10;
 
         Ext.each(this.launchers, function(launcher) {
             var el = launcher.el;
@@ -214,7 +214,7 @@ FEMhub.Desktop = function(lab) {
 
             if (y + h > height) {
                 x += 96;
-                y = 0;
+                y = 10;
             }
 
             pos.left = x + 'px';
@@ -222,7 +222,7 @@ FEMhub.Desktop = function(lab) {
 
             el.setPositioning(pos);
 
-            y += h;
+            y += h + 10;
         });
     },
 

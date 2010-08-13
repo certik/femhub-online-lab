@@ -212,6 +212,10 @@ body {
     background-image: url(/static/img/femhub/icons/64x64/folder.png);
 }
 
+.femhub-logout-launcher-icon {
+    background-image: url(/static/img/femhub/icons/64x64/logout.png);
+}
+
 .femhub-login-body {
     padding-top: 82px;
     background: #ffffff url(/static/img/femhub/femhub.jpg) no-repeat left top;
