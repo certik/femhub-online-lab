@@ -62,16 +62,16 @@ FEMhub.Launcher = Ext.extend(Ext.Component, {
         });
     },
 
-    handleClick: function() {
-        this.fireEvent('click', this);
+    handleClick: function(evt) {
+        this.fireEvent('click', this, evt);
     },
 
-    handleDblClick: function() {
-        this.fireEvent('dblclick', this);
+    handleDblClick: function(evt) {
+        this.fireEvent('dblclick', this, evt);
     },
 
-    handleContextMenu: function() {
-        this.fireEvent('contextmenu', this);
+    handleContextMenu: function(evt) {
+        this.fireEvent('contextmenu', this, evt);
     },
 });
 

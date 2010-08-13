@@ -188,12 +188,23 @@ FEMhub.Desktop = function(lab) {
         this.launchers.push(launcher);
         launcher.render(desktopEl);
 
-        launcher.on('dblclick', function(obj) {
+        launcher.on('dblclick', function(obj, evt) {
             module.start();
         });
 
-        launcher.on('contextmenu', function(obj) {
-            /* pass */
+        launcher.on('contextmenu', function(obj, evt) {
+            var menu = new Ext.menu.Menu({
+                items: [{
+                    text: 'Start',
+                    handler: function() {
+                        module.start();
+                    },
+                    scope: this,
+                }],
+            });
+
+            menu.showAt(evt.getXY());
+            evt.stopEvent();
         });
     };
 
