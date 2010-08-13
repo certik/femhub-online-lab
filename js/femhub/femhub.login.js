@@ -163,8 +163,8 @@ FEMhub.Login = Ext.extend(Ext.Window, {
 
         FEMhub.RPC.Account.login(params, function(result) {
             if (result.ok === true) {
-                this.close();
                 this.fireEvent('loginsuccess');
+                this.close();
             } else {
                 switch (result.reason) {
                 case 'disabled':

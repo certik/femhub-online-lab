@@ -61,8 +61,8 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
 
         if (Ext.isArray(this.modules)) {
             for (var i = 0; i < this.modules.length; i++) {
-                this.modules[i] = new this.modules[i]({ lab: this });
-                this.desktop.addLauncher(this.modules[i]);
+                var module = new this.modules[i]({ lab: this });
+                this.desktop.addLauncher(module);
             }
         }
     },
