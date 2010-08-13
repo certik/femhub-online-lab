@@ -197,6 +197,35 @@ FEMhub.Desktop = function(lab) {
         });
     };
 
+    this.arrangeLaunchers = function() {
+        var len = this.launchers.length;
+
+        var desktop = this.getDesktopEl();
+        var height = desktop.getHeight();
+
+        var x = 0;
+        var y = 0;
+
+        Ext.each(this.launchers, function(launcher) {
+            var el = launcher.el;
+
+            var pos = el.getPositioning();
+            var h = el.getHeight();
+
+            if (y + h > height) {
+                x += 96;
+                y = 0;
+            }
+
+            pos.left = x + 'px';
+            pos.top = y + 'px';
+
+            el.setPositioning(pos);
+
+            y += h;
+        });
+    },
+
     this.getDesktopEl = function() {
         return Ext.get('femhub-desktop');
     };
