@@ -211,33 +211,35 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             this.openNotebook(record.id, record.data.title);
         }, this);
 
-        this.notebooksGrid.on('cellcontextmenu', function(grid, row, col, evt) {
-            var context = new Ext.menu.Menu();
-
-            context.add([
-                new Ext.menu.Item({
+        this.notebooksGrid.on('rowcontextmenu', function(grid, row, evt) {
+            var context = new Ext.menu.Menu({
+                items: [{
+                    text: 'Open',
+                    handler: function() {
+                        var record = grid.getStore().getAt(row);
+                        this.openNotebook(record.id, record.data.title);
+                    },
+                    scope: this,
+                }, '-', {
                     text: 'Share',
-                    handler: function(node) {
+                    handler: function() {
                         FEMhub.log("share");
                     },
                     scope: this,
-                }),
-                new Ext.menu.Separator(),
-                new Ext.menu.Item({
+                }, {
                     text: 'Rename',
-                    handler: function(node) {
+                    handler: function() {
                         FEMhub.log("rename");
                     },
                     scope: this,
-                }),
-                new Ext.menu.Item({
+                }, {
                     text: 'Delete',
-                    handler: function(node) {
+                    handler: function() {
                         FEMhub.log("delete");
                     },
                     scope: this,
-                }),
-            ]);
+                }],
+            });
 
             context.showAt(evt.getXY());
             evt.stopEvent();
