@@ -204,26 +204,6 @@ body {
     background-position: -18px 0;
 }
 
-.femhub-bookshelf-icon {
-    background-image: url(/static/img/femhub/icons/folder.png);
-}
-
-.femhub-bookshelf-launcher-icon {
-    background-image: url(/static/img/femhub/icons/64x64/folder.png);
-}
-
-.femhub-console-icon {
-    background-image: url(/static/img/femhub/icons/16x16/console.png);
-}
-
-.femhub-console-launcher-icon {
-    background-image: url(/static/img/femhub/icons/64x64/console.png);
-}
-
-.femhub-logout-launcher-icon {
-    background-image: url(/static/img/femhub/icons/64x64/logout.png);
-}
-
 .femhub-login-body {
     padding-top: 82px;
     background: #ffffff url(/static/img/femhub/femhub.jpg) no-repeat left top;
