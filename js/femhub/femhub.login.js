@@ -25,8 +25,8 @@ FEMhub.Login = Ext.extend(Ext.Window, {
             fields: ['name', 'code'],
             data: [
                 ['English', 'en'],
-                ['Polski', 'pl'],
-                ['Čeština', 'cz'],
+                //['Polski', 'pl'],
+                //['Čeština', 'cz'],
             ],
         });
 
