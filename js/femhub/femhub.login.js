@@ -51,6 +51,7 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 id: 'femhub-login-username',
                 fieldLabel: 'Username',
                 xtype: 'textfield',
+                maxLength: 30,
                 width: 150,
                 listeners: {
                     specialkey: {
@@ -67,6 +68,7 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 fieldLabel: 'Password',
                 xtype: 'textfield',
                 inputType: 'password',
+                maxLength: 128,
                 width: 150,
                 listeners: {
                     specialkey: {
@@ -116,7 +118,6 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 minWidth: 110,
                 handler: function() {
                     var win = new FEMhub.CreateAccount(this);
-                    this.hide();
                     win.show();
                 },
                 scope: this,
@@ -125,7 +126,6 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 minWidth: 110,
                 handler: function() {
                     var win = new FEMhub.RemindPassword(this);
-                    this.hide();
                     win.show();
                 },
                 scope: this,
@@ -141,6 +141,10 @@ FEMhub.Login = Ext.extend(Ext.Window, {
         FEMhub.Login.superclass.constructor.call(this, config);
     },
 
+    onShow: function() {
+        this.focusUsername();
+    },
+
     clearFields: function() {
         Ext.getCmp('femhub-login-username').setValue('');
         Ext.getCmp('femhub-login-password').setValue('');
@@ -148,6 +152,10 @@ FEMhub.Login = Ext.extend(Ext.Window, {
 
     focusUsername: function() {
         Ext.getCmp('femhub-login-username').focus();
+    },
+
+    setUsername: function(username) {
+        Ext.getCmp('femhub-login-username').setValue(username);
     },
 
     login: function() {
@@ -203,43 +211,92 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
             title: 'Create accout',
             bodyStyle: 'background-color: white',
             padding: 10,
+            width: 390,
+            modal: true,
             layout: 'form',
-            layoutConfig: {
-                labelWidth: 80,
-            },
+            labelWidth: 150,
             closable: false,
             resizable: false,
             items: [{
                 id: 'femhub-create-username',
                 fieldLabel: 'Username',
                 xtype: 'textfield',
-                width: 150,
+                vtype: 'alphanum',
+                allowBlank: false,
+                maxLength: 30,
+                width: 200,
                 listeners: {
                     specialkey: {
                         fn: function(obj, evt) {
                             if (evt.getKey() == evt.ENTER) {
-                                Ext.getCmp('femhub-create-password-1').focus();
+                                Ext.getCmp('femhub-create-email').focus();
                             }
                         },
                         scope: this,
                     },
                 },
             }, {
-                id: 'femhub-create-password-1',
-                fieldLabel: 'Create password',
+                id: 'femhub-create-email',
+                fieldLabel: 'E-mail',
                 xtype: 'textfield',
-                width: 150,
+                vtype: 'email',
+                allowBlank: false,
+                maxLength: 70,
+                width: 200,
+                listeners: {
+                    specialkey: {
+                        fn: function(obj, evt) {
+                            if (evt.getKey() == evt.ENTER) {
+                                Ext.getCmp('femhub-create-password').focus();
+                            }
+                        },
+                        scope: this,
+                    },
+                },
             }, {
-                id: 'femhub-create-password-2',
+                id: 'femhub-create-password',
+                fieldLabel: 'Choose password',
+                xtype: 'textfield',
+                vtype: 'password',
+                inputType: 'password',
+                allowBlank: false,
+                maxLength: 128,
+                width: 200,
+                listeners: {
+                    specialkey: {
+                        fn: function(obj, evt) {
+                            if (evt.getKey() == evt.ENTER) {
+                                Ext.getCmp('femhub-create-password-retype').focus();
+                            }
+                        },
+                        scope: this,
+                    },
+                },
+            }, {
+                id: 'femhub-create-password-retype',
                 fieldLabel: 'Re-type password',
                 xtype: 'textfield',
-                width: 150,
+                vtype: 'password',
+                inputType: 'password',
+                allowBlank: false,
+                maxLength: 128,
+                initialPasswordField: 'femhub-create-password',
+                width: 200,
+                listeners: {
+                    specialkey: {
+                        fn: function(obj, evt) {
+                            if (evt.getKey() == evt.ENTER) {
+                                this.createAccount();
+                            }
+                        },
+                        scope: this,
+                    },
+                },
             }],
             buttons: [{
                 text: 'OK',
                 handler: function() {
                     this.createAccount();
-                    this.closeAndReturn();
                 },
                 scope: this,
             }, {
@@ -254,17 +311,55 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
         FEMhub.CreateAccount.superclass.constructor.call(this, config);
     },
 
+    onShow: function() {
+        this.focusUsername();
+    },
+
+    clearFields: function() {
+        Ext.getCmp('femhub-create-username').setValue('');
+        Ext.getCmp('femhub-create-email').setValue('');
+        Ext.getCmp('femhub-create-password').setValue('');
+        Ext.getCmp('femhub-create-password-retype').setValue('');
+    },
+
+    focusUsername: function() {
+        Ext.getCmp('femhub-create-username').focus();
+    },
+
     createAccount: function() {
-        var params = {};
+        var username = Ext.getCmp('femhub-create-username');
+        var email = Ext.getCmp('femhub-create-email');
+        var password = Ext.getCmp('femhub-create-password');
+
+        var params = {
+            username: username.getValue(),
+            email: email.getValue(),
+            password: password.getValue(),
+        }
 
         FEMhub.RPC.Account.createAccount(params, function(result) {
-            /* pass */
-        });
+            if (result.ok === true) {
+                this.login.setUsername(params.username);
+                this.closeAndReturn();
+            } else {
+                if (result.reason === 'exists') {
+                    Ext.MessageBox.show({
+                        title: 'Account creation failed',
+                        msg: "'" + params.username + "' is already in use. Choose different username.",
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.ERROR,
+                    });
+                } else {
+                    /* should not happen */
+                }
+
+                this.clearFields();
+            }
+        }, this);
     },
 
     closeAndReturn: function() {
         this.close();
-        this.login.show();
     },
 });
 
@@ -277,17 +372,35 @@ FEMhub.RemindPassword = Ext.extend(Ext.Window, {
             title: 'Remind password',
             bodyStyle: 'background-color: white',
             padding: 10,
+            width: 340,
+            modal: true,
             layout: 'form',
-            layoutConfig: {
-                labelWidth: 80,
-            },
+            labelWidth: 100,
             closable: false,
             resizable: false,
+            items: [{
+                id: 'femhub-remind-username',
+                fieldLabel: 'Username',
+                xtype: 'textfield',
+                vtype: 'alphanum',
+                maxLength: 30,
+                allowBlank: false,
+                width: 200,
+                listeners: {
+                    specialkey: {
+                        fn: function(obj, evt) {
+                            if (evt.getKey() == evt.ENTER) {
+                                this.remindPassword();
+                            }
+                        },
+                        scope: this,
+                    },
+                },
+            }],
             buttons: [{
                 text: 'OK',
                 handler: function() {
                     this.remindPassword();
-                    this.closeAndReturn();
                 },
                 scope: this,
             }, {
@@ -302,17 +415,59 @@ FEMhub.RemindPassword = Ext.extend(Ext.Window, {
         FEMhub.RemindPassword.superclass.constructor.call(this, config);
     },
 
+    onShow: function() {
+        this.focusUsername();
+    },
+
+    clearFields: function() {
+        Ext.getCmp('femhub-remind-username').setValue('');
+    },
+
+    focusUsername: function() {
+        Ext.getCmp('femhub-remind-username').focus();
+    },
+
     remindPassword: function() {
-        var params = {};
+        var username = Ext.getCmp('femhub-remind-username');
+
+        var params = {
+            username: username.getValue(),
+        }
 
         FEMhub.RPC.Account.remindPassword(params, function(result) {
-            /* pass */
-        });
+            if (result.ok === true) {
+                Ext.MessageBox.show({
+                    title: 'Remind password',
+                    msg: "New password was sent to your E-mail account.",
+                    buttons: Ext.MessageBox.OK,
+                    icon: Ext.MessageBox.INFO,
+                    fn: function(button) {
+                        if (button === 'ok') {
+                            this.login.setUsername(params.username);
+                            this.closeAndReturn();
+                        }
+                    },
+                    scope: this,
+                });
+            } else {
+                if (result.reason === 'does-not-exist') {
+                    Ext.MessageBox.show({
+                        title: 'Remind password',
+                        msg: "'" + params.username + "' account does not exists. Choose a correct one.",
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.ERROR,
+                    });
+                } else {
+                    /* should not happen */
+                }
+
+                this.clearFields();
+            }
+        }, this);
     },
 
     closeAndReturn: function() {
         this.close();
-        this.login.show();
     },
 });
 
