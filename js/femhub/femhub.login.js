@@ -168,6 +168,7 @@ FEMhub.Login = Ext.extend(Ext.Window, {
         var params = {
             username: username.getValue(),
             password: password.getValue(),
+            remember: remember.getValue(),
         }
 
         FEMhub.RPC.Account.login(params, function(result) {
