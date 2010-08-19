@@ -251,13 +251,15 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             var notebook = this.openNotebook(data.id, 'untitled');
 
             if (Ext.isDefined(handler)) {
-                handler.apply(scope || this, [notebook]);
+                handler.call(scope || this, notebook);
             }
         }, this);
     },
 
     openNotebook: function(id, title) {
-        var notebook = new FEMhub.Notebook({
+        var desktop = FEMhub.lab.getDesktop();
+
+        var notebook = desktop.createWindow(FEMhub.Notebook, {
             id: id,
             name: title,
             width: 600,

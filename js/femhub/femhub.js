@@ -8,6 +8,8 @@ FEMhub = {
     logs: [],
 };
 
+Ext.WindowMgr.zseed = 10000;
+
 FEMhub.init = function(ready, scope) {
     var namespace = FEMhub;
 
