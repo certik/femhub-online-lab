@@ -51,16 +51,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                     icon: FEMhub.icons + 'page_attach.png',
                     text: 'Import Notebook',
                     handler: function() {
-                        Ext.MessageBox.prompt(
-                            'Import Notebook',
-                            'Please enter plain text:',
-                            function(button, text) {
-                                if (button == 'ok') {
-                                    this.newNotebook(this.defaultEngine, function(notebook) {
-                                        notebook.importCells(text);
-                                    });
-                                }
-                            }, this, true);
+                        this.importNotebook();
                     },
                     scope: this,
                 },
@@ -204,36 +195,31 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             ddGroup: 'folders',
         });
 
-        this.notebooksGrid.on('celldblclick', function(grid, row, col, evt) {
+        this.notebooksGrid.on('rowdblclick', function(grid, row, evt) {
             var record = grid.getStore().getAt(row);
             this.openNotebook(record.id, record.data.title);
         }, this);
 
         this.notebooksGrid.on('rowcontextmenu', function(grid, row, evt) {
+            var record = grid.getStore().getAt(row);
+
             var context = new Ext.menu.Menu({
                 items: [{
                     text: 'Open',
                     handler: function() {
-                        var record = grid.getStore().getAt(row);
                         this.openNotebook(record.id, record.data.title);
                     },
                     scope: this,
                 }, '-', {
-                    text: 'Share',
-                    handler: function() {
-                        FEMhub.log("share");
-                    },
-                    scope: this,
-                }, {
                     text: 'Rename',
                     handler: function() {
-                        FEMhub.log("rename");
+                        this.renameNotebook(record);
                     },
                     scope: this,
                 }, {
                     text: 'Delete',
                     handler: function() {
-                        FEMhub.log("delete");
+                        this.deleteNotebook(record);
                     },
                     scope: this,
                 }],
@@ -273,17 +259,20 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
             this.root.appendChild(this.rootNode);
             recFillFoldersTree(this.rootNode);
+
+            this.foldersTree.getSelectionModel().select(this.rootNode);
+            this.getNotebooks(this.rootNode);
         }, this);
     },
 
-    isValidFolderName: function(name) {
+    isValidName: function(name) {
         return /^[a-z0-9_][a-z0-9_-]*/i.test(name) && name.length < 100;
     },
 
     addFolder: function(node) {
         Ext.MessageBox.prompt('Add folder', 'Enter folder name:', function(button, title) {
             if (button === 'ok') {
-                if (this.isValidFolderName(title) === false) {
+                if (this.isValidName(title) === false) {
                     Ext.MessageBox.show({
                         title: 'Add folder',
                         msg: "Invalid folder name.",
@@ -319,7 +308,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         } else {
             Ext.MessageBox.prompt('Rename folder', 'Enter new folder name:', function(button, title) {
                 if (button === 'ok') {
-                    if (this.isValidFolderName(title) === false) {
+                    if (this.isValidName(title) === false) {
                         Ext.MessageBox.show({
                             title: 'Rename folder',
                             msg: "Invalid folder name.",
@@ -368,6 +357,51 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 scope: this,
             });
         }
+    },
+
+    renameNotebook: function(record) {
+        Ext.MessageBox.prompt('Rename notebook', 'Enter new notebook name:', function(button, title) {
+            if (button === 'ok') {
+                if (this.isValidName(title) === false) {
+                    Ext.MessageBox.show({
+                        title: 'Rename notebook',
+                        msg: "Invalid notebook name.",
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.ERROR,
+                    });
+                } else {
+                    FEMhub.RPC.Notebooks.renameNotebook({guid: record.id, title: title}, function(result) {
+                        if (result.ok === true) {
+                            record.set('title', title);
+                            record.commit();
+                        } else {
+                            FEMhub.log("Can't rename notebook");
+                        }
+                    });
+                }
+            }
+        }, this);
+    },
+
+    deleteNotebook: function(record) {
+        Ext.MessageBox.show({
+            title: 'Delete notebook',
+            msg: 'Do you really want to delete selected notebook and all its contents?',
+            buttons: Ext.MessageBox.YESNO,
+            icon: Ext.MessageBox.QUESTION,
+            fn: function(button) {
+                if (button === 'yes') {
+                    FEMhub.RPC.Notebooks.deleteNotebook({guid: record.id}, function(result) {
+                        if (result.ok === true) {
+                            this.notebooksGrid.getStore().remove(record);
+                        } else {
+                            FEMhub.log("Can't delete notebook");
+                        }
+                    }, this);
+                }
+            },
+            scope: this,
+        });
     },
 
     getNotebooks: function(node) {
@@ -425,6 +459,19 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
         notebook.show();
         return notebook;
+    },
+
+    importNotebook: function() {
+        Ext.MessageBox.prompt(
+            'Import Notebook',
+            'Please enter plain text:',
+            function(button, text) {
+                if (button === 'ok') {
+                    this.newNotebook(this.defaultEngine, function(notebook) {
+                        notebook.importCells(text);
+                    });
+                }
+            }, this, true);
     },
 });
 
