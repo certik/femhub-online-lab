@@ -294,7 +294,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     },
 
     autosize: function() {
-        var width = this.el_label.getWidth() + 'px';
+        var width = this.el_label.getTextWidth(this.el_label.dom.innerHTML.replace(/ /g, 'x')) + 'px';
         this.el_content.applyStyles({'margin-left': width});
     },
 
