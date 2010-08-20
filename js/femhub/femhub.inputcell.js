@@ -454,6 +454,12 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 cell.autosize();
                 cell.showLabel();
                 cell.saved = false;
+            } else {
+                var cell = this.getOutputCell();
+
+                if (cell !== null) {
+                    cell.destroy();
+                }
             }
 
             if (config.keepfocus === true) {
