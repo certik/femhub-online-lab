@@ -98,7 +98,52 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             rootVisible: false,
             animate: true,
             enableDD: true,
+            ddGroup: 'folders',
             containerScroll: true,
+            listeners: {
+                nodedragover: {
+                    fn: function(evt) {
+                        return Ext.isDefined(evt.source.tree) || (evt.point === 'append');
+                    },
+                    scope: this,
+                },
+                beforenodedrop: {
+                    fn: function(evt) {
+                        if (Ext.isDefined(evt.source.tree)) {
+                            FEMhub.RPC.Folders.moveFolder({
+                                parent_guid: evt.target.id,
+                                folder_guid: evt.dropNode.id,
+                            });
+                        } else {
+                            var selections = evt.data.selections;
+
+                            if (Ext.isArray(selections)) {
+                                var guids = [];
+
+                                for (var i = 0; i < selections.length; i++) {
+                                    guids.push(selections[i].id);
+                                }
+
+                                FEMhub.RPC.Notebooks.moveNotebooks({
+                                    folder_guid: evt.target.id,
+                                    notebooks_guid: guids,
+                                }, function(result) {
+                                    if (result.ok === true) {
+                                        var store = this.notebooksGrid.getStore();
+
+                                        for (var i = 0; i < guids.length; i++) {
+                                            store.remove(store.getById(guids[i]));
+                                        }
+                                    } else {
+                                        FEMhub.log("Couldn't move notebooks");
+                                    }
+                                }, this);
+                            }
+                        }
+                    },
+                    scope: this,
+                },
+            },
         });
 
         this.foldersTree.on('contextmenu', function(node, evt) {
@@ -129,32 +174,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         }, this);
 
         this.foldersTree.on('click', function(node) {
-            if (node.id == this.rootNode.id) {
-                var id = 'root'; // XXX: hack
-            } else {
-                var id = node.id;
-            }
-
-            Ext.Ajax.request({
-                url: '/bookshelf/load?location=' + id + '&order=title&sort=asc',
-                method: "GET",
-                success: function(result, request) {
-                    var result = Ext.decode(result.responseText);
-                    this.notebooksGrid.getStore().removeAll();
-
-                    Ext.each(result, function(notebook) {
-                        var rec = Ext.data.Record.create(['title', 'engine', 'date']);
-
-                        this.notebooksGrid.getStore().add(new rec({
-                            title: notebook[1],
-                            engine: notebook[2],
-                            date: notebook[3],
-                        }, notebook[0]));
-                    }, this);
-                },
-                failure: Ext.emptyFn,
-                scope: this,
-            });
+            this.getNotebooks(node);
         }, this);
 
         this.fillFoldersTree();
@@ -167,19 +187,21 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'title' },
                     { name: 'engine' },
-                    { name: 'date', type: 'date' },
+                    { name: 'datetime', type: 'date' },
                 ]),
             }),
             cm: new Ext.grid.ColumnModel([
                 new Ext.grid.RowNumberer(),
                 { header: "Title", width: 200, sortable: true, dataIndex: 'title'},
                 { header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
-                { header: "Date", width: 100, sortable: true, dataIndex: 'date'},
+                { header: "Date", width: 100, sortable: true, dataIndex: 'datetime'},
             ]),
             viewConfig: {
                 forceFit: true,
             },
             region: 'center',
+            enableDragDrop: true,
+            ddGroup: 'folders',
         });
 
         this.notebooksGrid.on('celldblclick', function(grid, row, col, evt) {
@@ -220,30 +242,6 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             context.showAt(evt.getXY());
             evt.stopEvent();
         }, this);
-    },
-
-    newNotebook: function(engine, handler, scope) {
-        FEMhub.RPC.newNotebook({ engine_id: engine }, function(data) {
-            var notebook = this.openNotebook(data.id, 'untitled');
-
-            if (Ext.isDefined(handler)) {
-                handler.call(scope || this, notebook);
-            }
-        }, this);
-    },
-
-    openNotebook: function(id, title) {
-        var desktop = FEMhub.lab.getDesktop();
-
-        var notebook = desktop.createWindow(FEMhub.Notebook, {
-            id: id,
-            name: title,
-            width: 600,
-            height: 400,
-        });
-
-        notebook.show();
-        return notebook;
     },
 
     isRootNode: function(node) {
@@ -370,6 +368,63 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 scope: this,
             });
         }
+    },
+
+    getNotebooks: function(node) {
+        FEMhub.RPC.Notebooks.getNotebooks({ guid: node.id }, function(result) {
+            if (result.ok === true) {
+                var store = this.notebooksGrid.getStore();
+                store.removeAll();
+
+                var record = Ext.data.Record.create([
+                    'title', 'engine', 'datetime'
+                ]);
+
+                Ext.each(result.notebooks, function(notebook) {
+                    store.add(new record({
+                        title: notebook.title,
+                        engine: notebook.engine,
+                        datetime: notebook.datetime,
+                    }, notebook.guid));
+                }, this);
+            } else {
+                FEMhub.log("Failed to get notebooks");
+            }
+        }, this);
+    },
+
+    newNotebook: function(engine, handler, scope) {
+        var model = this.foldersTree.getSelectionModel();
+
+        var node = model.getSelectedNode() || this.rootNode;
+        var params = { engine_guid: engine, folder_guid: node.id };
+
+        FEMhub.RPC.Notebooks.addNotebook(params, function(result) {
+            if (result.ok === true) {
+                var notebook = this.openNotebook(result.guid);
+
+                if (Ext.isDefined(handler)) {
+                    handler.call(scope || this, notebook);
+                }
+            } else {
+                FEMhub.log("Failed to add new notebook");
+            }
+        }, this);
+    },
+
+    openNotebook: function(id, title) {
+        var desktop = FEMhub.lab.getDesktop();
+        var title = title || 'untitled';
+
+        var notebook = desktop.createWindow(FEMhub.Notebook, {
+            id: id,
+            name: title,
+            width: 600,
+            height: 400,
+        });
+
+        notebook.show();
+        return notebook;
     },
 });
 

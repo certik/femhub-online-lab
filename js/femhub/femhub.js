@@ -63,11 +63,13 @@ FEMhub.call = function(method, params, handler, scope) {
         params: Ext.encode({
             jsonrpc: "2.0",
             method: method,
-            params: params,
+            params: params || {},
             id: 0,
         }),
         success: function(result, request) {
-            handler.call(scope || this, Ext.decode(result.responseText).result);
+            if (Ext.isDefined(handler)) {
+                handler.call(scope || this, Ext.decode(result.responseText).result);
+            }
         },
         failure: function(result, request) {
             FEMhub.log(Ext.decode(result.responseText).error.message);
