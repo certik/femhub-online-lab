@@ -41,7 +41,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                     icon: FEMhub.icons + 'page_add.png',
                     text: 'New Notebook',
                     handler: function() {
-                        this.newNotebook(this.defaultEngine);
+                        this.newNotebook();
                     },
                     menu: this.enginesMenu,
                     scope: this,
@@ -140,6 +140,13 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         this.foldersTree.on('contextmenu', function(node, evt) {
             var context = new Ext.menu.Menu({
                 items: [{
+                    text: 'New notebook',
+                    handler: function() {
+                        this.addNotebookAt(node);
+                    },
+                    scope: this,
+                }, {
+
                     text: 'New folder',
                     handler: function() {
                         this.addFolder(node);
@@ -427,10 +434,16 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         }, this);
     },
 
-    newNotebook: function(engine, handler, scope) {
+    addNotebookAt: function(node, engine, handler, scope) {
+        return this.newNotebook(engine, handler, scope, node);
+    },
+
+    newNotebook: function(engine, handler, scope, node) {
         var model = this.foldersTree.getSelectionModel();
 
-        var node = model.getSelectedNode() || this.rootNode;
+        node = node || model.getSelectedNode() || this.rootNode;
+        engine = engine || this.defaultEngine;
+
         var params = { engine_guid: engine, folder_guid: node.id };
 
         FEMhub.RPC.Notebooks.addNotebook(params, function(result) {
