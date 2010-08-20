@@ -15,7 +15,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 scope: this,
                 stopEvent: true,
                 handler: function() {
-                    var cell = this.prevCell();
+                    var cell = this.prevCell('input');
 
                     if (cell.ctype == 'input') {
                         cell.setSelection('end');
@@ -30,7 +30,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 scope: this,
                 stopEvent: true,
                 handler: function() {
-                    var cell = this.nextCell();
+                    var cell = this.nextCell('input');
 
                     if (cell.ctype == 'input') {
                         cell.setSelection('start');
@@ -84,7 +84,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                     if (this.collapsed || this.ctype != 'input') {
                         ev.stopEvent();
 
-                        var cell = this.prevCell();
+                        var cell = this.prevCell('input'); // XXX
 
                         if (cell.ctype == 'input') {
                             cell.setSelection('end');
@@ -99,7 +99,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                             if (index == -1 || selection.start <= index) {
                                 ev.stopEvent();
 
-                                var cell = this.prevCell();
+                                var cell = this.prevCell('input'); // XXX
 
                                 if (cell.ctype == 'input') {
                                     cell.setSelection('end');
@@ -120,7 +120,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                     if (this.collapsed || this.ctype != 'input') {
                         ev.stopEvent();
 
-                        var cell = this.nextCell();
+                        var cell = this.nextCell('input'); // XXX
 
                         if (cell.ctype == 'input') {
                             cell.setSelection('start');
@@ -135,7 +135,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                             if (index == -1 || selection.start > index) {
                                 ev.stopEvent();
 
-                                var cell = this.nextCell();
+                                var cell = this.nextCell('input'); // XXX
 
                                 if (cell.ctype == 'input') {
                                     cell.setSelection('start');
