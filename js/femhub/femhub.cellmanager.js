@@ -30,6 +30,7 @@ FEMhub.CellManager = function(config) {
             'input': 'InputCell',
             'output': 'OutputCell',
             'image': 'ImageCell',
+            'content': 'ContentCell',
         },
 
         newCell: function(config) {
@@ -206,6 +207,10 @@ FEMhub.CellManager = function(config) {
                                 }
                             }
 
+                            if (data.cellstyle == 'text') {
+                                data.cellstyle = 'content';
+                            }
+
                             var cell = this.newCell({
                                 type: data.cellstyle,
                                 setup: {
@@ -287,6 +292,9 @@ FEMhub.CellManager = function(config) {
                             break;
                         case 'image':
                             cellstyle = 'outputimage';
+                            break;
+                        case 'content':
+                            cellstyle = 'text'
                             break;
                     }
 

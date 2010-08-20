@@ -251,6 +251,29 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         this.keymap_expander_nostop = new Ext.KeyMap(this.el_expander, [
             this.bindings.x_up, this.bindings.x_down,
         ]);
+
+        this.el.on('contextmenu', function(evt) {
+            if (evt.target.id == this.el.id || evt.target.id == this.el_label.id) {
+                var context = new Ext.menu.Menu({
+                    items: [{
+                        text: 'Collapse',
+                        handler: function() {
+                            this.collapseCell();
+                        },
+                        scope: this,
+                    }, {
+                        text: 'Remove',
+                        handler: function() {
+                            this.removeCell();
+                        },
+                        scope: this,
+                    }],
+                });
+
+                context.showAt(evt.getXY());
+                evt.stopEvent();
+            }
+        }, this);
     },
 
     onRender: function(container, position) {
@@ -331,8 +354,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
             }
         }
 
-        this.destroy();
-        this.owner.statusSaved = false;
+        FEMhub.IOCell.superclass.removeCell.call(this);
     },
 });
 

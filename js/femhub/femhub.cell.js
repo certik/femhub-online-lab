@@ -19,6 +19,27 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         }
 
         FEMhub.Cell.superclass.constructor.apply(this, arguments);
+
+        Ext.apply(this.bindings, {
+            x_shift_alt_up: {
+                key: Ext.EventObject.UP,
+                shift: true,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.insertContentCellBefore,
+            },
+            x_shift_alt_down: {
+                key: Ext.EventObject.DOWN,
+                shift: true,
+                ctrl: false,
+                alt: true,
+                scope: this,
+                stopEvent: true,
+                handler: this.insertContentCellAfter,
+            },
+        });
     },
 
     initComponent: function() {
@@ -188,6 +209,31 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         cell.focusCell();
 
         return cell;
+    },
+
+    autosize: function() {
+        /* pass */
+    },
+
+    insertContentCellBefore: function() {
+        return this.owner.newCell({ type: 'content', before: this });
+    },
+
+    insertContentCellAfter: function() {
+        return this.owner.newCell({ type: 'content', after: this });
+    },
+
+    removeCell: function() {
+        this.owner.statusSaved = false;
+        this.destroy();
+    },
+
+    setSaved: function() {
+        this.saved = true;
+    },
+
+    setUnsaved: function() {
+        this.saved = false;
     },
 });
 

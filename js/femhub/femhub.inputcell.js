@@ -201,6 +201,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.bindings.x_shift_enter, this.bindings.x_ctrl_enter,
             this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
             this.bindings.x_alt_up, this.bindings.x_alt_down,
+            this.bindings.x_shift_alt_up, this.bindings.x_shift_alt_down,
             this.bindings.x_shift_ctrl_alt_up, this.bindings.x_shift_ctrl_alt_down,
             this.bindings.x_alt_left,
             this.bindings.x_ctrl_space,
@@ -635,7 +636,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
     removeCell: function() {
         this.destroyOutputCellIfCan();
-        FEMhub.InputCell.superclass.removeCell.apply(this, arguments);
+        FEMhub.InputCell.superclass.removeCell.call(this);
     },
 });
 

@@ -232,3 +232,35 @@
     border-bottom-color: blue;
 }
 
+/*
+ * CONTENT CELL
+ */
+
+.femhub-cell-content {
+    height: auto;
+    display: block;
+}
+
+.femhub-cell-content-area {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    font-size: 10pt;
+    min-height: 10pt;
+    margin-right: 10px;
+}
+
+.femhub-cell-content-area ul {
+    list-style: disc outside;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding-left: 40px;
+}
+
+.femhub-cell-content-area ol {
+    list-style: decimal outside;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding-left: 40px;
+}
+
