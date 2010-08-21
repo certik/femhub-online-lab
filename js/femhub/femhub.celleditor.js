@@ -11,9 +11,8 @@ FEMhub.CellEditor = Ext.extend(Ext.Window, {
 
         this.htmlEditor = new Ext.form.HtmlEditor({
             border: false,
+            value: config.content || "",
         });
-
-        this.htmlEditor.setValue(config.content || "");
 
         Ext.apply(config, {
             title: "Edit cell",
