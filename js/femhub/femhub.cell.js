@@ -235,5 +235,44 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     setUnsaved: function() {
         this.saved = false;
     },
+
+    createContextMenu: function(items) {
+        items = items || [];
+
+        if (this.collapsed === true) {
+            items.push({
+                text: 'Expand',
+                iconCls: 'femhub-expand-icon',
+                handler: function() {
+                    this.expandCell();
+                },
+                scope: this,
+            });
+        } else {
+            items.push({
+                text: 'Collapse',
+                iconCls: 'femhub-collapse-icon',
+                handler: function() {
+                    this.collapseCell();
+                },
+                scope: this,
+            });
+        }
+
+        items = items.concat([{
+            text: 'Remove',
+            iconCls: 'femhub-remove-icon',
+            handler: function() {
+                this.removeCell();
+            },
+            scope: this,
+        }]);
+
+        var context = new Ext.menu.Menu({
+            items: items,
+        });
+
+        return context;
+    },
 });
 

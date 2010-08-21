@@ -13,24 +13,15 @@ FEMhub.ContentCell = Ext.extend(FEMhub.Cell, {
     },
 
     setupContentCellEvents: function() {
-        this.el_content.on('contextmenu', function(evt) {
-            var context = new Ext.menu.Menu({
-                items: [{
-                    text: 'Edit',
-                    iconCls: 'femhub-edit-icon',
-                    handler: function() {
-                        this.editCell();
-                    },
-                    scope: this,
-                }, {
-                    text: 'Remove',
-                    iconCls: 'femhub-remove-icon',
-                    handler: function() {
-                        this.removeCell();
-                    },
-                    scope: this,
-                }],
-            });
+        this.el.on('contextmenu', function(evt) {
+            var context = this.createContextMenu([{
+                text: 'Edit',
+                iconCls: 'femhub-edit-icon',
+                handler: function() {
+                    this.editCell();
+                },
+                scope: this,
+            }]);
 
             context.showAt(evt.getXY());
             evt.stopEvent();

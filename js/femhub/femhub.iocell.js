@@ -254,24 +254,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
 
         this.el.on('contextmenu', function(evt) {
             if (evt.target.id == this.el.id || evt.target.id == this.el_label.id) {
-                var context = new Ext.menu.Menu({
-                    items: [{
-                        text: 'Collapse',
-                        iconCls: 'femhub-collapse-icon',
-                        handler: function() {
-                            this.collapseCell();
-                        },
-                        scope: this,
-                    }, {
-                        text: 'Remove',
-                        iconCls: 'femhub-remove-icon',
-                        handler: function() {
-                            this.removeCell();
-                        },
-                        scope: this,
-                    }],
-                });
-
+                var context = this.createContextMenu();
                 context.showAt(evt.getXY());
                 evt.stopEvent();
             }
