@@ -1,5 +1,6 @@
 
 FEMhub.Notebook = Ext.extend(Ext.Window, {
+    iconCls: 'femhub-notebook-icon',
     maximizable: true,
     layout: 'fit',
 
@@ -29,13 +30,13 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         this.tbar = new Ext.Toolbar({
             items: [
                 {
-                    icon: FEMhub.icons + 'page_go.png',
                     cls: 'x-btn-text-icon',
                     text: 'Share',
+                    iconCls: 'femhub-share-notebook-icon',
                 }, '-', {
-                    icon: FEMhub.icons + 'textfield_rename.png',
                     cls: 'x-btn-text-icon',
                     text: 'Rename',
+                    iconCls: 'femhub-rename-icon',
                     handler: function() {
                         Ext.MessageBox.prompt(
                             'Rename Notebook',
@@ -54,9 +55,9 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     },
                     scope: this,
                 }, {
-                    icon: FEMhub.icons + 'page_save.png',
                     cls: 'x-btn-text-icon',
                     text: 'Save',
+                    iconCls: 'femhub-save-notebook-icon',
                     handler: function() {
                         this.getCellsManager().saveToBackend();
                     },
@@ -72,9 +73,9 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     },
                     scope: this,
                 }, '-', {
-                    icon: FEMhub.icons + 'cross.png',
                     cls: 'x-btn-text-icon',
                     text: 'Kill',
+                    iconCls: 'femhub-remove-icon',
                     handler: function() {
                         this.getCellsManager().killBackend();
                     },

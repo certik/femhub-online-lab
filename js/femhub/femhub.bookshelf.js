@@ -38,8 +38,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 {
                     xtype: 'tbsplit',
                     cls: 'x-btn-text-icon',
-                    icon: FEMhub.icons + 'page_add.png',
                     text: 'New Notebook',
+                    iconCls: 'femhub-add-notebook-icon',
                     handler: function() {
                         this.newNotebook();
                     },
@@ -48,8 +48,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 }, {
                     xtype: 'button',
                     cls: 'x-btn-text-icon',
-                    icon: FEMhub.icons + 'page_attach.png',
                     text: 'Import Notebook',
+                    iconCls: 'femhub-import-notebook-icon',
                     handler: function() {
                         this.importNotebook();
                     },
@@ -141,6 +141,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             var context = new Ext.menu.Menu({
                 items: [{
                     text: 'New notebook',
+                    iconCls: 'femhub-add-notebook-icon',
                     handler: function() {
                         this.addNotebookAt(node);
                     },
@@ -148,18 +149,21 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 }, {
 
                     text: 'New folder',
+                    iconCls: 'femhub-add-folder-icon',
                     handler: function() {
                         this.addFolder(node);
                     },
                     scope: this,
                 }, '-', {
                     text: 'Rename',
+                    iconCls: 'femhub-rename-icon',
                     handler: function() {
                         this.renameFolder(node);
                     },
                     scope: this,
                 }, {
                     text: 'Delete',
+                    iconCls: 'femhub-remove-icon',
                     handler: function() {
                         this.deleteFolder(node);
                     },
@@ -180,7 +184,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
     initNotebooksGrid: function() {
         this.notebooksGrid = new Ext.grid.GridPanel({
-            border:false,
+            border: false,
             ds: new Ext.data.Store({
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'title' },
@@ -212,19 +216,22 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
             var context = new Ext.menu.Menu({
                 items: [{
-                    text: 'Open',
+                    text: 'Edit',
+                    iconCls: 'femhub-edit-notebook-icon',
                     handler: function() {
                         this.openNotebook(record.id, record.data.title);
                     },
                     scope: this,
                 }, '-', {
                     text: 'Rename',
+                    iconCls: 'femhub-rename-icon',
                     handler: function() {
                         this.renameNotebook(record);
                     },
                     scope: this,
                 }, {
                     text: 'Delete',
+                    iconCls: 'femhub-remove-icon',
                     handler: function() {
                         this.deleteNotebook(record);
                     },

@@ -20,6 +20,7 @@ FEMhub.CellEditor = Ext.extend(Ext.Window, {
             layout: 'fit',
             width: 550,
             height: 300,
+            iconCls: 'femhub-celleditor-icon',
             maximizable: true,
             minimizable: true,
             closable: true,

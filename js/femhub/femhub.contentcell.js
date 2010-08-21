@@ -17,12 +17,14 @@ FEMhub.ContentCell = Ext.extend(FEMhub.Cell, {
             var context = new Ext.menu.Menu({
                 items: [{
                     text: 'Edit',
+                    iconCls: 'femhub-edit-icon',
                     handler: function() {
                         this.editCell();
                     },
                     scope: this,
                 }, {
                     text: 'Remove',
+                    iconCls: 'femhub-remove-icon',
                     handler: function() {
                         this.removeCell();
                     },

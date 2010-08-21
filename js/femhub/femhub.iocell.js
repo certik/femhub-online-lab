@@ -257,12 +257,14 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 var context = new Ext.menu.Menu({
                     items: [{
                         text: 'Collapse',
+                        iconCls: 'femhub-collapse-icon',
                         handler: function() {
                             this.collapseCell();
                         },
                         scope: this,
                     }, {
                         text: 'Remove',
+                        iconCls: 'femhub-remove-icon',
                         handler: function() {
                             this.removeCell();
                         },

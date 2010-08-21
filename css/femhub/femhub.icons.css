@@ -1,29 +1,85 @@
 
 .femhub-bookshelf-icon {
-    background-image: url(/static/img/femhub/icons/folder.png);
+    background-image: url(/static/img/femhub/icons/folder.png) !important;
 }
 
 .femhub-bookshelf-launcher-icon {
-    background-image: url(/static/img/femhub/icons/64x64/folder.png);
+    background-image: url(/static/img/femhub/icons/64x64/folder.png) !important;
 }
 
 .femhub-settings-icon {
-    background-image: url(/static/img/femhub/icons/16x16/settings.png);
+    background-image: url(/static/img/femhub/icons/16x16/settings.png) !important;
 }
 
 .femhub-settings-launcher-icon {
-    background-image: url(/static/img/femhub/icons/64x64/settings.png);
+    background-image: url(/static/img/femhub/icons/64x64/settings.png) !important;
 }
 
 .femhub-console-icon {
-    background-image: url(/static/img/femhub/icons/16x16/console.png);
+    background-image: url(/static/img/femhub/icons/16x16/console.png) !important;
 }
 
 .femhub-console-launcher-icon {
-    background-image: url(/static/img/femhub/icons/64x64/console.png);
+    background-image: url(/static/img/femhub/icons/64x64/console.png) !important;
 }
 
 .femhub-logout-launcher-icon {
-    background-image: url(/static/img/femhub/icons/64x64/logout.png);
+    background-image: url(/static/img/femhub/icons/64x64/logout.png) !important;
+}
+
+.femhub-notebook-icon {
+    background-image: url(/static/img/femhub/icons/page.png) !important;
+}
+
+.femhub-celleditor-icon {
+    background-image: url(/static/img/femhub/icons/page_white_edit.png) !important;
+}
+
+.femhub-edit-icon {
+    background-image: url(/static/img/femhub/icons/pencil.png) !important;
+}
+
+.femhub-remove-icon {
+    background-image: url(/static/img/femhub/icons/cross.png) !important;
+}
+
+.femhub-collapse-icon {
+    background-image: url(/static/img/femhub/icons/arrow_in.png) !important;
+}
+
+.femhub-expand-icon {
+    background-image: url(/static/img/femhub/icons/arrow_out.png) !important;
+}
+
+.femhub-rename-icon {
+    background-image: url(/static/img/femhub/icons/textfield_rename.png) !important;
+}
+
+.femhub-refresh-icon {
+    background-image: url(/static/img/femhub/icons/arrow_refresh.png) !important;
+}
+
+.femhub-add-folder-icon {
+    background-image: url(/static/img/femhub/icons/folder_add.png) !important;
+}
+
+.femhub-add-notebook-icon {
+    background-image: url(/static/img/femhub/icons/page_add.png) !important;
+}
+
+.femhub-share-notebook-icon {
+    background-image: url(/static/img/femhub/icons/page_go.png) !important;
+}
+
+.femhub-import-notebook-icon {
+    background-image: url(/static/img/femhub/icons/page_attach.png) !important;
+}
+
+.femhub-edit-notebook-icon {
+    background-image: url(/static/img/femhub/icons/page_edit.png) !important;
+}
+
+.femhub-save-notebook-icon {
+    background-image: url(/static/img/femhub/icons/page_save.png) !important;
 }
 
