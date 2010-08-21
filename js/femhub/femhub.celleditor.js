@@ -10,7 +10,6 @@ FEMhub.CellEditor = Ext.extend(Ext.Window, {
         });
 
         this.htmlEditor = new Ext.form.HtmlEditor({
-            enableSourceEdit: false,
             border: false,
         });
 
@@ -66,8 +65,19 @@ FEMhub.CellEditor = Ext.extend(Ext.Window, {
     },
 
     saveCell: function() {
-        this.fireEvent('savecell', this.htmlEditor.getValue());
-        this.close();
+        var content = this.htmlEditor.getValue();
+
+        if (/<script/.test(content)) {
+            Ext.MessageBox.show({
+                title: 'Cell editor',
+                msg: "&lt;script&gt; tags are not allowed in cells' contents.",
+                buttons: Ext.MessageBox.OK,
+                icon: Ext.MessageBox.ERROR,
+            });
+        } else {
+            this.fireEvent('savecell', content);
+            this.close();
+        }
     },
 });
 
