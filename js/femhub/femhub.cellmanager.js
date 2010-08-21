@@ -316,14 +316,14 @@ FEMhub.CellManager = function(config) {
                 }
             }
 
-            Ext.Ajax.request({
-                url: this.getDataURL() + 'save',
-                method: "POST",
-                params: {
-                    orderlist: Ext.encode(orderlist),
-                    cellsdata: Ext.encode(cellsdata),
-                },
-                success: function(response) {
+            var params = {
+                guid: this.nbid,
+                cellsdata: cellsdata,
+                orderlist: Ext.encode(orderlist),
+            }
+
+            FEMhub.RPC.Notebooks.saveNotebook(params, function(result) {
+                if (result.ok === true) {
                     Ext.each(savedlist, function(cell) {
                         cell.saved = true;
                     });
@@ -333,12 +333,10 @@ FEMhub.CellManager = function(config) {
                     if (FEMhub.hasArg(args, 'postsave')) {
                         args.postsave.call(args.scope);
                     }
-                },
-                failure: function(response) {
+                } else {
                     FEMhub.log("Failed to save cells for: " + this.nbid);
-                },
-                scope: this,
-            });
+                }
+            }, this);
         },
 
         renameAtBackend: function(title) {
