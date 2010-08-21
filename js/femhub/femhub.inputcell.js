@@ -491,7 +491,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         Ext.Ajax.request({
             url: this.owner.getAsyncURL(),
             method: "POST",
-            params: Ext.encode({
+            jsonData: Ext.encode({
                 method: 'evaluate',
                 cellid: this.id,    // XXX: currently not supported
                 input: input,
@@ -541,7 +541,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         Ext.Ajax.request({
             url: this.owner.getAsyncURL(),
             method: "POST",
-            params: Ext.encode({
+            jsonData: Ext.encode({
                 method: 'interrupt',
             }),
             success: function(result, request) {

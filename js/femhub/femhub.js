@@ -16,7 +16,7 @@ FEMhub.init = function(ready, scope) {
     Ext.Ajax.request({
         url: FEMhub.json,
         method: "POST",
-        params: Ext.encode({
+        jsonData: Ext.encode({
             jsonrpc: "2.0",
             method: "system.describe",
             params: {},
@@ -60,7 +60,7 @@ FEMhub.call = function(method, params, handler, scope) {
     Ext.Ajax.request({
         url: FEMhub.json,
         method: "POST",
-        params: Ext.encode({
+        jsonData: Ext.encode({
             jsonrpc: "2.0",
             method: method,
             params: params || {},

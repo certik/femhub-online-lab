@@ -234,7 +234,7 @@ FEMhub.CellManager = function(config) {
             Ext.Ajax.request({
                 url: this.getAsyncURL(),
                 method: "POST",
-                params: Ext.encode({
+                jsonData: Ext.encode({
                     method: 'start',
                 }),
                 success: Ext.emptyFn,
@@ -247,7 +247,7 @@ FEMhub.CellManager = function(config) {
             Ext.Ajax.request({
                 url: this.getAsyncURL(),
                 method: "POST",
-                params: Ext.encode({
+                jsonData: Ext.encode({
                     method: 'interrupt',
                 }),
                 success: Ext.emptyFn,
