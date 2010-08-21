@@ -338,21 +338,6 @@ FEMhub.CellManager = function(config) {
                 }
             }, this);
         },
-
-        renameAtBackend: function(title) {
-            Ext.Ajax.request({
-                url: this.getDataURL() + 'title',
-                method: "POST",
-                params: {
-                    newtitle: title,
-                },
-                success: Ext.emptyFn,
-                failure: function(response) {
-                    FEMhub.log("Failed to rename notebook: " + this.nbid);
-                },
-                scope: this,
-            });
-        },
     }, config, {
         root: Ext.getBody(),
     });

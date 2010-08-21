@@ -279,14 +279,10 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         }, this);
     },
 
-    isValidName: function(name) {
-        return /^[a-z0-9_][a-z0-9_-]*/i.test(name) && name.length < 100;
-    },
-
     addFolder: function(node) {
         Ext.MessageBox.prompt('Add folder', 'Enter folder name:', function(button, title) {
             if (button === 'ok') {
-                if (this.isValidName(title) === false) {
+                if (FEMhub.isValidName(title) === false) {
                     Ext.MessageBox.show({
                         title: 'Add folder',
                         msg: "Invalid folder name.",
@@ -376,7 +372,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     renameNotebook: function(record) {
         Ext.MessageBox.prompt('Rename notebook', 'Enter new notebook name:', function(button, title) {
             if (button === 'ok') {
-                if (this.isValidName(title) === false) {
+                if (FEMhub.isValidName(title) === false) {
                     Ext.MessageBox.show({
                         title: 'Rename notebook',
                         msg: "Invalid notebook name.",

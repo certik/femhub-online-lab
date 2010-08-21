@@ -93,3 +93,7 @@ FEMhub.hasArg = function(args, arg) {
     return Ext.isDefined(args) && Ext.isDefined(args[arg]);
 }
 
+FEMhub.isValidName = function(name) {
+    return /^[a-z0-9_][a-z0-9_ -]*/i.test(name) && name.length < 100;
+}
+

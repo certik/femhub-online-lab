@@ -38,20 +38,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     text: 'Rename',
                     iconCls: 'femhub-rename-icon',
                     handler: function() {
-                        Ext.MessageBox.prompt(
-                            'Rename Notebook',
-                            'Please enter new title:',
-                            function(button, text) {
-                                if (button == 'ok') {
-                                    this.getCellsManager().renameAtBackend(text);
-                                    this.setTitle(text);
-
-                                    // TODO: notify bookshelf about this change
-                                }
-                            },
-                            this,
-                            false,
-                            this.getCellsManager().name);
+                        this.renameNotebook();
                     },
                     scope: this,
                 }, {
@@ -191,6 +178,31 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 break;
             }
         }
+    },
+
+    renameNotebook: function() {
+        Ext.MessageBox.prompt('Rename notebook', 'Enter new notebook name:', function(button, title) {
+            if (button === 'ok') {
+                if (FEMhub.isValidName(title) === false) {
+                    Ext.MessageBox.show({
+                        title: 'Rename notebook',
+                        msg: "Invalid notebook name.",
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.ERROR,
+                    });
+                } else {
+                    var guid = this.getCellsManager().nbid;
+
+                    FEMhub.RPC.Notebooks.renameNotebook({guid: guid, title: title}, function(result) {
+                        if (result.ok === true) {
+                            this.setTitle(title);
+                        } else {
+                            FEMhub.log("Can't rename notebook");
+                        }
+                    }, this);
+                }
+            }
+        }, this);
     },
 });
 
