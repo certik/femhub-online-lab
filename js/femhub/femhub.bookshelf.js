@@ -318,7 +318,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         } else {
             Ext.MessageBox.prompt('Rename folder', 'Enter new folder name:', function(button, title) {
                 if (button === 'ok') {
-                    if (this.isValidName(title) === false) {
+                    if (FEMhub.isValidName(title) === false) {
                         Ext.MessageBox.show({
                             title: 'Rename folder',
                             msg: "Invalid folder name.",
