@@ -23,6 +23,14 @@
     background-image: url(/static/img/femhub/icons/64x64/console.png) !important;
 }
 
+.femhub-help-icon {
+    background-image: url(/static/img/femhub/icons/16x16/help.png) !important;
+}
+
+.femhub-help-launcher-icon {
+    background-image: url(/static/img/femhub/icons/64x64/help.png) !important;
+}
+
 .femhub-logout-launcher-icon {
     background-image: url(/static/img/femhub/icons/64x64/logout.png) !important;
 }

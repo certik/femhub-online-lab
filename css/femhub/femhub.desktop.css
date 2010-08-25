@@ -222,3 +222,26 @@ body {
     display: block;
 }
 
+.femhub-help-body {
+    background-color: white;
+    padding: 0 10px;
+    overflow-y: auto;
+    font-size: 120%;
+}
+
+.femhub-help-body h2 {
+    margin: 0.8em 0;
+    color: #005a9c;
+    font-size: 140%;
+}
+
+.femhub-help-body p {
+    margin: 0.5em 0;
+    text-align: justify;
+}
+
+.femhub-help-body dd {
+    margin-left: 0.5em;
+    margin-bottom: 0.2em;
+}
+
