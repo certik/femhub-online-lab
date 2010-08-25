@@ -72,7 +72,20 @@ FEMhub.call = function(method, params, handler, scope) {
             }
         },
         failure: function(result, request) {
-            FEMhub.log(Ext.decode(result.responseText).error.message);
+            if (Ext.isDefined(result.responseText)) {
+                var msg = Ext.decode(result.responseText).error.message;
+            } else {
+                var msg = "Internal Server Error (500)";
+            }
+
+            FEMhub.log(msg);
+
+            Ext.MessageBox.show({
+                title: 'Critical Error',
+                msg: msg,
+                buttons: Ext.MessageBox.OK,
+                icon: Ext.MessageBox.ERROR,
+            });
         },
     });
 }
