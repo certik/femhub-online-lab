@@ -1,15 +1,15 @@
 
 FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     toolbar: null,
-    enginesMenu: null,
     foldersTree: null,
     notebooksGrid: null,
 
-    defaultEngine: null,
+    engines: null,
 
     constructor: function(config) {
+        this.initEngines();
+
         this.initToolbar();
-        this.initEnginesMenu();
         this.initFoldersTree();
         this.initNotebooksGrid();
 
@@ -36,14 +36,13 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         this.toolbar = new Ext.Toolbar({
             items: [
                 {
-                    xtype: 'tbsplit',
+                    xtype: 'button',
                     cls: 'x-btn-text-icon',
                     text: 'New Notebook',
                     iconCls: 'femhub-add-notebook-icon',
                     handler: function() {
                         this.newNotebook();
                     },
-                    menu: this.enginesMenu,
                     scope: this,
                 }, {
                     xtype: 'button',
@@ -59,22 +58,22 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         });
     },
 
-    initEnginesMenu: function() {
-        this.enginesMenu = new Ext.menu.Menu();
+    initEngines: function() {
+        FEMhub.RPC.Backend.getEngines({}, function(result) {
+            if (result.ok === true) {
+                var engines = result.engines;
 
-        FEMhub.RPC.getEngines({}, function(engines) {
-            this.defaultEngine = engines[0].id;
-
-            Ext.each(engines, function(engine) {
-                this.enginesMenu.addMenuItem({
-                    engine: engine.id,
-                    text: engine.name,
-                    handler: function(item) {
-                        this.newNotebook(item.engine);
-                    },
-                    scope: this,
-                });
-            }, this);
+                if (engines.length == 0) {
+                    Ext.MessageBox.show({
+                        title: 'Internal Error',
+                        msg: "No engines were specified. Consult administrator about this problem.",
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.ERROR,
+                    });
+                } else {
+                    this.engines = engines;
+                }
+            }
         }, this);
     },
 
@@ -138,6 +137,25 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         });
 
         this.foldersTree.on('contextmenu', function(node, evt) {
+            var engines = [];
+
+            Ext.each(this.engines, function(engine) {
+                if (!engine.description.length) {
+                    var text = engine.name;
+                } else {
+                    var text = String.format("{0} ({1})", engine.name, engine.description);
+                }
+
+                engines.push({
+                    engine: engine.id,
+                    text: text,
+                    handler: function(item) {
+                        this.addNotebookAt(node, item.engine);
+                    },
+                    scope: this,
+                });
+            }, this);
+
             var context = new Ext.menu.Menu({
                 items: [{
                     text: 'New notebook',
@@ -145,6 +163,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                     handler: function() {
                         this.addNotebookAt(node);
                     },
+                    menu: engines,
                     scope: this,
                 }, {
 
@@ -445,7 +464,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         var model = this.foldersTree.getSelectionModel();
 
         node = node || model.getSelectedNode() || this.rootNode;
-        engine = engine || this.defaultEngine;
+        engine = engine || this.engines[0].id;
 
         var params = { engine_guid: engine, folder_guid: node.id };
 
@@ -483,7 +502,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             'Please enter plain text:',
             function(button, text) {
                 if (button === 'ok') {
-                    this.newNotebook(this.defaultEngine, function(notebook) {
+                    this.newNotebook(this.engines[0].id, function(notebook) {
                         notebook.importCells(text);
                     });
                 }
