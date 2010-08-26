@@ -433,7 +433,18 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         });
     },
 
+    getCurrentNode: function(node) {
+        if (Ext.isDefined(node) && node !== null) {
+            return node;
+        } else {
+            var model = this.foldersTree.getSelectionModel();
+            return model.getSelectedNode() || this.rootNode;
+        }
+    },
+
     getNotebooks: function(node) {
+        var node = this.getCurrentNode(node);
+
         FEMhub.RPC.Notebooks.getNotebooks({ guid: node.id }, function(result) {
             if (result.ok === true) {
                 var store = this.notebooksGrid.getStore();
@@ -461,9 +472,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 
     newNotebook: function(engine, handler, scope, node) {
-        var model = this.foldersTree.getSelectionModel();
-
-        node = node || model.getSelectedNode() || this.rootNode;
+        var node = this.getCurrentNode(node);
         engine = engine || this.engines[0].id;
 
         var params = { engine_guid: engine, folder_guid: node.id };
@@ -490,6 +499,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             name: title,
             width: 600,
             height: 400,
+            bookshelf: this,
         });
 
         notebook.show();
