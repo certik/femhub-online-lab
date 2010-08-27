@@ -484,6 +484,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 if (Ext.isDefined(handler)) {
                     handler.call(scope || this, notebook);
                 }
+
+                this.getNotebooks();
             } else {
                 FEMhub.log("Failed to add new notebook");
             }
