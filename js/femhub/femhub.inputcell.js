@@ -463,6 +463,8 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
             }
 
+            this.saved = false;
+
             if (config.keepfocus === true) {
                 this.focusCell(); /* needed for 'evaluate' button */
             } else {
@@ -472,8 +474,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                     this.nextCell('input');
                 }
             }
-
-            this.saved = false;
 
             this.fireEvent('postevaluate', this, input, output);
         }

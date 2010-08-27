@@ -91,3 +91,7 @@
     background-image: url(/static/img/femhub/icons/page_save.png) !important;
 }
 
+.femhub-eval-all-notebook-icon {
+    background-image: url(/static/img/femhub/icons/lightning.png) !important;
+}
+

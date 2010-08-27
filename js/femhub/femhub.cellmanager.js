@@ -141,8 +141,26 @@ FEMhub.CellManager = function(config) {
             }
         },
 
-        getAllCells: function() {
-            return Ext.DomQuery.select(".femhub-cell", this.root.dom);
+        getRawCells: function(type) {
+            return Ext.DomQuery.select(this.typeToCls(type), this.root.dom);
+        },
+
+        getCells: function(type) {
+            var cells = this.getRawCells(type);
+
+            for (var i = 0; i < cells.length; i++) {
+                cells[i] = Ext.getCmp(cells[i].id);
+            }
+
+            return cells;
+        },
+
+        iterCells: function(type, handler, scope) {
+            var cells = this.getCells(type);
+
+            for (var i = 0; i < cells.length; i++) {
+                handler.call(scope || this, cells[i]);
+            }
         },
 
         justifyCells: function() {
@@ -160,6 +178,12 @@ FEMhub.CellManager = function(config) {
 
                 cell.setLabel(label);
                 cell.autosize();
+            }, this);
+        },
+
+        evaluateCells: function() {
+            this.iterCells('input', function(cell) {
+                cell.evaluateCell({ keepfocus: true });
             }, this);
         },
 
@@ -257,7 +281,7 @@ FEMhub.CellManager = function(config) {
         },
 
         isSavedToBackend: function() {
-            var cells = this.getAllCells();
+            var cells = this.getRawCells();
 
             for (var i = 0; i < cells.length; i++) {
                 if (!Ext.getCmp(cells[i].id).saved) {
@@ -269,7 +293,7 @@ FEMhub.CellManager = function(config) {
         },
 
         saveToBackend: function(args) {
-            var cells = this.getAllCells();
+            var cells = this.getRawCells();
 
             var orderlist = [];
             var cellsdata = {};

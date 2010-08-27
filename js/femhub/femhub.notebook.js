@@ -35,6 +35,14 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     iconCls: 'femhub-share-notebook-icon',
                 }, '-', {
                     cls: 'x-btn-text-icon',
+                    text: 'Evaluate All',
+                    iconCls: 'femhub-eval-all-notebook-icon',
+                    handler: function() {
+                        this.evaluateCells();
+                    },
+                    scope: this,
+                }, '-', {
+                    cls: 'x-btn-text-icon',
                     text: 'Rename',
                     iconCls: 'femhub-rename-icon',
                     handler: function() {
@@ -204,6 +212,10 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 }
             }
         }, this, false, this.name);
+    },
+
+    evaluateCells: function() {
+        this.getCellsManager().evaluateCells();
     },
 });
 
