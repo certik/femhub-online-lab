@@ -354,7 +354,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                         });
                     }
                 }
-            }, this);
+            }, this, false, node.text);
         }
     },
 
@@ -409,7 +409,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                     });
                 }
             }
-        }, this);
+        }, this, false, record.get('title'));
     },
 
     deleteNotebook: function(record) {

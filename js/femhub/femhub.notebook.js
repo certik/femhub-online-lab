@@ -203,7 +203,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     }, this);
                 }
             }
-        }, this);
+        }, this, false, this.name);
     },
 });
 
