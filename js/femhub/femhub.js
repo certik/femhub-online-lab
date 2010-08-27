@@ -107,6 +107,7 @@ FEMhub.hasArg = function(args, arg) {
 }
 
 FEMhub.isValidName = function(name) {
-    return /^[a-z0-9_][a-z0-9_ -]*/i.test(name) && name.length < 100;
+    var len = name.trim().length;
+    return len > 0 && len < 100;
 }
 
