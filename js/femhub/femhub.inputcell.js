@@ -412,14 +412,14 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         this.evaluating = true;
 
-        function evalSuccess(ctype, output) {
+        function evalSuccess(ctype, index, output) {
             this.evaluating = false;
 
             this.el_evaluate.addClass('femhub-enabled');
             this.el_clear.addClass('femhub-enabled');
             this.el_interrupt.removeClass('femhub-enabled');
 
-            this.owner.nextEvalIndex();
+            this.owner.setEvalIndex(index);
 
             this.setLabel();
             this.autosize();
@@ -510,7 +510,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                         return evalFailure('unsupported type of cell');
                 }
 
-                evalSuccess.call(this, ctype, result.out + result.err);
+                evalSuccess.call(this, ctype, result.input_count, result.out + result.err);
             },
             failure: function(result, request) {
                 evalFailure.call(this, result.statusText);

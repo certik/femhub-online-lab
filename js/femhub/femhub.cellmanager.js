@@ -10,7 +10,7 @@ FEMhub.CellManager = function(config) {
         nbid: null,      // config.nbid
         name: null,      // config.name
 
-        evalIndex: 0,
+        evalIndex: 1,
         statusSaved: true,
 
         softEvalTimeout: null,
@@ -73,19 +73,18 @@ FEMhub.CellManager = function(config) {
             return cell;
         },
 
-        nextEvalIndex: function() {
+        setEvalIndex: function(evalIndex) {
             if (!this.autoJustify) {
-                return ++this.evalIndex;
+                this.evalIndex = evalIndex;
             } else {
                 var prev = "" + this.evalIndex;
-                this.evalIndex++;
-                var curr = "" + this.evalIndex;
+                var curr = "" + evalIndex;
+
+                this.evalIndex = evalIndex;
 
                 if (prev.length != curr.length) {
                     this.justifyCells();
                 }
-
-                return this.evalIndex;
             }
         },
 
@@ -170,9 +169,11 @@ FEMhub.CellManager = function(config) {
 
             Ext.each(cells, function(elt) {
                 var cell = Ext.getCmp(elt.id);
-                var label = cell.getLabel();
 
-                for (var i = 0; i < len - label.length; i++) {
+                var label = cell.getLabel();
+                var labelLen = label.length;
+
+                for (var i = 0; i < len - labelLen; i++) {
                     label += ' ';
                 }
 
