@@ -28,6 +28,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
 
     initComponent: function() {
         this.tbar = new Ext.Toolbar({
+            enableOverflow: true,
             items: [
                 {
                     cls: 'x-btn-text-icon',

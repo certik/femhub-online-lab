@@ -34,6 +34,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
     initToolbar: function() {
         this.toolbar = new Ext.Toolbar({
+            enableOverflow: true,
             items: [{
                 xtype: 'button',
                 cls: 'x-btn-text-icon',
