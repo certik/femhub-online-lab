@@ -361,6 +361,26 @@ FEMhub.CellManager = function(config) {
                 }
             }, this);
         },
+
+        evaluateCode: function(code) {
+            Ext.Ajax.request({
+                url: this.getAsyncURL(),
+                method: 'POST',
+                jsonData: Ext.encode({
+                    method: 'evaluate',
+                    cellid: null,
+                    input: code,
+                }),
+                success: function(result, request) {
+                    var result = Ext.decode(result.responseText);
+                    FEMhub.log(result.out + result.err);
+                },
+                failure: function(result, request) {
+                    FEMhub.log(result.statusText);
+                },
+                scope: this,
+            });
+        },
     }, config, {
         root: Ext.getBody(),
     });

@@ -59,6 +59,18 @@
     background-image: url(/static/img/femhub/icons/arrow_out.png) !important;
 }
 
+.femhub-plugin-icon {
+    background-image: url(/static/img/femhub/icons/plugin.png) !important;
+}
+
+.femhub-plugin-edit-icon {
+    background-image: url(/static/img/femhub/icons/plugin_edit.png) !important;
+}
+
+.femhub-refresh-icon {
+    background-image: url(/static/img/femhub/icons/arrow_refresh.png) !important;
+}
+
 .femhub-rename-icon {
     background-image: url(/static/img/femhub/icons/textfield_rename.png) !important;
 }

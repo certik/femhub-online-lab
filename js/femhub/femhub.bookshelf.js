@@ -131,6 +131,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             enableDD: true,
             ddGroup: 'folders',
             containerScroll: true,
+            autoScroll: true,
             listeners: {
                 nodedragover: {
                     fn: function(evt) {

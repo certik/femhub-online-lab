@@ -7,6 +7,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     cells: null,
     baseTitle: 'FEMhub Notebook',
 
+    imports: [],
+
     constructor: function(config) {
         config.title = config.name;
         FEMhub.Notebook.superclass.constructor.apply(this, arguments);
@@ -44,6 +46,30 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     iconCls: 'femhub-eval-all-notebook-icon',
                     handler: function() {
                         this.evaluateCells();
+                    },
+                    scope: this,
+                }, {
+                    xtype: 'tbsplit',
+                    cls: 'x-btn-text-icon',
+                    text: 'Imports',
+                    iconCls: 'femhub-plugin-icon',
+                    menu: [{
+                        text: 'Select',
+                        iconCls: 'femhub-plugin-edit-icon',
+                        handler: function() {
+                            this.selectImports();
+                        },
+                        scope: this,
+                    }, {
+                        text: 'Reload',
+                        iconCls: 'femhub-refresh-icon',
+                        handler: function() {
+                            this.evaluateImports();
+                        },
+                        scope: this,
+                    }],
+                    handler: function() {
+                        this.selectImports();
                     },
                     scope: this,
                 }, '-', {
@@ -219,8 +245,65 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         }, this, false, this.name);
     },
 
+    selectImports: function() {
+        var checked = [];
+
+        Ext.each(this.imports, function(notebook) {
+            checked.push(notebook.guid);
+        });
+
+        var chooser = new FEMhub.NotebookChooser({
+            guid: this.getCellsManager().nbid,
+            exclude: true,
+            checked: checked,
+            listeners: {
+                notebookschosen: {
+                    fn: function(notebooks) {
+                        this.imports = notebooks;
+                    },
+                    scope: this,
+                },
+            },
+            title: 'Choose imports',
+            iconCls: 'femhub-plugin-icon',
+            chooseText: 'Import',
+        });
+
+        chooser.show();
+    },
+
+    evaluateImports: function(evalCells) {
+        var index = 0;
+
+        Ext.each(this.imports, function(notebook) {
+            FEMhub.RPC.Notebooks.getCells({
+                guid: notebook.guid,
+                type: 'input',
+            }, function(result) {
+                if (result.ok === true) {
+                    if (Ext.isDefined(result.cells)) {
+                        Ext.each(result.cells, function(cell) {
+                            var manager = this.getCellsManager();
+                            manager.evaluateCode(cell.content);
+                        }, this);
+                    }
+                } else {
+                    /* pass */
+                }
+
+                if (++index == this.imports.length && evalCells) {
+                    this.getCellsManager().evaluateCells();
+                }
+            }, this);
+        }, this);
+    },
+
     evaluateCells: function() {
-        this.getCellsManager().evaluateCells();
+        if (this.imports.length) {
+            this.evaluateImports(true);
+        } else {
+            this.getCellsManager().evaluateCells();
+        }
     },
 });
 
