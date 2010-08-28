@@ -125,6 +125,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             split: true,
             root: this.root,
             rootVisible: false,
+            useArrows: true,
             animate: true,
             enableDD: true,
             ddGroup: 'folders',
