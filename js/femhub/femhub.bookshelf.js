@@ -217,6 +217,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 { header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
                 { header: "Date", width: 100, sortable: true, dataIndex: 'datetime'},
             ]),
+            sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
             viewConfig: {
                 forceFit: true,
             },
