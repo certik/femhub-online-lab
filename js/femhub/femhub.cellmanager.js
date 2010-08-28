@@ -198,6 +198,17 @@ FEMhub.CellManager = function(config) {
 
         initBackend: function() {
             Ext.Ajax.request({
+                url: this.getAsyncURL(),
+                method: "POST",
+                jsonData: Ext.encode({
+                    method: 'start',
+                }),
+                success: Ext.emptyFn,
+                failure: Ext.emptyFn,
+                scope: this,
+            });
+
+            Ext.Ajax.request({
                 url: this.getDataURL() + 'nbobject',
                 method: "GET",
                 success: function(result, request) {
@@ -252,17 +263,6 @@ FEMhub.CellManager = function(config) {
 
                     this.getFirstCell().focusCell();
                 },
-                failure: Ext.emptyFn,
-                scope: this,
-            });
-
-            Ext.Ajax.request({
-                url: this.getAsyncURL(),
-                method: "POST",
-                jsonData: Ext.encode({
-                    method: 'start',
-                }),
-                success: Ext.emptyFn,
                 failure: Ext.emptyFn,
                 scope: this,
             });
