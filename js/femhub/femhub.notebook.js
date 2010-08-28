@@ -33,6 +33,10 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     cls: 'x-btn-text-icon',
                     text: 'Share',
                     iconCls: 'femhub-share-notebook-icon',
+                    handler: function() {
+                        FEMhub.raiseNotImplementedError();
+                    },
+                    scope: this,
                 }, '-', {
                     cls: 'x-btn-text-icon',
                     text: 'Evaluate All',
