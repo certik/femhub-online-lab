@@ -260,8 +260,6 @@ FEMhub.CellManager = function(config) {
 
                         this.statusSaved = true;
                     }
-
-                    this.getFirstCell().focusCell();
                 },
                 failure: Ext.emptyFn,
                 scope: this,
