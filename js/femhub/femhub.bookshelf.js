@@ -34,27 +34,66 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
     initToolbar: function() {
         this.toolbar = new Ext.Toolbar({
-            items: [
-                {
-                    xtype: 'button',
-                    cls: 'x-btn-text-icon',
-                    text: 'New Notebook',
-                    iconCls: 'femhub-add-notebook-icon',
-                    handler: function() {
-                        this.newNotebook();
-                    },
-                    scope: this,
-                }, {
-                    xtype: 'button',
-                    cls: 'x-btn-text-icon',
-                    text: 'Import Notebook',
-                    iconCls: 'femhub-import-notebook-icon',
-                    handler: function() {
-                        this.importNotebook();
-                    },
-                    scope: this,
+            items: [{
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
+                text: 'New Notebook',
+                iconCls: 'femhub-add-notebook-icon',
+                handler: function() {
+                    this.newNotebook();
                 },
-            ],
+                scope: this,
+            }, {
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
+                text: 'New folder',
+                iconCls: 'femhub-add-folder-icon',
+                handler: function() {
+                    this.addFolder();
+                },
+                scope: this,
+            }, '-', {
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
+                text: 'Import Notebook',
+                iconCls: 'femhub-import-notebook-icon',
+                handler: function() {
+                    this.importNotebook();
+                },
+                scope: this,
+            }, '-', {
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
+                text: 'Rename',
+                iconCls: 'femhub-rename-icon',
+                handler: function() {
+                    var model = this.notebooksGrid.getSelectionModel();
+
+                    if (model.getCount()) {
+                        var record = model.getSelected();
+                        this.renameNotebook(record);
+                    } else {
+                        this.renameFolder();
+                    }
+                },
+                scope: this,
+            }, {
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
+                text: 'Delete',
+                iconCls: 'femhub-remove-icon',
+                handler: function() {
+                    var model = this.notebooksGrid.getSelectionModel();
+
+                    if (model.getCount()) {
+                        var record = model.getSelected();
+                        this.deleteNotebook(record);
+                    } else {
+                        this.deleteFolder();
+                    }
+                },
+                scope: this,
+            }],
         });
     },
 
@@ -300,6 +339,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 
     addFolder: function(node) {
+        var node = this.getCurrentNode(node);
+
         Ext.MessageBox.prompt('Add folder', 'Enter folder name:', function(button, title) {
             if (button === 'ok') {
                 if (FEMhub.isValidName(title) === false) {
@@ -328,6 +369,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 
     renameFolder: function(node) {
+        var node = this.getCurrentNode(node);
+
         if (this.isRootNode(node)) {
             Ext.MessageBox.show({
                 title: 'Rename folder',
@@ -360,6 +403,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 
     deleteFolder: function(node) {
+        var node = this.getCurrentNode(node);
+
         if (this.isRootNode(node)) {
             Ext.MessageBox.show({
                 title: 'Delete folder',
