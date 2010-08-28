@@ -15,8 +15,9 @@ body {
     height: 30px;
     margin: 0;
     padding: 0;
-    position: relative;
     z-index: 12001;
+    position: relative;
+    overflow: hidden !important;
     background: #000000 url(/static/img/femhub/taskbar/taskbar-bg.gif) repeat-x left top;
 }
 
