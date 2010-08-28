@@ -86,7 +86,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         FEMhub.Notebook.superclass.onRender.apply(this, arguments);
 
         this.cells = new FEMhub.Cells({
-            nbid: this.id,
+            nbid: this.nbid,
             name: this.name,
         });
 

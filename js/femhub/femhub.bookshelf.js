@@ -497,7 +497,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         var title = title || 'untitled';
 
         var notebook = desktop.createWindow(FEMhub.Notebook, {
-            id: id,
+            nbid: id,
             name: title,
             width: 600,
             height: 400,
