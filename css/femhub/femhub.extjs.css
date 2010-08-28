@@ -1,9 +1,9 @@
 
-.x-tree-node-leaf .x-tree-node-icon {
-    background-image: url(/static/external/ext/images/default/tree/folder.gif);
+.femhub-folder.x-tree-node-leaf .x-tree-node-icon {
+    background-image: url(/static/external/ext/images/default/tree/folder.gif) !important;
 }
 
-.x-tree-node-collapsed .x-tree-node-icon {
-    background-image: url(/static/external/ext/images/default/tree/folder.gif);
+.femhub-folder.x-tree-node-collapsed .x-tree-node-icon {
+    background-image: url(/static/external/ext/images/default/tree/folder.gif) !important;
 }
 

@@ -315,6 +315,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                     var subNode = new Ext.tree.TreeNode({
                         id: folder.guid,
                         text: folder.title,
+                        cls: 'femhub-folder',
                     });
 
                     node.appendChild(subNode);
@@ -329,6 +330,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             this.rootNode = new Ext.tree.TreeNode({
                 id: folder.guid,
                 text: folder.title,
+                cls: 'femhub-folder',
             });
 
             this.root.appendChild(this.rootNode);
@@ -357,6 +359,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                             node.appendChild(new Ext.tree.TreeNode({
                                 id: result.guid,
                                 text: title,
+                                cls: 'femhub-folder',
                             }));
 
                             node.expand();
