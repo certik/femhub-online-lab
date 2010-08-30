@@ -19,13 +19,15 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     },
 
     setTitle: function(text) {
-        var title = this.baseTitle;
+        this.name = text;
 
-        if (Ext.isDefined(text) && text !== null) {
-            title += ' - ' + text;
+        if (text) {
+            var title = this.baseTitle + ' - ' + text;
+        } else {
+            var title = this.baseTitle;
         }
 
-        FEMhub.Notebook.superclass.setTitle.apply(this, [title]);
+        FEMhub.Notebook.superclass.setTitle.call(this, title);
     },
 
     initComponent: function() {
