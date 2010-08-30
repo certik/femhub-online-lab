@@ -279,6 +279,19 @@ FEMhub.CellManager = function(config) {
             });
         },
 
+        killEngine: function() {
+            Ext.Ajax.request({
+                url: this.getAsyncURL(),
+                method: "POST",
+                jsonData: Ext.encode({
+                    method: 'kill',
+                }),
+                success: Ext.emptyFn,
+                failure: Ext.emptyFn,
+                scope: this,
+            });
+        },
+
         isSavedToBackend: function() {
             var cells = this.getRawCells();
 

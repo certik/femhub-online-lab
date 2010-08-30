@@ -125,9 +125,10 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     },
 
     close: function() {
-        var cells = this.getCellsManager();
+        var manager = this.getCellsManager();
 
-        if (cells.isSavedToBackend()) {
+        if (manager.isSavedToBackend()) {
+            manager.killEngine();
             FEMhub.Notebook.superclass.close.call(this);
         } else {
             Ext.MessageBox.show({
@@ -137,8 +138,9 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 fn: function(button) {
                     switch (button) {
                         case 'yes':
-                            cells.saveToBackend();
+                            manager.saveToBackend();
                         case 'no':
+                            manager.killEngine();
                             FEMhub.Notebook.superclass.close.call(this);
                             break;
                         case 'cancel':
@@ -306,4 +308,6 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         }
     },
 });
+
+Ext.reg('x-femhub-notebook', FEMhub.Notebook);
 

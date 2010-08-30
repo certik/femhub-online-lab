@@ -249,5 +249,9 @@ FEMhub.Desktop = function(lab) {
         this.taskbar.destroy();
         this.getDesktopEl().remove();
     };
+
+    this.getGroup = function() {
+        return windows;
+    };
 };
 
