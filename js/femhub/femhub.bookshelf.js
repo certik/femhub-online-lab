@@ -65,6 +65,15 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             }, '-', {
                 xtype: 'button',
                 cls: 'x-btn-text-icon',
+                text: 'Refresh',
+                iconCls: 'femhub-refresh-icon',
+                handler: function() {
+                    this.getNotebooks();
+                },
+                scope: this,
+            }, {
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
                 text: 'Rename',
                 iconCls: 'femhub-rename-icon',
                 handler: function() {
