@@ -74,6 +74,14 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     scope: this,
                 }, '-', {
                     cls: 'x-btn-text-icon',
+                    text: 'Refresh',
+                    iconCls: 'femhub-refresh-icon',
+                    handler: function() {
+                        this.getCellsManager().justifyCells();
+                    },
+                    scope: this,
+                }, {
+                    cls: 'x-btn-text-icon',
                     text: 'Rename',
                     iconCls: 'femhub-rename-icon',
                     handler: function() {
