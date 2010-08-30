@@ -553,19 +553,34 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         }, this);
     },
 
-    openNotebook: function(id, title) {
+    openNotebook: function(guid, name) {
         var desktop = FEMhub.lab.getDesktop();
-        var title = title || 'untitled';
 
-        var notebook = desktop.createWindow(FEMhub.Notebook, {
-            nbid: id,
-            name: title,
-            width: 600,
-            height: 400,
-            bookshelf: this,
-        });
+        var notebooks = desktop.getGroup().getBy(function(wnd) {
+            return Ext.isDefined(wnd.nbid) && wnd.nbid == guid;
+        }, this);
+
+        if (notebooks.length) {
+            var notebook = notebooks[0];
+        } else {
+            var notebook = desktop.createWindow(FEMhub.Notebook, {
+                nbid: guid,
+                name: name || 'untitled',
+                width: 600,
+                height: 400,
+                bookshelf: this,
+            });
+
+        }
 
         notebook.show();
+
+        if (notebooks.length) {
+            notebook.header.highlight("ee7700", {
+                attr: 'color', duration: 2,
+            });
+        }
+
         return notebook;
     },
 
