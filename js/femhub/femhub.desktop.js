@@ -58,11 +58,22 @@ FEMhub.Desktop = function(lab) {
     this.createWindow = function(cls, config) {
         config = config || {};
 
+        var view = this.getSize();
+
+        var width = Math.min(0.8*view.width, 700);
+        var height = Math.min(0.8*view.height, 500);
+
         Ext.applyIf(config, {
             renderTo: desktopEl,
             manager: windows,
             minimizable: true,
-            maximizable: true
+            maximizable: true,
+            closable: true,
+            onEsc: Ext.emptyFn,
+            x: (view.width - width)/2,
+            y: (view.height - height)/2,
+            width: width,
+            height: height,
         });
 
         var win = new cls(config);
@@ -201,8 +212,7 @@ FEMhub.Desktop = function(lab) {
 
             menu.showAt(evt.getXY());
             evt.stopEvent();
-        });
-    };
+        }); };
 
     this.arrangeLaunchers = function() {
         var len = this.launchers.length;

@@ -17,14 +17,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
         Ext.apply(config, {
             title: "Bookshelf",
-            layout: 'border',
-            width: 700,
-            height: 500,
             iconCls: 'femhub-bookshelf-icon',
-            maximizable: true,
-            minimizable: true,
-            closable: true,
-            onEsc: Ext.emptyFn,
+            layout: 'border',
             tbar: this.toolbar,
             items: [this.foldersTree, this.notebooksGrid],
         });

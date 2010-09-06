@@ -9,15 +9,11 @@ FEMhub.Settings = Ext.extend(Ext.Window, {
         this.initTabsPanel();
 
         Ext.apply(config, {
-            title: "Settings",
+            title: 'Settings',
+            iconCls: 'femhub-settings-icon',
             layout: 'fit',
             width: 400,
             height: 300,
-            iconCls: 'femhub-settings-icon',
-            maximizable: true,
-            minimizable: true,
-            closable: true,
-            onEsc: Ext.emptyFn,
             items: this.tabsPanel,
             buttons: [{
                 text: 'Apply',

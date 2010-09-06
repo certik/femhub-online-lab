@@ -4,14 +4,10 @@ FEMhub.Help = Ext.extend(Ext.Window, {
         config = config || {};
 
         Ext.apply(config, {
-            title: "Help",
-            layout: 'fit',
-            width: 500,
-            height: 400,
+            title: 'Help',
             iconCls: 'femhub-help-icon',
             bodyCssClass: 'femhub-help-body',
-            closable: true,
-            onEsc: Ext.emptyFn,
+            layout: 'fit',
             buttons: [{
                 text: 'Close',
                 handler: function() {

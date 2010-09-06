@@ -1,24 +1,16 @@
 
 FEMhub.Console = Ext.extend(Ext.Window, {
-    consoleGrid: null,
-
     constructor: function(config) {
+        config = config || {};
+
         this.initConsoleGrid();
         this.fillConsoleGrid();
 
-        config = config || {};
-
         Ext.apply(config, {
-            title: "Console",
-            layout: 'fit',
-            width: 700,
-            height: 500,
+            title: 'Console',
             iconCls: 'femhub-console-icon',
-            maximizable: true,
-            minimizable: true,
-            closable: true,
-            onEsc: Ext.emptyFn,
-            items: [this.consoleGrid],
+            layout: 'fit',
+            items: this.consoleGrid,
         });
 
         FEMhub.Console.superclass.constructor.call(this, config);
