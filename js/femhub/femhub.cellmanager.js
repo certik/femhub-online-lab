@@ -272,7 +272,7 @@ FEMhub.CellManager = function(config) {
             });
         },
 
-        killBackend: function() {
+        interruptEngine: function() {
             Ext.Ajax.request({
                 url: this.getAsyncURL(),
                 method: "POST",

@@ -36,6 +36,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Share',
                 iconCls: 'femhub-share-notebook-icon',
+                tooltip: 'Share this notebook with other users.',
+                tabIndex: -1,
                 handler: function() {
                     FEMhub.raiseNotImplementedError();
                 },
@@ -44,6 +46,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Evaluate All',
                 iconCls: 'femhub-eval-all-notebook-icon',
+                tooltip: 'Evaluate all cells in this notebook.',
+                tabIndex: -1,
                 handler: function() {
                     this.evaluateCells();
                 },
@@ -53,6 +57,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Imports',
                 iconCls: 'femhub-plugin-icon',
+                tooltip: 'Import external cells to this notebook.',
+                tabIndex: -1,
                 menu: [{
                     text: 'Select',
                     iconCls: 'femhub-plugin-edit-icon',
@@ -75,6 +81,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
             }, '-', {
                 cls: 'x-btn-icon',
                 iconCls: 'femhub-increase-font-size-icon',
+                tooltip: "Increase cells' font size.",
+                tabIndex: -1,
                 handler: function() {
                     this.getCellsManager().increaseFontSize();
                 },
@@ -82,6 +90,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
             }, {
                 cls: 'x-btn-icon',
                 iconCls: 'femhub-decrease-font-size-icon',
+                tooltip: "Decrease cells' font size.",
+                tabIndex: -1,
                 handler: function() {
                     this.getCellsManager().decreaseFontSize();
                 },
@@ -90,6 +100,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Refresh',
                 iconCls: 'femhub-refresh-icon',
+                tooltip: 'Refresh the user interface.',
+                tabIndex: -1,
                 handler: function() {
                     this.getCellsManager().justifyCells();
                 },
@@ -98,6 +110,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Rename',
                 iconCls: 'femhub-rename-icon',
+                tooltip: 'Choose new title for this notebook.',
+                tabIndex: -1,
                 handler: function() {
                     this.renameNotebook();
                 },
@@ -106,6 +120,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Save',
                 iconCls: 'femhub-save-notebook-icon',
+                tooltip: 'Save changes to this notebook.',
+                tabIndex: -1,
                 handler: function() {
                     this.getCellsManager().saveToBackend();
                 },
@@ -113,6 +129,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
             }, {
                 cls: 'x-btn-text',
                 text: 'Save & Close',
+                tooltip: 'Save changes and close this window.',
+                tabIndex: -1,
                 handler: function() {
                     this.getCellsManager().saveToBackend({
                         postsave: this.close,
@@ -122,10 +140,12 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 scope: this,
             }, '-', {
                 cls: 'x-btn-text-icon',
-                text: 'Kill',
+                text: 'Interrupt',
                 iconCls: 'femhub-remove-icon',
+                tooltip: 'Interrupt currently evaluating cell.',
+                tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().killBackend();
+                    this.getCellsManager().interruptEngine();
                 },
                 scope: this,
             }],
