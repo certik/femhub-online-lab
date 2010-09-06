@@ -16,7 +16,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         config = config || {};
 
         Ext.apply(config, {
-            title: "FEMhub Bookshelf",
+            title: "Bookshelf",
             layout: 'border',
             width: 700,
             height: 500,

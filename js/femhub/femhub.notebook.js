@@ -5,7 +5,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     layout: 'fit',
 
     cells: null,
-    baseTitle: 'FEMhub Notebook',
+    baseTitle: 'Notebook',
 
     imports: [],
 

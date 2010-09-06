@@ -28,5 +28,5 @@ FEMhub.Module = Ext.extend(Ext.util.Observable, {
     },
 });
 
-FEMhub.Modules = {}; // global namespace of FEMhub modules
+FEMhub.Modules = {}; // global namespace of Online Lab modules
 

@@ -9,7 +9,7 @@ FEMhub.Console = Ext.extend(Ext.Window, {
         config = config || {};
 
         Ext.apply(config, {
-            title: "FEMhub Console",
+            title: "Console",
             layout: 'fit',
             width: 700,
             height: 500,

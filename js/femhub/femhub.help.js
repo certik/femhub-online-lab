@@ -4,7 +4,7 @@ FEMhub.Help = Ext.extend(Ext.Window, {
         config = config || {};
 
         Ext.apply(config, {
-            title: "FEMhub Help",
+            title: "Help",
             layout: 'fit',
             width: 500,
             height: 400,

@@ -9,7 +9,7 @@ FEMhub.Settings = Ext.extend(Ext.Window, {
         this.initTabsPanel();
 
         Ext.apply(config, {
-            title: "FEMhub Settings",
+            title: "Settings",
             layout: 'fit',
             width: 400,
             height: 300,
