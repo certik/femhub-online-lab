@@ -135,6 +135,7 @@ Ext.extend(FEMhub.TaskButton, Ext.Button, {
             el.un('mousedown', onMouseDown, this);
         }
 
+        this.win.toFront();
         desktop.disable();
 
         el.on('mousemove', onMouseMove, this);
@@ -162,6 +163,7 @@ Ext.extend(FEMhub.TaskButton, Ext.Button, {
             box.height -= box.y + box.height - view.height;
         }
 
+        this.win.toFront();
         this.win.updateBox(box);
     },
 
