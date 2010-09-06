@@ -557,20 +557,16 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         var desktop = FEMhub.lab.getDesktop();
 
         var notebooks = desktop.getGroup().getBy(function(wnd) {
-            return Ext.isDefined(wnd.nbid) && wnd.nbid == guid;
+            return Ext.isDefined(wnd.guid) && wnd.guid == guid;
         }, this);
 
         if (notebooks.length) {
             var notebook = notebooks[0];
         } else {
             var notebook = desktop.createWindow(FEMhub.Notebook, {
-                nbid: guid,
-                name: name || 'untitled',
-                width: 600,
-                height: 400,
-                bookshelf: this,
+                guid: guid,
+                name: name,
             });
-
         }
 
         notebook.show();

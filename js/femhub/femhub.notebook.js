@@ -1,137 +1,133 @@
 
 FEMhub.Notebook = Ext.extend(Ext.Window, {
-    iconCls: 'femhub-notebook-icon',
-    maximizable: true,
-    layout: 'fit',
-
-    cells: null,
-    baseTitle: 'Notebook',
-
     imports: [],
 
     constructor: function(config) {
-        config.title = config.name;
-        FEMhub.Notebook.superclass.constructor.apply(this, arguments);
+        if (!Ext.isDefined(config.name)) {
+            config.name = 'untitled';
+        }
+
+        var tbar = this.initToolbar();
+
+        this.cells = new FEMhub.Cells({
+            nbid: config.guid,
+            name: config.name,
+        });
+
+        Ext.applyIf(config, {
+            title: config.name,
+            iconCls: 'femhub-notebook-icon',
+            layout: 'fit',
+            tbar: tbar,
+            items: this.cells,
+        });
+
+        FEMhub.Notebook.superclass.constructor.call(this, config);
     },
 
     getCellsManager: function() {
         return this.cells.getCellsManager();
     },
 
-    setTitle: function(text) {
-        this.name = text;
-
-        if (text) {
-            var title = this.baseTitle + ' - ' + text;
-        } else {
-            var title = this.baseTitle;
-        }
-
-        FEMhub.Notebook.superclass.setTitle.call(this, title);
-    },
-
-    initComponent: function() {
-        this.tbar = new Ext.Toolbar({
+    initToolbar: function() {
+        return new Ext.Toolbar({
             enableOverflow: true,
-            items: [
-                {
-                    cls: 'x-btn-text-icon',
-                    text: 'Share',
-                    iconCls: 'femhub-share-notebook-icon',
-                    handler: function() {
-                        FEMhub.raiseNotImplementedError();
-                    },
-                    scope: this,
-                }, '-', {
-                    cls: 'x-btn-text-icon',
-                    text: 'Evaluate All',
-                    iconCls: 'femhub-eval-all-notebook-icon',
-                    handler: function() {
-                        this.evaluateCells();
-                    },
-                    scope: this,
-                }, {
-                    xtype: 'tbsplit',
-                    cls: 'x-btn-text-icon',
-                    text: 'Imports',
-                    iconCls: 'femhub-plugin-icon',
-                    menu: [{
-                        text: 'Select',
-                        iconCls: 'femhub-plugin-edit-icon',
-                        handler: function() {
-                            this.selectImports();
-                        },
-                        scope: this,
-                    }, {
-                        text: 'Reload',
-                        iconCls: 'femhub-refresh-icon',
-                        handler: function() {
-                            this.evaluateImports();
-                        },
-                        scope: this,
-                    }],
+            items: [{
+                cls: 'x-btn-text-icon',
+                text: 'Share',
+                iconCls: 'femhub-share-notebook-icon',
+                handler: function() {
+                    FEMhub.raiseNotImplementedError();
+                },
+                scope: this,
+            }, '-', {
+                cls: 'x-btn-text-icon',
+                text: 'Evaluate All',
+                iconCls: 'femhub-eval-all-notebook-icon',
+                handler: function() {
+                    this.evaluateCells();
+                },
+                scope: this,
+            }, {
+                xtype: 'tbsplit',
+                cls: 'x-btn-text-icon',
+                text: 'Imports',
+                iconCls: 'femhub-plugin-icon',
+                menu: [{
+                    text: 'Select',
+                    iconCls: 'femhub-plugin-edit-icon',
                     handler: function() {
                         this.selectImports();
                     },
                     scope: this,
-                }, '-', {
-                    cls: 'x-btn-text-icon',
-                    text: 'Refresh',
+                }, {
+                    text: 'Reload',
                     iconCls: 'femhub-refresh-icon',
                     handler: function() {
-                        this.getCellsManager().justifyCells();
+                        this.evaluateImports();
                     },
                     scope: this,
-                }, {
-                    cls: 'x-btn-text-icon',
-                    text: 'Rename',
-                    iconCls: 'femhub-rename-icon',
-                    handler: function() {
-                        this.renameNotebook();
-                    },
-                    scope: this,
-                }, {
-                    cls: 'x-btn-text-icon',
-                    text: 'Save',
-                    iconCls: 'femhub-save-notebook-icon',
-                    handler: function() {
-                        this.getCellsManager().saveToBackend();
-                    },
-                    scope: this,
-                }, {
-                    cls: 'x-btn-text',
-                    text: 'Save & Close',
-                    handler: function() {
-                        this.getCellsManager().saveToBackend({
-                            postsave: this.close,
-                            scope: this,
-                        });
-                    },
-                    scope: this,
-                }, '-', {
-                    cls: 'x-btn-text-icon',
-                    text: 'Kill',
-                    iconCls: 'femhub-remove-icon',
-                    handler: function() {
-                        this.getCellsManager().killBackend();
-                    },
-                    scope: this,
+                }],
+                handler: function() {
+                    this.selectImports();
                 },
-            ],
+                scope: this,
+            }, '-', {
+                cls: 'x-btn-text-icon',
+                text: 'Refresh',
+                iconCls: 'femhub-refresh-icon',
+                handler: function() {
+                    this.getCellsManager().justifyCells();
+                },
+                scope: this,
+            }, {
+                cls: 'x-btn-text-icon',
+                text: 'Rename',
+                iconCls: 'femhub-rename-icon',
+                handler: function() {
+                    this.renameNotebook();
+                },
+                scope: this,
+            }, {
+                cls: 'x-btn-text-icon',
+                text: 'Save',
+                iconCls: 'femhub-save-notebook-icon',
+                handler: function() {
+                    this.getCellsManager().saveToBackend();
+                },
+                scope: this,
+            }, {
+                cls: 'x-btn-text',
+                text: 'Save & Close',
+                handler: function() {
+                    this.getCellsManager().saveToBackend({
+                        postsave: this.close,
+                        scope: this,
+                    });
+                },
+                scope: this,
+            }, '-', {
+                cls: 'x-btn-text-icon',
+                text: 'Kill',
+                iconCls: 'femhub-remove-icon',
+                handler: function() {
+                    this.getCellsManager().killBackend();
+                },
+                scope: this,
+            }],
         });
-
-        FEMhub.Notebook.superclass.initComponent.call(this);
     },
 
-    onRender: function() {
-        FEMhub.Notebook.superclass.onRender.apply(this, arguments);
+    setTitle: function(title, iconCls) {
+        this.name = title;
 
-        this.cells = new FEMhub.Cells({
-            nbid: this.nbid,
-            name: this.name,
-        });
+        if (title) {
+            title = 'Notebook - ' + title;
+        } else {
+            title = 'Notebook';
+        }
 
-        this.add(this.cells);
+        FEMhub.Notebook.superclass.setTitle.call(this, title, iconCls);
     },
 
     close: function() {
