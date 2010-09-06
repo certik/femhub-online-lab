@@ -243,7 +243,12 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                     FEMhub.RPC.Notebooks.renameNotebook({guid: guid, title: title}, function(result) {
                         if (result.ok === true) {
                             this.setTitle(title);
-                            this.bookshelf.getNotebooks();
+
+                            FEMhub.getDesktop().getManager().each(function(wnd) {
+                                if (wnd.getXType() === 'x-femhub-bookshelf') {
+                                    wnd.getNotebooks();
+                                }
+                            });
                         } else {
                             FEMhub.log("Can't rename notebook");
                         }

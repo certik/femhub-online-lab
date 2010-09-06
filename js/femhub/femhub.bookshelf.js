@@ -594,6 +594,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 });
 
+Ext.reg('x-femhub-bookshelf', FEMhub.Bookshelf);
+
 FEMhub.Modules.Bookshelf = Ext.extend(FEMhub.Module, {
     launcher: {
         text: 'Bookshelf',
