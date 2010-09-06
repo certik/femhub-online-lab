@@ -65,6 +65,10 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.el.addClass('femhub-cell');
 
+        if (Ext.isDefined(this.initFontSize)) {
+            this.setFontSize(this.initFontSize);
+        }
+
         this.el_bracket = this.el.createChild({
             tag: 'div',
             cls: 'femhub-cell-bracket',
@@ -273,6 +277,10 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         });
 
         return context;
+    },
+
+    setFontSize: function(size) {
+        this.el.setStyle('font-size', size + '%');
     },
 });
 

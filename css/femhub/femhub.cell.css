@@ -34,6 +34,8 @@
     height: 30px;
     margin: 10px;
     border: none;
+    font-size: 100%;
+    font-family: monospace;
 }
 
 .femhub-cell-bracket {
@@ -81,8 +83,6 @@
     height: auto;
     position: absolute;
     white-space: pre;
-    font-size: 10pt;
-    font-family: monospace;
     border-top: 1px solid white;
     padding-top: 5px;
     visibility: hidden;
@@ -108,8 +108,7 @@
     width: 100%;
     padding: 5px;
     overflow: hidden;
-    font-size: 10pt;
-    font-family: monospace;
+    font-size: inherit;
     border-width: 1px;
     border-style: solid;
     border-color: #bfbfbf;
@@ -163,9 +162,8 @@
 .femhub-cell-input-controls {
     margin: 2px 0 0 2px;
     width: 100%;
-    font-size: 7pt;
-    font-family: monospace;
     display: none;
+    font-size: 7pt;
 }
 
 .femhub-cell-input-controls.femhub-enabled {
@@ -245,9 +243,9 @@
     position: relative;
     overflow: hidden;
     display: block;
-    font-size: 10pt;
     min-height: 10pt;
     margin-right: 10px;
+    font-family: sans-serif;
 }
 
 .femhub-cell-content-area ul {

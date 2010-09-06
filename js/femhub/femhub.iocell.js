@@ -271,7 +271,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
             cls: 'femhub-cell-expander',
         });
 
-        this.el_expander.dom.setAttribute('readOnly','readonly');
+        this.el_expander.dom.setAttribute('readOnly', 'readonly');
 
         this.el_label = this.el.createChild({
             tag: 'div',

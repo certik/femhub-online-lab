@@ -107,3 +107,11 @@
     background-image: url(/static/img/femhub/icons/lightning.png) !important;
 }
 
+.femhub-increase-font-size-icon {
+    background-image: url(/static/img/femhub/icons/16x16/font-increase.png) !important;
+}
+
+.femhub-decrease-font-size-icon {
+    background-image: url(/static/img/femhub/icons/16x16/font-decrease.png) !important;
+}
+

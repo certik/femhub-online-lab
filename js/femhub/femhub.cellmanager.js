@@ -25,6 +25,7 @@ FEMhub.CellManager = function(config) {
         autoJustify: true,
         wrapOutputText: true,
         tabWidth: 4,
+        fontSize: 100,
 
         types: {
             'input': 'InputCell',
@@ -44,6 +45,7 @@ FEMhub.CellManager = function(config) {
 
             var cell = new FEMhub[ctype](Ext.apply({
                 owner: this,
+                initFontSize: this.fontSize,
             }, config.setup));
 
             this.statusSaved = false;
@@ -160,6 +162,10 @@ FEMhub.CellManager = function(config) {
             for (var i = 0; i < cells.length; i++) {
                 handler.call(scope || this, cells[i]);
             }
+        },
+
+        each: function(handler, scope) {
+            return this.iterCells(undefined, handler, scope);
         },
 
         justifyCells: function() {
@@ -393,6 +399,34 @@ FEMhub.CellManager = function(config) {
                 },
                 scope: this,
             });
+        },
+
+        increaseFontSize: function() {
+            if (this.fontSize >= 300) {
+                this.fontSize = 300;
+            } else {
+                this.fontSize += 20;
+            }
+
+            this.each(function(cell) {
+                cell.setFontSize(this.fontSize);
+            }, this);
+
+            this.justifyCells();
+        },
+
+        decreaseFontSize: function() {
+            if (this.fontSize <= 40) {
+                this.fontSize = 40;
+            } else {
+                this.fontSize -= 20;
+            }
+
+            this.each(function(cell) {
+                cell.setFontSize(this.fontSize);
+            }, this);
+
+            this.justifyCells();
         },
     }, config, {
         root: Ext.getBody(),
