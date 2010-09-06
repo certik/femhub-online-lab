@@ -275,5 +275,17 @@ FEMhub.TaskBar = Ext.extend(Ext.BoxComponent, {
         this.scrollLeft[pos == 0 ? 'addClass': 'removeClass']('femhub-disabled');
         this.scrollRight[pos >= (this.getScrollWidth()-this.getScrollArea()) ? 'addClass': 'removeClass']('femhub-disabled');
     },
+
+    onEnable: function() {
+        Ext.each(this.buttons, function(button) {
+            button.enable();
+        }, this);
+    },
+
+    onDisable: function() {
+        Ext.each(this.buttons, function(button) {
+            button.disable();
+        }, this);
+    },
 });
 

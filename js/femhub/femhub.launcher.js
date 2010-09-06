@@ -36,13 +36,10 @@ FEMhub.Launcher = Ext.extend(Ext.Component, {
         });
 
         this.elLink.addClassOnFocus('femhub-highlight');
-        this.elLink.on('click', function() {
-            this.elLink.focus();
-        }, this);
 
-        this.elLink.on('click', this.handleClick, this, {preventDefault: true});
-        this.elLink.on('dblclick', this.handleDblClick, this, {preventDefault: true});
-        this.elLink.on('contextmenu', this.handleContextMenu, this, {preventDefault: true});
+        this.elLink.on('click', this.onClick, this, {stopEvent: true});
+        this.elLink.on('dblclick', this.onDblClick, this, {stopEvent: true});
+        this.elLink.on('contextmenu', this.onContextMenu, this, {stopEvent: true});
 
         this.el.initDDProxy('launchers', {}, {
             startDrag: function(x, y) {
@@ -62,16 +59,23 @@ FEMhub.Launcher = Ext.extend(Ext.Component, {
         });
     },
 
-    handleClick: function(evt) {
-        this.fireEvent('click', this, evt);
+    onClick: function(evt) {
+        if (!this.disabled) {
+            this.elLink.focus();
+            this.fireEvent('click', this, evt);
+        }
     },
 
-    handleDblClick: function(evt) {
-        this.fireEvent('dblclick', this, evt);
+    onDblClick: function(evt) {
+        if (!this.disabled) {
+            this.fireEvent('dblclick', this, evt);
+        }
     },
 
-    handleContextMenu: function(evt) {
-        this.fireEvent('contextmenu', this, evt);
+    onContextMenu: function(evt) {
+        if (!this.disabled) {
+            this.fireEvent('contextmenu', this, evt);
+        }
     },
 });
 

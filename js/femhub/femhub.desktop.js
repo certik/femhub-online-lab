@@ -74,10 +74,6 @@ FEMhub.Desktop = function(lab) {
         win.render(desktopEl);
         win.taskButton = taskbar.addButton(win);
 
-        win.cmenu = new Ext.menu.Menu({
-            items: [],
-        });
-
         win.animateTarget = win.taskButton.el;
 
         win.on({
@@ -252,6 +248,30 @@ FEMhub.Desktop = function(lab) {
 
     this.getGroup = function() {
         return windows;
+    };
+
+    this.getSize = function() {
+        return desktopEl.getSize();
+    };
+
+    this.getTaskbar = function() {
+        return this.taskbar;
+    };
+
+    this.enable = function() {
+        Ext.each(this.launchers, function(launcher) {
+            launcher.enable();
+        }, this);
+
+        this.taskbar.enable();
+    };
+
+    this.disable = function() {
+        Ext.each(this.launchers, function(launcher) {
+            launcher.disable();
+        }, this);
+
+        this.taskbar.disable();
     };
 };
 

@@ -120,3 +120,7 @@ FEMhub.raiseNotImplementedError = function() {
     });
 }
 
+FEMhub.getDesktop = function() {
+    return FEMhub.lab.getDesktop();
+}
+
