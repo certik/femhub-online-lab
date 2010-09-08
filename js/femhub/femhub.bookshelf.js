@@ -273,7 +273,11 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
         this.notebooksGrid.on('rowdblclick', function(grid, row, evt) {
             var record = grid.getStore().getAt(row);
-            this.openNotebook(record.id, record.data.title);
+
+            this.openNotebook({
+                guid: record.id,
+                name: record.data.title,
+            });
         }, this);
 
         this.notebooksGrid.on('rowcontextmenu', function(grid, row, evt) {
@@ -281,10 +285,24 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
             var context = new Ext.menu.Menu({
                 items: [{
-                    text: 'Edit',
+                    text: 'Open',
                     iconCls: 'femhub-edit-notebook-icon',
+                    menu: [{
+                        text: 'Open without output cells',
+                        handler: function() {
+                            this.openNotebook({
+                                guid: record.id,
+                                name: record.data.title,
+                                loadOutputCells: false,
+                            });
+                        },
+                        scope: this,
+                    }],
                     handler: function() {
-                        this.openNotebook(record.id, record.data.title);
+                        this.openNotebook({
+                            guid: record.id,
+                            name: record.data.title,
+                        });
                     },
                     scope: this,
                 }, '-', {
@@ -534,7 +552,9 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
         FEMhub.RPC.Notebooks.addNotebook(params, function(result) {
             if (result.ok === true) {
-                var notebook = this.openNotebook(result.guid);
+                var notebook = this.openNotebook({
+                    guid: result.guid,
+                });
 
                 if (Ext.isDefined(handler)) {
                     handler.call(scope || this, notebook);
@@ -547,20 +567,17 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         }, this);
     },
 
-    openNotebook: function(guid, name) {
+    openNotebook: function(conf) {
         var desktop = FEMhub.lab.getDesktop();
 
         var notebooks = desktop.getGroup().getBy(function(wnd) {
-            return Ext.isDefined(wnd.guid) && wnd.guid == guid;
+            return Ext.isDefined(wnd.getGUID) && wnd.getGUID() == conf.guid;
         }, this);
 
         if (notebooks.length) {
             var notebook = notebooks[0];
         } else {
-            var notebook = desktop.createWindow(FEMhub.Notebook, {
-                guid: guid,
-                name: name,
-            });
+            var notebook = desktop.createWindow(FEMhub.Notebook, { conf: conf });
         }
 
         notebook.show();

@@ -7,11 +7,7 @@ FEMhub.CellManager = function(config) {
     }
 
     return Ext.apply({
-        nbid: null,      // config.nbid
-        name: null,      // config.name
-
-        evalIndex: 1,
-        statusSaved: true,
+        guid: null,
 
         softEvalTimeout: null,
         hardEvalTimeout: null,
@@ -19,7 +15,7 @@ FEMhub.CellManager = function(config) {
         moveForwardOnRemove: false,
         mergeOnBackspace: true,
         newCellOnEval: false,
-        autoLoadOutputCells: true,
+        loadOutputCells: true,
         cycleCells: true,
         startEmpty: true,
         autoJustify: true,
@@ -27,11 +23,18 @@ FEMhub.CellManager = function(config) {
         tabWidth: 4,
         fontSize: 100,
 
+        evalIndex: 1,
+        statusSaved: true,
+
         types: {
             'input': 'InputCell',
             'output': 'OutputCell',
             'image': 'ImageCell',
             'content': 'ContentCell',
+        },
+
+        getGUID: function() {
+            return this.guid;
         },
 
         newCell: function(config) {
@@ -195,11 +198,11 @@ FEMhub.CellManager = function(config) {
         },
 
         getDataURL: function() {
-            return '/notebook/' + this.nbid + '/';
+            return '/notebook/' + this.guid + '/';
         },
 
         getAsyncURL: function() {
-            return '/asyncnotebook/' + this.nbid + '/';
+            return '/asyncnotebook/' + this.guid + '/';
         },
 
         initBackend: function() {
@@ -234,7 +237,7 @@ FEMhub.CellManager = function(config) {
                             var data = result.cells[id];
 
                             if (data.cellstyle == 'outputtext') {
-                                if (this.autoLoadOutputCells) {
+                                if (this.loadOutputCells) {
                                     data.cellstyle = 'output';
                                 } else {
                                     return;
@@ -242,7 +245,7 @@ FEMhub.CellManager = function(config) {
                             }
 
                             if (data.cellstyle == 'outputimage') {
-                                if (this.autoLoadOutputCells) {
+                                if (this.loadOutputCells) {
                                     data.cellstyle = 'image';
                                 } else {
                                     return;
@@ -359,7 +362,7 @@ FEMhub.CellManager = function(config) {
             }
 
             var params = {
-                guid: this.nbid,
+                guid: this.guid,
                 cellsdata: cellsdata,
                 orderlist: Ext.encode(orderlist),
             }
@@ -376,7 +379,7 @@ FEMhub.CellManager = function(config) {
                         args.postsave.call(args.scope);
                     }
                 } else {
-                    FEMhub.log("Failed to save cells for: " + this.nbid);
+                    FEMhub.log("Failed to save cells for: " + this.guid);
                 }
             }, this);
         },

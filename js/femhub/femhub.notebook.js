@@ -3,22 +3,19 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     imports: [],
 
     constructor: function(config) {
-        if (!Ext.isDefined(config.name)) {
-            config.name = 'untitled';
+        config = config || {};
+
+        if (!Ext.isDefined(config.conf.name)) {
+            config.conf.name = 'untitled';
         }
 
-        var tbar = this.initToolbar();
-
-        this.cells = new FEMhub.Cells({
-            nbid: config.guid,
-            name: config.name,
-        });
+        this.cells = new FEMhub.CellPanel({ conf: config.conf });
 
         Ext.applyIf(config, {
-            title: config.name,
+            title: config.conf.name,
             iconCls: 'femhub-notebook-icon',
             layout: 'fit',
-            tbar: tbar,
+            tbar: this.initToolbar(),
             items: this.cells,
         });
 
@@ -27,6 +24,10 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
 
     getCellsManager: function() {
         return this.cells.getCellsManager();
+    },
+
+    getGUID: function() {
+        return this.getCellsManager().getGUID();
     },
 
     initToolbar: function() {
@@ -272,7 +273,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
-                    var guid = this.getCellsManager().nbid;
+                    var guid = this.getGUID();
 
                     FEMhub.RPC.Notebooks.renameNotebook({guid: guid, title: title}, function(result) {
                         if (result.ok === true) {
@@ -300,7 +301,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         });
 
         var chooser = new FEMhub.NotebookChooser({
-            guid: this.getCellsManager().nbid,
+            guid: this.getGUID(),
             exclude: true,
             checked: checked,
             listeners: {
