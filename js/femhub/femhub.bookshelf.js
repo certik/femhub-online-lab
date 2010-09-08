@@ -351,7 +351,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
         Ext.MessageBox.prompt('Add folder', 'Enter folder name:', function(button, title) {
             if (button === 'ok') {
-                if (FEMhub.isValidName(title) === false) {
+                if (FEMhub.util.isValidName(title) === false) {
                     Ext.MessageBox.show({
                         title: 'Add folder',
                         msg: "Invalid folder name.",
@@ -390,7 +390,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         } else {
             Ext.MessageBox.prompt('Rename folder', 'Enter new folder name:', function(button, title) {
                 if (button === 'ok') {
-                    if (FEMhub.isValidName(title) === false) {
+                    if (FEMhub.util.isValidName(title) === false) {
                         Ext.MessageBox.show({
                             title: 'Rename folder',
                             msg: "Invalid folder name.",
@@ -446,7 +446,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     renameNotebook: function(record) {
         Ext.MessageBox.prompt('Rename notebook', 'Enter new notebook name:', function(button, title) {
             if (button === 'ok') {
-                if (FEMhub.isValidName(title) === false) {
+                if (FEMhub.util.isValidName(title) === false) {
                     Ext.MessageBox.show({
                         title: 'Rename notebook',
                         msg: "'" + title + "' is not a valid notebook name.",

@@ -264,7 +264,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     renameNotebook: function() {
         Ext.MessageBox.prompt('Rename notebook', 'Enter new notebook name:', function(button, title) {
             if (button === 'ok') {
-                if (FEMhub.isValidName(title) === false) {
+                if (FEMhub.util.isValidName(title) === false) {
                     Ext.MessageBox.show({
                         title: 'Rename notebook',
                         msg: "'" + title + "' is not a valid notebook name.",

@@ -2,12 +2,9 @@
 FEMhub.Lab = function(config) {
     Ext.apply(this, config);
 
-    this.addEvents({
-        'ready': true,
-        'beforeunload': true,
-    });
+    this.addEvents(['ready', 'beforeunload']);
 
-    FEMhub.init(function() {
+    FEMhub.RPC.init(function() {
         Ext.onReady(this.initLab, this);
     }, this);
 };
@@ -15,14 +12,12 @@ FEMhub.Lab = function(config) {
 Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     isReady: false,
     desktop: null,
-    modules: null,
-
-    init: function() {
-        /* pass */
-    },
+    modules: [],
 
     initLab: function() {
-        this.init();
+        if (Ext.isDefined(this.init)) {
+            this.init();
+        }
 
         Ext.EventManager.on(window, 'beforeunload', this.onUnload, this);
 
@@ -59,14 +54,12 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     afterLogin: function() {
         this.desktop = new FEMhub.Desktop(this);
 
-        if (Ext.isArray(this.modules)) {
-            for (var i = 0; i < this.modules.length; i++) {
-                var module = new this.modules[i]({ lab: this });
-                this.desktop.addLauncher(module);
-            }
-
-            this.desktop.arrangeLaunchers();
+        for (var i = 0; i < this.modules.length; i++) {
+            var module = new this.modules[i]({ lab: this });
+            this.desktop.addLauncher(module);
         }
+
+        this.desktop.arrangeLaunchers();
     },
 
     onReady: function(handler, scope) {
