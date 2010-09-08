@@ -18,6 +18,11 @@ FEMhub.CellPanel = Ext.extend(Ext.BoxComponent, {
         this.cellsManager.initBackend();
     },
 
+    beforeDestroy: function() {
+        this.cellsManager.destroy();
+        FEMhub.CellPanel.superclass.beforeDestroy.call(this);
+    },
+
     getCellsManager: function() {
         return this.cellsManager;
     },
