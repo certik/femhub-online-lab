@@ -225,6 +225,13 @@ body {
     display: block;
 }
 
+.femhub-mesheditor-body {
+    background-color: white;
+    padding: 0 0px;
+    overflow-y: auto;
+    font-size: 120%;
+}
+
 .femhub-help-body {
     background-color: white;
     padding: 0 10px;
