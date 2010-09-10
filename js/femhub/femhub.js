@@ -22,15 +22,6 @@ FEMhub.hasArg = function(args, arg) {
     return Ext.isDefined(args) && Ext.isDefined(args[arg]);
 }
 
-FEMhub.raiseNotImplementedError = function() {
-    Ext.MessageBox.show({
-        title: 'Not implemented',
-        msg: "This function hasn't been implemented yet. Sorry.",
-        buttons: Ext.MessageBox.OK,
-        icon: Ext.MessageBox.INFO,
-    });
-}
-
 FEMhub.getDesktop = function() {
     return FEMhub.lab.getDesktop();
 }

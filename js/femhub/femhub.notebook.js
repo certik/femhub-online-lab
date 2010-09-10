@@ -40,7 +40,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 tooltip: 'Share this notebook with other users.',
                 tabIndex: -1,
                 handler: function() {
-                    FEMhub.raiseNotImplementedError();
+                    FEMhub.msg.NotImplementedError();
                 },
                 scope: this,
             }, '-', {
