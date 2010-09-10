@@ -1,8 +1,4 @@
 
-Ext.BLANK_IMAGE_URL = "/static/external/ext/images/default/s.gif";
-
-Ext.WindowMgr.zseed = 10000;
-
 FEMhub = {
     version: [0, 0, 1],
     json: "/femhub/json/",
