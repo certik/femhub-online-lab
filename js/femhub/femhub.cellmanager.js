@@ -396,7 +396,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
 
                 this.statusSaved = true;
 
-                if (FEMhub.hasArg(args, 'postsave')) {
+                if (FEMhub.util.hasArg(args, 'postsave')) {
                     args.postsave.call(args.scope);
                 }
             } else {

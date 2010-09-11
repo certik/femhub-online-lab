@@ -15,7 +15,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         }
 
         if (!Ext.isDefined(config.id)) {
-            config.id = FEMhub.unique();
+            config.id = FEMhub.util.unique();
         }
 
         FEMhub.Cell.superclass.constructor.apply(this, arguments);

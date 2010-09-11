@@ -6,6 +6,14 @@ FEMhub.util.isValidName = function(name) {
     return len > 0 && len < 100;
 }
 
+FEMhub.util.hasArg = function(args, arg) {
+    return Ext.isDefined(args) && Ext.isDefined(args[arg]);
+}
+
+FEMhub.util.unique = function() {
+    return (new Date()).getTime() + Math.random().toString().substr(2, 8);
+}
+
 FEMhub.util.rfc = {};
 
 FEMhub.util.rfc.UUID = function() {
