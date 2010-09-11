@@ -89,3 +89,11 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     },
 });
 
+FEMhub.getDesktop = function() {
+    if (Ext.isDefined(FEMhub.lab)) {
+        return FEMhub.lab.getDesktop();
+    } else {
+        /* XXX: show error */
+    }
+}
+

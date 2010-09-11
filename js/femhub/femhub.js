@@ -4,7 +4,3 @@ FEMhub = {
     json: "/femhub/json/",
 };
 
-FEMhub.getDesktop = function() {
-    return FEMhub.lab.getDesktop();
-}
-
