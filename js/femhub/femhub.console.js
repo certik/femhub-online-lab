@@ -47,7 +47,7 @@ FEMhub.Console = Ext.extend(Ext.Window, {
                 text: 'Clear',
                 handler: function() {
                     this.clearConsoleGrid();
-                    FEMhub.clearLogs();
+                    FEMhub.logs.clear();
                 },
                 scope: this,
             }],
@@ -64,9 +64,9 @@ FEMhub.Console = Ext.extend(Ext.Window, {
         var store = this.consoleGrid.getStore();
         var index = 0;
 
-        Ext.each(FEMhub.logs, function(log) {
+        FEMhub.logs.each(function(log) {
             store.add(new rec({text: log[0], when: log[1]}, index++));
-        });
+        }, this);
     },
 
     clearConsoleGrid: function() {
