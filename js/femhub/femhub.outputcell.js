@@ -3,7 +3,6 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     ctype: 'output',
 
     labelPrefix: 'Out',
-    myInputCell: null,
 
     initComponent: function() {
         FEMhub.OutputCell.superclass.initComponent.call(this);
@@ -50,17 +49,7 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     getInputCell: function() {
-       if (this.myInputCell === null) {
-           return null;
-       } else {
-           var elt = Ext.get(this.myInputCell.id);
-
-           if (elt === null || !Ext.isDefined(elt)) {
-               return null;
-           } else {
-               return this.myInputCell;
-           }
-       }
+       return Ext.getCmp(this.id.splice(0, this.id.lastIndexOf('o'))) || null;
     },
 
     setupOutputCellObserver: function() {

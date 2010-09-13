@@ -33,6 +33,8 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     types: {
         'input': 'InputCell',
         'output': 'OutputCell',
+        'text': 'OutputCell',
+        'error': 'OutputCell',
         'image': 'ImageCell',
         'content': 'ContentCell',
     },

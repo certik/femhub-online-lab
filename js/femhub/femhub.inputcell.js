@@ -3,8 +3,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     ctype: 'input',
 
     labelPrefix: 'In ',
-    myOutputCell: null,
-
     evaluating: false,
 
     observedInputLength: 0,
@@ -138,31 +136,33 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         return this.setInput(input);
     },
 
-    getOutputCell: function() {
-       if (this.myOutputCell === null) {
-           var cmp = Ext.getCmp(this.id + 'o');
+    getOutputCells: function() {
+       var cell = Ext.getCmp(this.id + 'o');
 
-           if (cmp === null || !Ext.isDefined(cmp)) {
-               return null;
-           } else {
-               return cmp;
-           }
+       if (cell) {
+           return [cell];
        } else {
-           var elt = Ext.get(this.myOutputCell.id);
+           var cells = [];
 
-           if (elt === null || !Ext.isDefined(elt)) {
-               return null;
-           } else {
-               return this.myOutputCell;
+           for (var i = 0;; i++) {
+                var cell = Ext.getCmp(this.id + 'o' + i);
+
+                if (cell) {
+                    cells.push(cell);
+                } else {
+                    break;
+                }
            }
+
+           return cells;
        }
     },
 
-    destroyOutputCellIfCan: function() {
-        var cell = this.getOutputCell();
+    destroyOutputCells: function() {
+        var cells = this.getOutputCells();
 
-        if (cell !== null) {
-            cell.destroy();
+        for (var i = 0; i < cells.length; i++) {
+            cells[i].destroy();
         }
     },
 
@@ -412,7 +412,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         this.evaluating = true;
 
-        function evalSuccess(ctype, index, output) {
+        function evalSuccess(index, cells) {
             this.evaluating = false;
 
             this.el_evaluate.addClass('femhub-enabled');
@@ -425,43 +425,35 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.autosize();
             this.showLabel();
 
-            if (output.length > 0) {
-                if (/\n$/.test(output)) {
+            this.destroyOutputCells();
+
+            var after = this, i = 0;
+
+            Ext.each(cells, function(cell) {
+                var output = cell.output;
+                var type = cell.type;
+
+                while (/\n$/.test(output)) {
                     output = output.slice(0, output.length-1);
                 }
 
-                var cell = this.getOutputCell();
-
-                if (cell !== null && cell.ctype !== ctype) {
-                    cell.destroy();
-                    cell = null;
-                }
-
-                if (cell === null) {
-                    cell = this.owner.newCell({
-                        type: ctype,
-                        after: this,
+                if (output.length > 0) {
+                    var cell = this.owner.newCell({
+                        type: type,
+                        after: after,
                         setup: {
-                            id: this.id + 'o',
-                            myInputCell: this,
+                            id: this.id + 'o' + i++,
                         },
                     });
+
+                    cell.setOutput(output);
+                    cell.setLabel();
+                    cell.autosize();
+                    cell.showLabel();
+
+                    after = cell;
                 }
-
-                this.myOutputCell = cell;
-
-                cell.setLabel();
-                cell.setOutput(output);
-                cell.autosize();
-                cell.showLabel();
-                cell.saved = false;
-            } else {
-                var cell = this.getOutputCell();
-
-                if (cell !== null) {
-                    cell.destroy();
-                }
-            }
+            }, this);
 
             this.saved = false;
 
@@ -475,7 +467,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
             }
 
-            this.fireEvent('postevaluate', this, input, output);
+            this.fireEvent('postevaluate', this, input, cells);
         }
 
         function evalFailure(output) {
@@ -498,19 +490,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             }),
             success: function(result, request) {
                 var result = Ext.decode(result.responseText);
-
-                switch (result.cellstyle) {
-                    case 'outputtext':
-                        var ctype = 'output';
-                        break;
-                    case 'outputimage':
-                        var ctype = 'image';
-                        break;
-                    default:
-                        return evalFailure('unsupported type of cell');
-                }
-
-                evalSuccess.call(this, ctype, result.input_count, result.out + result.err);
+                evalSuccess.call(this, result.index, result.cells)
             },
             failure: function(result, request) {
                 evalFailure.call(this, result.statusText);
@@ -520,13 +500,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     clearCell: function() {
-        var cell = this.getOutputCell();
-
-        if (cell !== null) {
-            this.myOutputCell = null;
-            cell.destroy();
-        }
-
+        this.destroyOutputCells();
         this.setInput('');
         this.clearLabel();
         this.autosize();
@@ -559,15 +533,17 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     insertInputCellAfter: function() {
-        this.blurCell();
+        var after = this.getOutputCells();
 
-        var after = this.getOutputCell();
-
-        if (after === null) {
+        if (!after.length) {
             after = this;
+        } else {
+            after = after[after.length-1];
         }
 
         var cell = this.owner.newCell({ type: 'input', after: after });
+
+        this.blurCell();
         cell.focusCell();
 
         return cell;
@@ -597,7 +573,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         cell.setInput(input);
         cell.setSelection(selection);
 
-        this.destroyOutputCellIfCan();
+        this.destroyOutputCells();
 
         cell.autosize();
         cell.focusCell();
@@ -625,7 +601,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         cell.setInput(input);
         cell.setSelection(selection);
 
-        this.destroyOutputCellIfCan();
+        this.destroyOutputCells();
 
         cell.autosize();
         cell.focusCell();
@@ -635,7 +611,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     removeCell: function() {
-        this.destroyOutputCellIfCan();
+        this.destroyOutputCells();
         FEMhub.InputCell.superclass.removeCell.call(this);
     },
 });
