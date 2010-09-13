@@ -34,7 +34,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         'input': 'InputCell',
         'output': 'OutputCell',
         'text': 'OutputCell',
-        'error': 'OutputCell',
+        'error': 'ErrorCell',
         'image': 'ImageCell',
         'content': 'ContentCell',
     },
@@ -356,6 +356,8 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
                         cellstyle = 'input';
                         break;
                     case 'output':
+                    case 'error':
+                    case 'text':
                         cellstyle = 'outputtext';
                         break;
                     case 'image':

@@ -133,6 +133,14 @@
 }
 
 /*
+ * ERROR CELL
+ */
+
+.femhub-cell-error .femhub-cell-output-textarea {
+    background-color: #ffcc99;
+}
+
+/*
  * IMAGE CELL
  */
 
