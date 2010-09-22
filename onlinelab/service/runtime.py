@@ -16,17 +16,7 @@ import tornado.web
 
 from tornado.options import define, options
 
-class MainHandler(tornado.web.RequestHandler):
-    """Handle simple GET request. """
-
-    def get(self):
-        self.write("Hello, world!")
-
-class EngineHandler(tornado.web.RequestHandler):
-    """Handle simple POST request. """
-
-    def post(self, guid):
-        self.write("Engine: %s" % guid)
+import handlers
 
 define("port", default=8888, help="run on the given port", type=int)
 define("path", default='.', help="run in the given directory", type=str)
@@ -104,8 +94,8 @@ def main():
         os.chdir(options.path)
 
     application = tornado.web.Application([
-        (r"/", MainHandler),
-        (r"/engine/(?P<guid>\w{32})", EngineHandler),
+        (r"/", handlers.MainHandler),
+        (r"/engine/(?P<guid>\w{32})", handlers.EngineHandler),
     ])
 
     server = tornado.httpserver.HTTPServer(application)
