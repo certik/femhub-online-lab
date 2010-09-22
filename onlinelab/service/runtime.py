@@ -43,14 +43,15 @@ def init_options():
     options.path = os.path.abspath(options.path)
 
 def init_logging():
-    channel = logging.handlers.RotatingFileHandler(
-        filename=options.logfile,
-        maxBytes=options.log_file_max_size,
-        backupCount=options.log_file_num_backups)
-    channel.setFormatter(tornado.options._LogFormatter(color=False))
+    if options.logfile:
+        channel = logging.handlers.RotatingFileHandler(
+            filename=options.logfile,
+            maxBytes=options.log_file_max_size,
+            backupCount=options.log_file_num_backups)
+        channel.setFormatter(tornado.options._LogFormatter(color=False))
 
-    logger = logging.getLogger()
-    logger.addHandler(channel)
+        logger = logging.getLogger()
+        logger.addHandler(channel)
 
 def main():
     init_options()
