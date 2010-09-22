@@ -4,6 +4,7 @@ import os
 import sys
 import signal
 import logging
+import lockfile
 
 import daemon
 import daemon.pidfile
@@ -81,7 +82,7 @@ def main():
 
         context = daemon.DaemonContext(
             working_directory=options.path,
-            pidfile=daemon.pidfile.PIDLockFile(options.pidfile),
+            pidfile=daemon.pidfile.TimeoutPIDLockFile(options.pidfile, 1),
             files_preserve=[ file.stream for file in logger.handlers ],
             stdout=stdout,
             stderr=stderr,
@@ -94,7 +95,11 @@ def main():
             signal.SIGTERM: 'terminate',
         }
 
-        context.open()
+        try:
+            context.open()
+        except (lockfile.LockTimeout, lockfile.AlreadyLocked):
+            logging.error("Can't obtain a lock on '%s'. Quitting." % options.pidfile)
+            sys.exit(1)
     else:
         os.chdir(options.path)
 
