@@ -22,6 +22,7 @@ class PythonXMLRPCServer(SimpleXMLRPCServer):
     def __init__(self, port, interpreter):
         SimpleXMLRPCServer.__init__(self, ('localhost', port))
         self.register_instance(self.methods(interpreter))
+        self.register_introspection_functions()
 
     def serve_forever(self, interactive=False):
         """Indefinitely serve XML RPC requests. """
