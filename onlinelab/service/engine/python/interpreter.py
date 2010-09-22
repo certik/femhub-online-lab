@@ -39,7 +39,7 @@ class PythonInterpreter(object):
 
         try:
             interrupted = False
-            traceback = None
+            traceback = False
 
             try:
                 if code is not None:
