@@ -42,16 +42,15 @@ class ProcessManager(object):
             command = args.command
         except AttributeError:
             from engine.python import boot
-            command = "python -c '%s'" % boot
+            command = ["python", "-c", "%s" % boot]
 
-        # Lets start the engine's process. For some reason 'shell' argument
-        # must be set to 'True', otherwise the process will become defunct.
-        # We must close all non-standard file descriptors, because otherwise
-        # IOLoop will hang. When the process will be ready to handle requests
-        # from the core, it'll tell us this by sending a single line of well
-        # formatted text (containing port numer and PID) via a pipe.
+        # Lets start the engine's process. We must close all non-standard file
+        # descriptors (via 'close_fds'), because otherwise IOLoop will hang.
+        # When the process will be ready to handle requests from the core, it
+        # will tell us this by sending a single line of well formatted output
+        # (containing port numer and PID) via a pipe.
 
-        proc = subprocess.Popen(command, shell=True, close_fds=True, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(command, close_fds=True, stdout=subprocess.PIPE)
 
         # File descriptor of the pipe (fd) is our connector the process, so
         # we will monitor this descriptor to see the change in status of the
@@ -78,6 +77,7 @@ class ProcessManager(object):
 
         del self.processes[guid]
         proc.kill()
+        proc.poll()
 
         fail('timeout')
 
@@ -115,6 +115,7 @@ class ProcessManager(object):
 
                 del self.processes[guid]
                 proc.kill()
+                proc.poll()
 
                 fail('invalid-output')
 
@@ -205,6 +206,7 @@ class ProcessManager(object):
         for guid, process in self.processes.iteritems():
             logging.warning("Forced kill of %s (pid=%s)" % (guid, process.pid))
             process.proc.kill()
+            process.proc.poll()
 
 class EngineProcess(object):
     """Bridge between a logical engine and a physical process. """
@@ -232,6 +234,7 @@ class EngineProcess(object):
         """Terminate this engine's process. """
         # XXX: clear the queue?
         self.proc.terminate()
+        self.proc.poll()
         okay('killed')
 
     def stat(self, args, okay, fail):
