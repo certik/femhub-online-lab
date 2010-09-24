@@ -308,8 +308,6 @@ class EngineProcess(object):
     def _on_evaluate_timeout(self):
         raise NotImplementedError
 
-    # XXX: implement on_connection_close (very important!)
-
     def _on_evaluate_handler(self, response):
         """Handler that gets executed when evaluation finishes. """
         _, okay, fail = self.evaluating
