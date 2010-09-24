@@ -294,12 +294,15 @@ class EngineProcess(object):
             body = utilities.xml_encode(args.source, 'evaluate')
 
             http_client = tornado.httpclient.AsyncHTTPClient()
-            http_request = tornado.httpclient.HTTPRequest(self.url, method='POST', body=body)
+            http_request = tornado.httpclient.HTTPRequest(self.url,
+                method='POST', body=body, request_timeout=0)
 
             http_client.fetch(http_request, self._on_evaluate_handler)
 
     def _on_evaluate_timeout(self):
         raise NotImplementedError
+
+    # XXX: implement on_connection_close (very important!)
 
     def _on_evaluate_handler(self, response):
         """Handler that gets executed when evaluation finishes. """
@@ -311,5 +314,5 @@ class EngineProcess(object):
         if response.code == 200:
             okay(utilities.xml_decode(response.body))
         else:
-            fail('response-code')
+            fail('response-code: %s' % response.code)
 
