@@ -120,17 +120,25 @@ class ProcessManager(object):
 
     def _on_disconnect(self, guid, fd, events):
         """Handler that gets executed when a process dies. """
+        self.ioloop.remove_handler(fd)
+
+        try:
+            process = self.processes[guid]
+        except KeyError:
+            # We don't want to pass 'fd' everywhere so we don't
+            # remove this handler on process kill. We remove it
+            # here anyway.
+            return
+
+        logging.warning("Child process disconnected (pid=%s)" % process.pid)
+
         # The pipe that connects this service to some engine's stdout was
         # destroyed. Most likely engine's process was killed, but for the
         # sake of completeness (to avoid dead process and memory leaks)
         # lets make sure the process is really dead.
 
-        process = self.processes[guid]
-
-        logging.warning("Child process disconnected (pid=%s)" % process.pid)
-
         if process.is_running:
-            self.process.kill()
+            process.proc.kill() # XXX: we should use public API for this
 
         # 'False' value tells us that this process was running but was killed
         # unexpectedly. The next engine method invocation will take advantage
