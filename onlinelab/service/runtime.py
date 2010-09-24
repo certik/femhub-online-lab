@@ -7,7 +7,11 @@ import logging
 import lockfile
 
 import daemon
-import daemon.pidfile
+
+try:
+    import daemon.pidfile as pidlockfile
+except ImportError:
+    import daemon.pidlockfile as pidlockfile
 
 import tornado.httpserver
 import tornado.ioloop
@@ -74,7 +78,7 @@ def main():
 
         context = daemon.DaemonContext(
             working_directory=options.path,
-            pidfile=daemon.pidfile.TimeoutPIDLockFile(options.pidfile, 1),
+            pidfile=pidlockfile.TimeoutPIDLockFile(options.pidfile, 1),
             files_preserve=[ file.stream for file in logger.handlers ],
             stdout=stdout,
             stderr=stderr,
