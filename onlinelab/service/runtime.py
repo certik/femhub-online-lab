@@ -14,62 +14,55 @@ except ImportError:
     import daemon.pidlockfile as pidlockfile
 
 import tornado.httpserver
-import tornado.ioloop
 import tornado.options
+import tornado.ioloop
 import tornado.web
-
-from tornado.options import define, options
 
 import handlers
 import processes
 
-define("port", default=8888, help="run on the given port", type=int)
-define("path", default='.', help="run in the given directory", type=str)
-define("debug", default=False, help="run in debug mode", type=bool)
-define("daemon", default=True, help="run in daemon mode", type=bool)
-define("pidfile", default=None, help="where to store PID", type=str)
-define("logfile", default=None, help="where to store logs ", type=str)
-
-def init_options():
-    tornado.options.parse_command_line()
-
-    if not options.logfile:
-        if options.daemon:
-            options.logfile = 'onlinelab-%s.log' % options.port
+def main(args):
+    """Initialize Online Lab service given a config in ``args``. """
+    if not args.log_file:
+        if args.daemon:
+            args.log_file = 'onlinelab-service-%s.log' % args.port
     else:
-        options.logfile = os.path.abspath(options.logfile)
+        args.log_file = os.path.abspath(args.log_file)
 
-    if not options.pidfile:
-        if options.daemon:
-            options.pidfile = 'onlinelab-%s.pid' % options.port
+    if not args.pid_file:
+        if args.daemon:
+            args.pid_file = 'onlinelab-service-%s.pid' % args.port
     else:
-        options.pidfile = os.path.abspath(options.pidfile)
+        args.pid_file = os.path.abspath(args.pid_file)
 
-    options.path = os.path.abspath(options.path)
-
-def init_logging():
-    if options.logfile:
-        channel = logging.handlers.RotatingFileHandler(
-            filename=options.logfile,
-            maxBytes=options.log_file_max_size,
-            backupCount=options.log_file_num_backups)
-        channel.setFormatter(tornado.options._LogFormatter(color=False))
-
+    if args.log_level != 'none':
         logger = logging.getLogger()
-        logger.addHandler(channel)
 
-def main():
-    init_options()
-    init_logging()
+        level = getattr(logging, args.log_level.upper())
+        logger.setLevel(level)
 
-    if options.daemon:
-        if os.path.exists(options.pidfile):
+        if not args.daemon:
+            tornado.options.enable_pretty_logging()
+
+        if args.log_file:
+            channel = logging.handlers.RotatingFileHandler(
+                filename=args.log_file,
+                maxBytes=args.log_max_size,
+                backupCount=args.log_num_backups)
+
+            formatter = tornado.options._LogFormatter(color=False)
+            channel.setFormatter(formatter)
+
+            logger.addHandler(channel)
+
+    if args.daemon:
+        if os.path.exists(args.pid_file):
             logging.error("Server already running. Quitting.")
             sys.exit(1)
 
         logger = logging.getLogger()
 
-        if options.debug:
+        if args.debug:
             stdout = sys.stdout
             stderr = sys.stderr
         else:
@@ -77,8 +70,8 @@ def main():
             stderr = None
 
         context = daemon.DaemonContext(
-            working_directory=options.path,
-            pidfile=pidlockfile.TimeoutPIDLockFile(options.pidfile, 1),
+            working_directory=args.home,
+            pidfile=pidlockfile.TimeoutPIDLockFile(args.pid_file, 1),
             files_preserve=[ file.stream for file in logger.handlers ],
             stdout=stdout,
             stderr=stderr,
@@ -94,10 +87,10 @@ def main():
         try:
             context.open()
         except (lockfile.LockTimeout, lockfile.AlreadyLocked):
-            logging.error("Can't obtain a lock on '%s'. Quitting." % options.pidfile)
+            logging.error("Can't obtain a lock on '%s'. Quitting." % args.pid_file)
             sys.exit(1)
     else:
-        os.chdir(options.path)
+        os.chdir(args.home)
 
     application = tornado.web.Application([
         (r"/", handlers.MainHandler),
@@ -105,9 +98,9 @@ def main():
     ]);
 
     server = tornado.httpserver.HTTPServer(application)
-    server.listen(options.port)
+    server.listen(args.port)
 
-    logging.info("Server started at localhost:%s (pid=%s)" % (options.port, os.getpid()))
+    logging.info("Server started at localhost:%s (pid=%s)" % (args.port, os.getpid()))
 
     try:
         tornado.ioloop.IOLoop.instance().start()

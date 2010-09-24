@@ -1,0 +1,177 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import logging
+import argparse
+
+DEF_MAX_SIZE    = 10*1000*1000      # store 10 MB in a log file
+DEF_NUM_BACKUPS = 10                # keep 10 log files at most
+
+def sys_path_hack():
+    """ """
+    script_dir = os.path.dirname(__file__)              # bin/onlinelab
+    module_top = os.path.split(script_dir)[0]           # ../
+    module_dir = os.path.join(module_top, 'onlinelab')  # ../onlinelab/
+
+    if os.path.isdir(module_dir):
+        sys.path.insert(0, os.path.abspath(module_top))
+
+def path(string):
+    """ """
+    return os.path.abspath(string)
+
+def boolean(string):
+    """ """
+    string = string.lower()
+
+    if string in ['0', 'f', 'false', 'no', 'off']:
+        return False
+
+    if string in ['1', 't', 'true', 'yes', 'on']:
+        return True
+
+    raise ValueError
+
+class PathAction(argparse.Action):
+    """ """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        """ """
+        values = values.split(os.path.pathsep)
+        values = map(os.path.abspath, values)
+
+        paths = getattr(namespace, self.dest)
+        paths.extend(values)
+
+        setattr(namespace, self.dest, paths)
+
+class Module(object):
+    """ """
+
+    def __init__(self, args):
+        for path in args.python_path:
+            sys.path.insert(0, path)
+
+        if args.hack:
+            sys_path_hack()
+
+        getattr(self, args.func)(args)
+
+class Core(Module):
+    """ """
+
+    def init(self, args):
+        """ """
+        raise NotImplementedError("'init' method is not implemented yet")
+
+    def start(self, args):
+        """ """
+        import onlinelab.core
+        onlinelab.core.main(args)
+
+    def stop(self, args):
+        """ """
+        raise NotImplementedError("'stop' method is not implemented yet")
+
+    def restart(self, args):
+        """ """
+        raise NotImplementedError("'restart' method is not implemented yet")
+
+    def status(self, args):
+        """ """
+        raise NotImplementedError("'status' method is not implemented yet")
+
+class Service(Module):
+    """ """
+
+    def init(self, args):
+        """ """
+        raise NotImplementedError("'init' method is not implemented yet")
+
+    def start(self, args):
+        """ """
+        import onlinelab.service
+        onlinelab.service.main(args)
+
+    def stop(self, args):
+        """ """
+        raise NotImplementedError("'stop' method is not implemented yet")
+
+    def restart(self, args):
+        """ """
+        raise NotImplementedError("'restart' method is not implemented yet")
+
+    def status(self, args):
+        """ """
+        raise NotImplementedError("'status' method is not implemented yet")
+
+def init_parser():
+    """ """
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    parser.add_argument('--python-path', default=[], action=PathAction)
+    parser.add_argument('--hack', default=True, type=boolean)
+    parser.add_argument('--debug', default=False, type=boolean)
+
+    # Initialize parser for "core" module
+    parser_core = subparsers.add_parser('core')
+    parser_core.set_defaults(module=Core)
+    subparsers_core = parser_core.add_subparsers()
+
+    # Initialize parser for "service" module
+    parser_service = subparsers.add_parser('service')
+    parser_service.set_defaults(module=Service)
+    subparsers_service = parser_service.add_subparsers()
+
+    # Add methods for "core" module
+    parser_core_init = subparsers_core.add_parser('init')
+    parser_core_init.set_defaults(func='init')
+
+    parser_core_start = subparsers_core.add_parser('start')
+    parser_core_start.set_defaults(func='start')
+
+    parser_core_stop = subparsers_core.add_parser('stop')
+    parser_core_stop.set_defaults(func='stop')
+
+    parser_core_restart = subparsers_core.add_parser('restart')
+    parser_core_restart.set_defaults(func='restart')
+
+    parser_core_status = subparsers_core.add_parser('status')
+    parser_core_status.set_defaults(func='status')
+
+    # Add methods for "service" module
+    parser_service_init = subparsers_service.add_parser('init')
+    parser_service_init.set_defaults(func='init')
+
+    parser_service_start = subparsers_service.add_parser('start')
+    parser_service_start.set_defaults(func='start')
+    parser_service_start.add_argument('--port', '-p', default=8000, type=int)
+    parser_service_start.add_argument('--home', '-H', default='.', type=path)
+    parser_service_start.add_argument('--daemon', '-d', default=True, type=boolean)
+    parser_service_start.add_argument('--pid-file', default=None)
+    parser_service_start.add_argument('--log-file', default=None)
+    parser_service_start.add_argument('--log-level', default='info', choices=('none', 'info', 'warning', 'error'))
+    parser_service_start.add_argument('--log-max-size', default=DEF_MAX_SIZE, type=int)
+    parser_service_start.add_argument('--log-num-backups', default=DEF_NUM_BACKUPS, type=int)
+
+    parser_service_stop = subparsers_service.add_parser('stop')
+    parser_service_stop.set_defaults(func='stop')
+
+    parser_service_restart = subparsers_service.add_parser('restart')
+    parser_service_restart.set_defaults(func='restart')
+
+    parser_service_status = subparsers_service.add_parser('status')
+    parser_service_status.set_defaults(func='status')
+
+    return parser
+
+def main():
+    """Parse command line and run appropriate component. """
+    args = init_parser().parse_args()
+    args.module(args)
+
+if __name__ == "__main__":
+    main()
+
