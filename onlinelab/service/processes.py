@@ -244,9 +244,12 @@ class EngineProcess(object):
         memory_percent = self.util.get_memory_percent()
         memory_info = self.util.get_memory_info()
 
+        user, system = cpu_times
+        rss, vms = memory_info
+
         okay({
-            'cpu': { 'percent': cpu_percent, 'user': cpu_times.user, 'system': cpu_times.system },
-            'memory': { 'percent': memory_percent, 'rss': memory_info.rss, 'vms': memory_info.vms },
+            'cpu': { 'percent': cpu_percent, 'user': user, 'system': system },
+            'memory': { 'percent': memory_percent, 'rss': rss, 'vms': vms },
         })
 
     def evaluate(self, args, okay, fail):
