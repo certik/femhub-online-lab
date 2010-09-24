@@ -17,6 +17,7 @@ import tornado.web
 from tornado.options import define, options
 
 import handlers
+import processes
 
 define("port", default=8888, help="run on the given port", type=int)
 define("path", default='.', help="run in the given directory", type=str)
@@ -96,8 +97,8 @@ def main():
 
     application = tornado.web.Application([
         (r"/", handlers.MainHandler),
-        (r"/engine/(?P<guid>\w{32})", handlers.EngineHandler),
-    ])
+        (r"/engine/(?P<guid>\w{32})/(?P<func>[a-z]+)", handlers.EngineHandler),
+    ]);
 
     server = tornado.httpserver.HTTPServer(application)
     server.listen(options.port)
@@ -107,8 +108,8 @@ def main():
     try:
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
+        print # SIGINT prints '^C' so lets make logs more readable
         server.stop()
 
-if __name__ == "__main__":
-    main()
+    processes.ProcessManager.instance().killall()
 
