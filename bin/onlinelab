@@ -17,7 +17,10 @@ def sys_path_hack():
 
 def path(string):
     """Convert a string to an absolute path. """
-    return os.path.abspath(string)
+    if string is not None:
+        return os.path.abspath(string)
+    else:
+        return None
 
 def boolean(string):
     """Convert a string to a boolean value. """
@@ -220,11 +223,13 @@ class OnlineLab(object):
         'pid-file': (
             ('--pid-file',), {
                 'default': None,
+                'type': path,
             },
         ),
         'log-file': (
             ('--log-file',), {
                 'default': None,
+                'type': path,
             },
         ),
         'log-level': (
@@ -273,16 +278,12 @@ class OnlineLab(object):
         if not args.log_file:
             args.log_file = os.path.join(args.home,
                 'onlinelab-%s-%s.log' % (args.module.__name__.lower(), args.port))
-        else:
-            args.log_file = os.path.abspath(args.log_file)
 
     def postprocess_pid_file(self, args):
         """'pid_file' default configuration depends on 'home' and 'port'. """
         if not args.pid_file:
             args.pid_file = os.path.join(args.home,
                 'onlinelab-%s-%s.pid' % (args.module.__name__.lower(), args.port))
-        else:
-            args.pid_file = os.path.abspath(args.pid_file)
 
     def __init__(self):
         """Construct command-line parser based on global settings. """
