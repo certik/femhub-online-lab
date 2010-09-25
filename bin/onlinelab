@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
 import os
+import re
 import sys
 import logging
 import argparse
 
-DEF_CORE_PORT    = 8000
-DEF_SERVICE_PORT = 9000
+DEFAULT_CORE_PORT    = 8000
+DEFAULT_SERVICE_PORT = 9000
 
-DEF_MAX_SIZE     = 10*1000*1000      # store 10 MB in a log file
-DEF_NUM_BACKUPS  = 10                # keep 10 log files at most
+DEFAULT_MAX_SIZE     = 10*1000*1000      # store 10 MB in a log file
+DEFAULT_NUM_BACKUPS  = 10                # keep 10 log files at most
 
 def sys_path_hack():
-    """ """
+    """Hook in-tree Online Lab mode into Python path. """
     script_dir = os.path.dirname(__file__)              # bin/onlinelab
     module_top = os.path.split(script_dir)[0]           # ../
     module_dir = os.path.join(module_top, 'onlinelab')  # ../onlinelab/
@@ -21,11 +22,11 @@ def sys_path_hack():
         sys.path.insert(0, os.path.abspath(module_top))
 
 def path(string):
-    """ """
+    """Convert a string to an absolute path. """
     return os.path.abspath(string)
 
 def boolean(string):
-    """ """
+    """Convert a string to a boolean value. """
     string = string.lower()
 
     if string in ['0', 'f', 'false', 'no', 'off']:
@@ -34,13 +35,12 @@ def boolean(string):
     if string in ['1', 't', 'true', 'yes', 'on']:
         return True
 
-    raise ValueError
+    raise ValueError("'%s' can't be treated as a boolean option" % string)
 
 class PathAction(argparse.Action):
-    """ """
+    """Handle colon-separated, relative paths. """
 
     def __call__(self, parser, namespace, values, option_string=None):
-        """ """
         values = values.split(os.path.pathsep)
         values = map(os.path.abspath, values)
 
@@ -49,139 +49,265 @@ class PathAction(argparse.Action):
 
         setattr(namespace, self.dest, paths)
 
+class VersionAction(argparse.Action):
+    """Display version information and quit. """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        sys_path_hack()
+
+        from onlinelab import __version__
+        print "Online Lab version %s" % __version__
+
+        sys.exit(0)
+
+class ConfigureAction(argparse.Action):
+    """Configure-style boolean options. """
+
+    def __init__(self,
+                 option_strings,
+                 dest,
+                 default=None,
+                 required=False,
+                 help=None,
+                 metavar=None,
+                 positive_prefixes=['--', '--with-', '--enable-'],
+                 negative_prefixes=['--no-', '--without-', '--disable-']):
+        strings = []
+
+        self.positive_strings = set()
+        self.negative_strings = set()
+
+        for string in option_strings:
+            assert re.match(r'--[A-z]+', string)
+
+            suffix = string[2:]
+
+            for positive_prefix in positive_prefixes:
+                self.positive_strings.add(positive_prefix + suffix)
+                strings.append(positive_prefix + suffix)
+
+            for negative_prefix in negative_prefixes:
+                self.negative_strings.add(negative_prefix + suffix)
+                strings.append(negative_prefix + suffix)
+
+        super(ConfigureAction, self).__init__(
+            option_strings=strings,
+            dest=dest,
+            nargs='?',
+            const=None,
+            default=default,
+            type=boolean,
+            choices=None,
+            required=required,
+            help=help,
+            metavar=metavar)
+
+    def __call__(self, parser, namespace, value, option_string=None):
+        if value is None:
+            value = option_string in self.positive_strings
+        elif option_string in self.negative_strings:
+            value = not value
+
+        setattr(namespace, self.dest, value)
+
 class Module(object):
-    """ """
+    """Base class for Online Lab modules. """
 
     def __init__(self, args):
-        for path in args.python_path:
-            sys.path.insert(0, path)
-
-        if args.hack:
-            sys_path_hack()
-
         getattr(self, args.func)(args)
 
 class Core(Module):
-    """ """
+    """Online Lab core module. """
 
     def init(self, args):
-        """ """
-        raise NotImplementedError("'init' method is not implemented yet")
+        """Initialize a new core server. """
+        import onlinelab.core
+        onlinelab.core.init(args)
 
     def start(self, args):
-        """ """
+        """Start an existing core server. """
         import onlinelab.core
-        onlinelab.core.main(args)
+        onlinelab.core.start(args)
 
     def stop(self, args):
-        """ """
-        raise NotImplementedError("'stop' method is not implemented yet")
+        """Stop a running core server. """
+        import onlinelab.core
+        onlinelab.core.stop(args)
 
     def restart(self, args):
-        """ """
-        raise NotImplementedError("'restart' method is not implemented yet")
+        """Restart a running core server. """
+        import onlinelab.core
+        onlinelab.core.restart(args)
 
     def status(self, args):
-        """ """
-        raise NotImplementedError("'status' method is not implemented yet")
+        """Display information about a core server. """
+        import onlinelab.core
+        onlinelab.core.status(args)
 
 class Service(Module):
-    """ """
+    """Online Lab service module. """
 
     def init(self, args):
-        """ """
-        raise NotImplementedError("'init' method is not implemented yet")
+        """Initialize a new service. """
+        import onlinelab.service
+        onlinelab.service.init(args)
 
     def start(self, args):
-        """ """
+        """Start an existing service. """
         import onlinelab.service
-        onlinelab.service.main(args)
+        onlinelab.service.start(args)
 
     def stop(self, args):
-        """ """
-        raise NotImplementedError("'stop' method is not implemented yet")
+        """Stop a running service. """
+        import onlinelab.service
+        onlinelab.service.stop(args)
 
     def restart(self, args):
-        """ """
-        raise NotImplementedError("'restart' method is not implemented yet")
+        """Restart a running service. """
+        import onlinelab.service
+        onlinelab.service.restart(args)
 
     def status(self, args):
-        """ """
-        raise NotImplementedError("'status' method is not implemented yet")
+        """Display information about a service. """
+        import onlinelab.service
+        onlinelab.service.status(args)
+
+options = {
+    'python-path': (
+        ('--python-path',), {
+            'default': [],
+            'action': PathAction,
+        },
+    ),
+    'version': (
+        ('--version',), {
+            'nargs': 0,
+            'action': VersionAction,
+        },
+    ),
+    'debug': (
+        ('--debug',), {
+            'default': False,
+            'action': ConfigureAction,
+        },
+    ),
+    'home': (
+        ('--home',), {
+            'default': '.',
+            'type': path,
+        },
+    ),
+    'port': (
+        ('--port',), {
+            'default': None,
+            'type': int,
+        },
+    ),
+    'daemon': (
+        ('--daemon',), {
+            'default': True,
+            'action': ConfigureAction,
+        },
+    ),
+    'settings': (
+        ('--settings',), {
+            'default': 'frontend.settings',
+        },
+    ),
+    'pid-file': (
+        ('--pid-file',), {
+            'default': None,
+        },
+    ),
+    'log-file': (
+        ('--log-file',), {
+            'default': None,
+        },
+    ),
+    'log-level': (
+        ('--log-level',), {
+            'default': 'info',
+            'choices': ('none', 'info', 'warning', 'error'),
+        },
+    ),
+    'log-max-size': (
+        ('--log-max-size',), {
+            'default': DEFAULT_MAX_SIZE,
+            'type': int,
+        },
+    ),
+    'log-num-backups': (
+        ('--log-num-backups',), {
+            'default': DEFAULT_NUM_BACKUPS,
+            'type': int,
+        },
+    ),
+}
+
+modules = {
+    ('core', Core): {
+        'init': [],
+        'start': [('port', {'default': DEFAULT_CORE_PORT}), 'daemon', 'settings',
+            'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
+        'stop': [],
+        'restart': [],
+        'status': [],
+    },
+    ('service', Service): {
+        'init': [],
+        'start': [('port', {'default': DEFAULT_SERVICE_PORT}), 'daemon',
+            'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
+        'stop': [],
+        'restart': [],
+        'status': [],
+    },
+}
+
+commons = ['debug', 'python-path', 'home']
 
 def init_parser():
-    """ """
+    """Construct command-line parser based on global settings. """
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 
-    parser.add_argument('--python-path', default=[], action=PathAction)
-    parser.add_argument('--hack', default=True, type=boolean)
-    parser.add_argument('--debug', default=False, type=boolean)
+    args, kwargs = options['version']
+    parser.add_argument(*args, **kwargs)
 
-    # Initialize parser for "core" module
-    parser_core = subparsers.add_parser('core')
-    parser_core.set_defaults(module=Core)
-    subparsers_core = parser_core.add_subparsers()
+    for (module, cls), funcs in modules.iteritems():
+        module_parser = subparsers.add_parser(module)
+        module_parser.set_defaults(module=cls)
 
-    # Initialize parser for "service" module
-    parser_service = subparsers.add_parser('service')
-    parser_service.set_defaults(module=Service)
-    subparsers_service = parser_service.add_subparsers()
+        module_subparsers = module_parser.add_subparsers()
 
-    # Add methods for "core" module
-    parser_core_init = subparsers_core.add_parser('init')
-    parser_core_init.set_defaults(func='init')
+        for func, specs in funcs.iteritems():
+            func_parser = module_subparsers.add_parser(func)
+            func_parser.set_defaults(func=func)
 
-    parser_core_start = subparsers_core.add_parser('start')
-    parser_core_start.set_defaults(func='start')
-    parser_core_start.add_argument('--port', '-p', default=DEF_CORE_PORT, type=int)
-    parser_core_start.add_argument('--home', '-H', default='.', type=path)
-    parser_core_start.add_argument('--daemon', '-d', default=True, type=boolean)
-    parser_core_start.add_argument('--settings', '-s', default='frontend.settings')
-    parser_core_start.add_argument('--pid-file', default=None)
-    parser_core_start.add_argument('--log-file', default=None)
-    parser_core_start.add_argument('--log-level', default='info', choices=('none', 'info', 'warning', 'error'))
-    parser_core_start.add_argument('--log-max-size', default=DEF_MAX_SIZE, type=int)
-    parser_core_start.add_argument('--log-num-backups', default=DEF_NUM_BACKUPS, type=int)
+            for spec in commons + specs:
+                override = None
 
-    parser_core_stop = subparsers_core.add_parser('stop')
-    parser_core_stop.set_defaults(func='stop')
+                if isinstance(spec, tuple):
+                    spec, override = spec
 
-    parser_core_restart = subparsers_core.add_parser('restart')
-    parser_core_restart.set_defaults(func='restart')
+                args, kwargs = options[spec]
 
-    parser_core_status = subparsers_core.add_parser('status')
-    parser_core_status.set_defaults(func='status')
+                if override is not None:
+                    kwargs = dict(kwargs)
+                    kwargs.update(override)
 
-    # Add methods for "service" module
-    parser_service_init = subparsers_service.add_parser('init')
-    parser_service_init.set_defaults(func='init')
-
-    parser_service_start = subparsers_service.add_parser('start')
-    parser_service_start.set_defaults(func='start')
-    parser_service_start.add_argument('--port', '-p', default=DEF_SERVICE_PORT, type=int)
-    parser_service_start.add_argument('--home', '-H', default='.', type=path)
-    parser_service_start.add_argument('--daemon', '-d', default=True, type=boolean)
-    parser_service_start.add_argument('--pid-file', default=None)
-    parser_service_start.add_argument('--log-file', default=None)
-    parser_service_start.add_argument('--log-level', default='info', choices=('none', 'info', 'warning', 'error'))
-    parser_service_start.add_argument('--log-max-size', default=DEF_MAX_SIZE, type=int)
-    parser_service_start.add_argument('--log-num-backups', default=DEF_NUM_BACKUPS, type=int)
-
-    parser_service_stop = subparsers_service.add_parser('stop')
-    parser_service_stop.set_defaults(func='stop')
-
-    parser_service_restart = subparsers_service.add_parser('restart')
-    parser_service_restart.set_defaults(func='restart')
-
-    parser_service_status = subparsers_service.add_parser('status')
-    parser_service_status.set_defaults(func='status')
+                func_parser.add_argument(*args, **kwargs)
 
     return parser
 
 def main():
-    """Parse command line and run appropriate component. """
+    """Parse command line and run appropriate module. """
     args = init_parser().parse_args()
+
+    sys_path_hack()
+
+    for path in args.python_path:
+        sys.path.insert(0, path)
+
     args.module(args)
 
 if __name__ == "__main__":
