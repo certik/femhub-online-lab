@@ -2,7 +2,6 @@
 
 import os
 import sys
-import signal
 import logging
 import lockfile
 
@@ -22,7 +21,7 @@ import handlers
 import processes
 
 def main(args):
-    """Initialize Online Lab service given a config in ``args``. """
+    """Start an existing service. """
     if not args.log_file:
         if args.daemon:
             args.log_file = 'onlinelab-service-%s.log' % args.port
@@ -77,13 +76,6 @@ def main(args):
             stderr=stderr,
             umask=022)
 
-        context.signal_map = {
-            signal.SIGTSTP: None,
-            signal.SIGTTIN: None,
-            signal.SIGTTOU: None,
-            signal.SIGTERM: 'terminate',
-        }
-
         try:
             context.open()
         except (lockfile.LockTimeout, lockfile.AlreadyLocked):
@@ -106,7 +98,14 @@ def main(args):
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
         print # SIGINT prints '^C' so lets make logs more readable
-        server.stop()
+    except SystemExit:
+        pass
+
+    # Make sure we clean up after this service here. It is important that
+    # we explicitly terminate all child processes that were # spawned by
+    # this service.
 
     processes.ProcessManager.instance().killall()
+
+    logging.info("Stopped service at localhost:%s (pid=%s)" % (args.port, os.getpid()))
 
