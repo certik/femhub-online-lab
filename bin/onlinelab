@@ -220,6 +220,12 @@ class OnlineLab(object):
                 'default': 'frontend.settings',
             },
         ),
+        'ui-path': (
+            ('--ui-path',), {
+                'default': None,
+                'type': path,
+            },
+        ),
         'pid-file': (
             ('--pid-file',), {
                 'default': None,
@@ -255,7 +261,7 @@ class OnlineLab(object):
     modules = {
         ('core', Core): {
             'init': [],
-            'start': [('port', {'default': DEFAULT_CORE_PORT}), 'daemon', 'settings',
+            'start': [('port', {'default': DEFAULT_CORE_PORT}), 'daemon', 'settings', 'ui-path',
                 'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
             'stop': [('port', {'default': DEFAULT_CORE_PORT}), 'pid-file', 'log-file', 'log-level'],
             'restart': [],
