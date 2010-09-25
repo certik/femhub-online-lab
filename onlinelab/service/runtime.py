@@ -20,20 +20,18 @@ import tornado.web
 import handlers
 import processes
 
-def main(args):
-    """Start an existing service. """
-    if not args.log_file:
-        if args.daemon:
-            args.log_file = 'onlinelab-service-%s.log' % args.port
-    else:
-        args.log_file = os.path.abspath(args.log_file)
+def _setup_console_logging(args):
+    """Configure :mod:`logging` to log to the terminal. """
+    if args.log_level != 'none':
+        logger = logging.getLogger()
 
-    if not args.pid_file:
-        if args.daemon:
-            args.pid_file = 'onlinelab-service-%s.pid' % args.port
-    else:
-        args.pid_file = os.path.abspath(args.pid_file)
+        level = getattr(logging, args.log_level.upper())
+        logger.setLevel(level)
 
+        tornado.options.enable_pretty_logging()
+
+def _setup_logging(args):
+    """Enable logging to a terminal and a log file. """
     if args.log_level != 'none':
         logger = logging.getLogger()
 
@@ -53,6 +51,14 @@ def main(args):
             channel.setFormatter(formatter)
 
             logger.addHandler(channel)
+
+def init(args):
+    """Initialize a new service. """
+    raise NotImplementedError("'init' is not implemented yet")
+
+def start(args):
+    """Start an existing service. """
+    _setup_logging(args)
 
     if args.daemon:
         if os.path.exists(args.pid_file):
@@ -92,7 +98,7 @@ def main(args):
     server = tornado.httpserver.HTTPServer(application)
     server.listen(args.port)
 
-    logging.info("Service started at localhost:%s (pid=%s)" % (args.port, os.getpid()))
+    logging.info("Started service at localhost:%s (pid=%s)" % (args.port, os.getpid()))
 
     try:
         tornado.ioloop.IOLoop.instance().start()
@@ -108,4 +114,28 @@ def main(args):
     processes.ProcessManager.instance().killall()
 
     logging.info("Stopped service at localhost:%s (pid=%s)" % (args.port, os.getpid()))
+
+def stop(args):
+    """Stop a running service. """
+    _setup_console_logging(args)
+
+    lock = pidlockfile.PIDLockFile(args.pid_file)
+
+    if lock.is_locked():
+        pid = lock.read_pid()
+        logging.info("Sending TERM signal to service process (pid=%s)" % pid)
+        os.kill(pid, signal.SIGTERM)
+        sys.exit(0)
+    else:
+        logging.warning("No service running but lock file found. Cleaning up.")
+        os.unlink(args.pid_file)
+        sys.exit(1)
+
+def restart(args):
+    """Restart a running service. """
+    raise NotImplementedError("'restart' is not implemented yet")
+
+def status(args):
+    """Display information about a service. """
+    raise NotImplementedError("'status' is not implemented yet")
 
