@@ -5,8 +5,11 @@ import sys
 import logging
 import argparse
 
-DEF_MAX_SIZE    = 10*1000*1000      # store 10 MB in a log file
-DEF_NUM_BACKUPS = 10                # keep 10 log files at most
+DEF_CORE_PORT    = 8000
+DEF_SERVICE_PORT = 9000
+
+DEF_MAX_SIZE     = 10*1000*1000      # store 10 MB in a log file
+DEF_NUM_BACKUPS  = 10                # keep 10 log files at most
 
 def sys_path_hack():
     """ """
@@ -131,6 +134,15 @@ def init_parser():
 
     parser_core_start = subparsers_core.add_parser('start')
     parser_core_start.set_defaults(func='start')
+    parser_core_start.add_argument('--port', '-p', default=DEF_CORE_PORT, type=int)
+    parser_core_start.add_argument('--home', '-H', default='.', type=path)
+    parser_core_start.add_argument('--daemon', '-d', default=True, type=boolean)
+    parser_core_start.add_argument('--settings', '-s', default='frontend.settings')
+    parser_core_start.add_argument('--pid-file', default=None)
+    parser_core_start.add_argument('--log-file', default=None)
+    parser_core_start.add_argument('--log-level', default='info', choices=('none', 'info', 'warning', 'error'))
+    parser_core_start.add_argument('--log-max-size', default=DEF_MAX_SIZE, type=int)
+    parser_core_start.add_argument('--log-num-backups', default=DEF_NUM_BACKUPS, type=int)
 
     parser_core_stop = subparsers_core.add_parser('stop')
     parser_core_stop.set_defaults(func='stop')
@@ -147,7 +159,7 @@ def init_parser():
 
     parser_service_start = subparsers_service.add_parser('start')
     parser_service_start.set_defaults(func='start')
-    parser_service_start.add_argument('--port', '-p', default=8000, type=int)
+    parser_service_start.add_argument('--port', '-p', default=DEF_SERVICE_PORT, type=int)
     parser_service_start.add_argument('--home', '-H', default='.', type=path)
     parser_service_start.add_argument('--daemon', '-d', default=True, type=boolean)
     parser_service_start.add_argument('--pid-file', default=None)

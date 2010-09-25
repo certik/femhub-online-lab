@@ -1,4 +1,4 @@
-"""Runtime environment for Online Lab services. """
+"""Runtime environment for Online Lab core. """
 
 import os
 import sys
@@ -13,25 +13,27 @@ try:
 except ImportError:
     import daemon.pidlockfile as pidlockfile
 
+import django.core.handlers.wsgi
+
 import tornado.httpserver
 import tornado.options
 import tornado.ioloop
+import tornado.wsgi
 import tornado.web
 
 import handlers
-import processes
 
 def main(args):
-    """Initialize Online Lab service given a config in ``args``. """
+    """Initialize Online Lab core given a config in ``args``. """
     if not args.log_file:
         if args.daemon:
-            args.log_file = 'onlinelab-service-%s.log' % args.port
+            args.log_file = 'onlinelab-core-%s.log' % args.port
     else:
         args.log_file = os.path.abspath(args.log_file)
 
     if not args.pid_file:
         if args.daemon:
-            args.pid_file = 'onlinelab-service-%s.pid' % args.port
+            args.pid_file = 'onlinelab-core-%s.pid' % args.port
     else:
         args.pid_file = os.path.abspath(args.pid_file)
 
@@ -92,21 +94,24 @@ def main(args):
     else:
         os.chdir(args.home)
 
+    os.environ['DJANGO_SETTINGS_MODULE'] = args.settings
+
+    wsgi_app = tornado.wsgi.WSGIContainer(
+        django.core.handlers.wsgi.WSGIHandler())
+
     application = tornado.web.Application([
-        (r"/", handlers.MainHandler),
-        (r"/engine/(?P<guid>\w{32})/(?P<func>[a-z]+)", handlers.EngineHandler),
+        (r"/async", handlers.AsyncHandler),
+        (r".*", tornado.web.FallbackHandler, dict(fallback=wsgi_app)),
     ]);
 
     server = tornado.httpserver.HTTPServer(application)
     server.listen(args.port)
 
-    logging.info("Service started at localhost:%s (pid=%s)" % (args.port, os.getpid()))
+    logging.info("Core started at localhost:%s (pid=%s)" % (args.port, os.getpid()))
 
     try:
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
         print # SIGINT prints '^C' so lets make logs more readable
         server.stop()
-
-    processes.ProcessManager.instance().killall()
 
