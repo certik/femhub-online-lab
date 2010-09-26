@@ -1,5 +1,6 @@
 """Common JSON-RPC utilities for core and services. """
 
+import uuid
 import logging
 import urlparse
 import functools
@@ -15,28 +16,32 @@ class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
 
     def return_result(self, result=None):
         """Return properly formatted JSON-RPC result response. """
-        logging.info("JSON-RPC: method call ended successfully")
-
-        response = { 'result': result, 'error': None }
+        response = { 'result': result, 'error': None, 'id': self.id }
         body = tornado.escape.json_encode(response)
 
         self.write(body)
         self.finish()
 
+        logging.info("JSON-RPC: method call ended successfully")
+
     def return_error(self, code, message, data=None):
         """Return properly formatted JSON-RPC error response. """
-        logging.info("JSON-RPC: error: %(message)s (%(code)s)" % vars())
-
         error = { 'code': code, 'message': message }
 
         if data is not None:
             error['data'] = data
 
         response = { 'result': None, 'error': error }
+
+        if hasattr(self, 'id'):
+            response['id'] = self.id
+
         body = tornado.escape.json_encode(response)
 
         self.write(body)
         self.finish()
+
+        logging.info("JSON-RPC: error: %(message)s (%(code)s)" % vars())
 
     def return_parse_error(self, data=None):
         """Return 'Parse error' JSON-RPC error response. """
@@ -124,7 +129,7 @@ class JSONRPCProxy(object):
             'jsonrpc': '2.0',
             'method': method,
             'params': params,
-            'id': None,
+            'id': uuid.uuid4().hex,
         });
 
         logging.info("JSON-RPC: call '%s' method on %s" % (method, self.url))
