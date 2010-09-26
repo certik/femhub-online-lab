@@ -256,6 +256,16 @@ class OnlineLab(object):
                 'type': int,
             },
         ),
+        'core-url': (
+            ('--core-url',), {
+                'default': None,
+            },
+        ),
+        'service-url': (
+            ('--service-url',), {
+                'default': None,
+            },
+        ),
     }
 
     modules = {
@@ -269,7 +279,7 @@ class OnlineLab(object):
         },
         ('service', Service): {
             'init': [],
-            'start': [('port', {'default': DEFAULT_SERVICE_PORT}), 'daemon',
+            'start': [('port', {'default': DEFAULT_SERVICE_PORT}), 'daemon', 'core-url', 'service-url',
                 'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
             'stop': [('port', {'default': DEFAULT_SERVICE_PORT}), 'pid-file', 'log-file', 'log-level'],
             'restart': [],
@@ -290,6 +300,11 @@ class OnlineLab(object):
         if not args.pid_file:
             args.pid_file = os.path.join(args.home,
                 'onlinelab-%s-%s.pid' % (args.module.__name__.lower(), args.port))
+
+    def postprocess_service_url(self, args):
+        """'service_url' default configuration depends on 'port'. """
+        if not args.service_url:
+            args.service_url = 'http://localhost:%s' % args.port
 
     def __init__(self):
         """Construct command-line parser based on global settings. """

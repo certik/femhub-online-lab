@@ -2,10 +2,10 @@
 
 import os
 import sys
+import daemon
 import logging
 import lockfile
-
-import daemon
+import functools
 
 try:
     import daemon.pidfile as pidlockfile
@@ -13,12 +13,16 @@ except ImportError:
     import daemon.pidlockfile as pidlockfile
 
 import tornado.httpserver
+import tornado.httpclient
 import tornado.options
+import tornado.escape
 import tornado.ioloop
 import tornado.web
 
 import handlers
 import processes
+
+from ..utils.jsonrpc import JSONRPCProxy
 
 def _setup_console_logging(args):
     """Configure :mod:`logging` to log to the terminal. """
@@ -100,16 +104,46 @@ def start(args):
 
     logging.info("Started service at localhost:%s (pid=%s)" % (args.port, os.getpid()))
 
+    # We are ready for processing requests from a core server. However,
+    # at this point no one knows about our existence, so lets tell a
+    # selected core server that we exist and we would like to share our
+    # computational resources.
+    #
+    # To achieve this, we will send notification (registration) request
+    # to the selected core sever. The request consists of our URL, our
+    # capabilities (e.g. what engine types we support) and a public key
+    # that will allow later to authenticate the core server.
+
+    def _on_registred_okay(args, result):
+        """Gets executed when the core responds. """
+        logging.info("Service has been registered at %s" % args.core_url)
+
+    def _registration_callback(args):
+        """Gets executed when IOLoop is started. """
+        proxy = JSONRPCProxy(args.core_url, 'service')
+
+        proxy.call('register', {
+            'service_url': args.service_url,
+        }, functools.partial(_on_registred_okay, args))
+
+    ioloop = tornado.ioloop.IOLoop.instance()
+
+    if args.core_url:
+        ioloop.add_callback(functools.partial(_registration_callback, args))
+    else:
+        logging.warning("Couldn't register this service at any core server.")
+
     try:
-        tornado.ioloop.IOLoop.instance().start()
+        ioloop.start()
     except KeyboardInterrupt:
         print # SIGINT prints '^C' so lets make logs more readable
     except SystemExit:
         pass
 
-    # Make sure we clean up after this service here. It is important that
-    # we explicitly terminate all child processes that were # spawned by
-    # this service.
+    # Make sure we clean up after this service here before we quit. It is
+    # important that we explicitly terminate all child processes that were
+    # spawned by this service. Note that in case of SIGKILL we can't do
+    # much and those processes will be kept alive.
 
     processes.ProcessManager.instance().killall()
 

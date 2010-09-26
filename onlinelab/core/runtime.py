@@ -3,10 +3,9 @@
 import os
 import sys
 import signal
+import daemon
 import logging
 import lockfile
-
-import daemon
 
 try:
     import daemon.pidfile as pidlockfile
@@ -100,6 +99,7 @@ def start(args):
 
     application = tornado.web.Application([
         (r"/async", handlers.AsyncHandler),
+        (r"/service", handlers.ServiceHandler),
         (r".*", tornado.web.FallbackHandler, dict(fallback=wsgi_app)),
     ]);
 
