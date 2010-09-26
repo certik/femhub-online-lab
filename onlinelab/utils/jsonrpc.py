@@ -9,6 +9,27 @@ import tornado.web
 import tornado.escape
 import tornado.httpclient
 
+class JSONRPCError(Exception):
+    """Base class for JSON-RPC errors. """
+
+    def __init__(self, data):
+        self.data = data
+
+class ParseError(JSONRPCError):
+    name = 'parse_error'
+
+class InvalidRequest(JSONRPCError):
+    name = 'invalid_request'
+
+class MethodNotFound(JSONRPCError):
+    name = 'method_not_found'
+
+class InvalidParams(JSONRPCError):
+    name = 'invalid_params'
+
+class InternalError(JSONRPCError):
+    name = 'internal_error'
+
 class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
     """Simple handler of JSON-RPC requests. """
 
@@ -69,48 +90,49 @@ class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
         logging.info("JSON-RPC: received RPC method call")
 
         try:
-            data = tornado.escape.json_decode(self.request.body)
-        except ValueError:
-            self.return_parse_error()
-        else:
-            method = data.get('method', None)
-
-            if method is None:
-                self.return_invalid_request()
-                return
-
-            params = data.get('params', None)
-
-            if params is None:
-                self.return_invalid_request()
-                return
-
-            if method not in self.__methods__:
-                self.return_method_not_found()
-                return
-
-            func = getattr(self, method)
-
-            if func is not None:
-                if type(params) == dict:
-                    try:
-                        func(**params)
-                    except TypeError:
-                        pass
-                    else:
-                        return
-
-                if type(params) == list:
-                    try:
-                        func(*params)
-                    except TypeError:
-                        pass
-                    else:
-                        return
-
-                self.return_invalid_params()
+            try:
+                data = tornado.escape.json_decode(self.request.body)
+            except ValueError:
+                raise ParseError
             else:
-                self.return_internal_error()
+                for name in ['jsonrpc', 'id', 'method', 'params']:
+                    value = data.get(name, None)
+
+                    if value is not None:
+                        setattr(self, name, value)
+                    else:
+                        raise InvalidRequest("'%s' parameter is mandatory" % name)
+
+                if self.method not in self.__methods__:
+                    raise MethodNotFound("'%s' is not a valid method" % self.method)
+
+                func = getattr(self, self.method)
+
+                if func is None:
+                    raise InternalError("'%s' method hasn't been implemented" % self.method)
+
+                if type(self.params) == dict:
+                    try:
+                        func(**self.params)
+                    except TypeError, exc:
+                        raise InvalidParams(exc.args[0])
+                    else:
+                        return
+
+                if type(self.params) == list:
+                    try:
+                        func(*self.params)
+                    except TypeError, exc:
+                        raise InvalidParams("Invalid number of positional arguments")
+                    else:
+                        return
+
+                try:
+                    func(self.params)
+                except TypeError, exc:
+                    raise InvalidParams("Method does not take any arguments")
+        except JSONRPCError, exc:
+            getattr(self, 'return_' + exc.name)(exc.data)
 
 class JSONRPCProxy(object):
     """Simple proxy for making JSON-RPC requests. """
