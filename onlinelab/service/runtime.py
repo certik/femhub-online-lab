@@ -153,17 +153,18 @@ def stop(args):
     """Stop a running service. """
     _setup_console_logging(args)
 
-    lock = pidlockfile.PIDLockFile(args.pid_file)
-
-    if lock.is_locked():
-        pid = lock.read_pid()
-        logging.info("Sending TERM signal to service process (pid=%s)" % pid)
-        os.kill(pid, signal.SIGTERM)
-        sys.exit(0)
+    if not os.path.exists(args.pid_file):
+        logging.warning("Nothing to stop. Quitting.")
     else:
-        logging.warning("No service running but lock file found. Cleaning up.")
-        os.unlink(args.pid_file)
-        sys.exit(1)
+        lock = pidlockfile.PIDLockFile(args.pid_file)
+
+        if lock.is_locked():
+            pid = lock.read_pid()
+            logging.info("Sending TERM signal to service process (pid=%s)" % pid)
+            os.kill(pid, signal.SIGTERM)
+        else:
+            logging.warning("No service running but lock file found. Cleaning up.")
+            os.unlink(args.pid_file)
 
 def restart(args):
     """Restart a running service. """
