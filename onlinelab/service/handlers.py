@@ -7,13 +7,8 @@ import tornado.web
 import tornado.escape
 
 import processes
-import utilities
 
-class MainHandler(tornado.web.RequestHandler):
-    """Handle simple GET request. """
-
-    def get(self):
-        self.write("Online Lab")
+from ..utils import jsonrpc
 
 class Args(dict):
     """Dictionary with object-like access. """
@@ -24,78 +19,51 @@ class Args(dict):
         except KeyError:
             raise AttributeError("'%s' is not a valid attribute" % name)
 
-class EngineHandler(tornado.web.RequestHandler):
-    """Handle simple POST request. """
+class MainHandler(tornado.web.RequestHandler):
+    """Handle simple GET request. """
+
+    def get(self):
+        self.write("Online Lab")
+
+class EngineHandler(jsonrpc.AsyncJSONRPCRequestHandler):
+    """Handle method calls to be executed on an engine. """
+
+    __methods__ = ['init', 'kill', 'stat', 'evaluate', 'interrupt']
 
     def initialize(self):
-        self._func_handlers = {
-            'init': self.handle_init,
-            'kill': self.handle_kill,
-            'stat': self.handle_stat,
-            'evaluate': self.handle_evaluate,
-            'interrupt': self.handle_interrupt,
-        }
+        self.manager = processes.ProcessManager.instance()
 
-    def dispatch(self, func, guid, args):
-        """Call appropriate method with the give arguments. """
-        try:
-            handler = self._func_handlers[func]
-        except KeyError:
-            error = { 'code': -32601, 'message': "Unknown method" }
-            self.write(utilities.json(result=None, error=error))
-            self.finish()
+    def on_method_okay(self, result):
+        """Gets executed when engine method call succeeded. """
+        if isinstance(result, str):
+            self.return_result({'status': result})
         else:
-            manager = processes.ProcessManager.instance()
-            handler(manager, guid, Args(args))
+            self.return_result(result)
 
-    def callback_okay(self, func, result):
-        """Called when method invocation succeeded. """
-        self.write(utilities.json(result=result, error=None))
-        self.finish()
+    def on_method_fail(self, error):
+        """Gets executed when engine method call failed. """
+        self.return_result({'status': error, 'error': True})
 
-    def callback_fail(self, func, error):
-        """Called when method invocation failed. """
-        self.write(utilities.json(result=None, error=error))
-        self.finish()
+    okay = on_method_okay
+    fail = on_method_fail
 
-    def handle_init(self, manager, guid, args):
-        """Handle ``init`` engine method. """
-        manager.init(guid, args,
-            okay=functools.partial(self.async_callback(self.callback_okay), 'init'),
-            fail=functools.partial(self.async_callback(self.callback_fail), 'init'))
+    def init(self, uuid):
+        """Process 'init' method call from a client. """
+        self.manager.init(uuid, Args({}), self.okay, self.fail)
 
-    def handle_kill(self, manager, guid, args):
-        """Handle ``kill`` engine method. """
-        manager.kill(guid, args,
-            okay=functools.partial(self.async_callback(self.callback_okay), 'kill'),
-            fail=functools.partial(self.async_callback(self.callback_fail), 'kill'))
+    def kill(self, uuid):
+        """Process 'kill' method call from a client. """
+        self.manager.kill(uuid, Args({}), self.okay, self.fail)
 
-    def handle_stat(self, manager, guid, args):
-        """Handle ``stat`` engine method. """
-        manager.stat(guid, args,
-            okay=functools.partial(self.async_callback(self.callback_okay), 'stat'),
-            fail=functools.partial(self.async_callback(self.callback_fail), 'stat'))
+    def stat(self, uuid):
+        """Process 'stat' method call from a client. """
+        self.manager.stat(uuid, Args({}), self.okay, self.fail)
 
-    def handle_evaluate(self, manager, guid, args):
-        """Handle ``evaluate`` engine method. """
-        manager.evaluate(guid, args,
-            okay=functools.partial(self.async_callback(self.callback_okay), 'evaluate'),
-            fail=functools.partial(self.async_callback(self.callback_fail), 'evaluate'))
+    def evaluate(self, uuid, source, cellid=None):
+        """Process 'evaluate' method call from a client. """
+        self.manager.evaluate(uuid, Args(source=source, cellid=cellid), self.okay, self.fail)
 
-    def handle_interrupt(self, manager, guid, args):
-        """Handle ``interrupt`` engine method. """
-        manager.interrupt(guid, args,
-            okay=functools.partial(self.async_callback(self.callback_okay), 'interrupt'),
-            fail=functools.partial(self.async_callback(self.callback_fail), 'interrupt'))
-
-    @tornado.web.asynchronous
-    def post(self, guid, func):
-        try:
-            args = tornado.escape.json_decode(self.request.body)
-        except ValueError:
-            error = { 'code': -32700, 'message': "Parse Error" }
-            self.write(utilities.json(result=None, error=error))
-            self.finish()
-        else:
-            self.dispatch(func, guid, args)
+    def interrupt(self, uuid, cellid=None):
+        """Process 'interrupt' method call from a client. """
+        self.manager.interrupt(uuid, Args(cellid=cellid), self.okay, self.fail)
 

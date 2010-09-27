@@ -96,7 +96,7 @@ def start(args):
 
     application = tornado.web.Application([
         (r"/", handlers.MainHandler),
-        (r"/engine/(?P<guid>\w{32})/(?P<func>[a-z]+)", handlers.EngineHandler),
+        (r"/engine/?", handlers.EngineHandler),
     ]);
 
     server = tornado.httpserver.HTTPServer(application)

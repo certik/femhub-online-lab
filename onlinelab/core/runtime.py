@@ -98,8 +98,8 @@ def start(args):
         django.core.handlers.wsgi.WSGIHandler())
 
     application = tornado.web.Application([
-        (r"/async", handlers.AsyncHandler),
-        (r"/service", handlers.ServiceHandler),
+        (r"/async/?", handlers.AsyncHandler),
+        (r"/service/?", handlers.ServiceHandler),
         (r".*", tornado.web.FallbackHandler, dict(fallback=wsgi_app)),
     ]);
 
