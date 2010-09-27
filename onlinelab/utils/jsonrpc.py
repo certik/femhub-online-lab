@@ -161,27 +161,27 @@ class JSONRPCProxy(object):
 
     def _on_response_handler(self, okay, fail, response):
         """Parse and process response from a JSON-RPC server. """
-        if response.code == 200:
+        error = None
+
+        try:
+            if response.code != 200:
+                raise JSONRPCError("got %s HTTP response code" % response.code)
+
             try:
                 data = tornado.escape.json_decode(response.body)
             except ValueError:
-                logging.error("JSON-RPC: error: parsing response failed")
+                raise JSONRPCError("parsing response failed")
             else:
                 error = data.get('error', None)
 
                 if error is not None:
-                    if fail is None:
-                        logging.error("JSON-RPC: error: %s" % error['message'])
-                    else:
-                        fail(error)
-                else:
-                    if okay is not None:
-                        result = data.get('result', None)
+                    raise JSONRPCError("code=%(code)s, message=%(message)s" % error)
 
-                        if result is None:
-                            logging.error("JSON-RPC: error: didn't receive any results")
-                        else:
-                            okay(result)
-        else:
-            logging.error("JSON-RPC: error: got %s HTTP response code" % response.code)
+                if okay is not None:
+                    okay(data.get('result', None))
+        except JSONRPCError, exc:
+            logging.error("JSON-RPC: error: %s" % exc.data)
+
+            if fail is not None:
+                fail(error, http_code=response.code)
 
