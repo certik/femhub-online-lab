@@ -270,8 +270,8 @@ class EngineProcess(object):
         elif guid and self.evaluating.args.guid != guid:
             for i, (args, okay, fail) in enumerate(self.queue):
                 if args.guid == self.evaluating.args.guid:
-                    okay(dict(source=args.source, interrupted=True,
-                        traceback=False, out='', err=''))
+                    okay(dict(source=args.source, index=None, out='',
+                        err='', traceback=False, interrupted=True))
                     del self.queue[i]
                     return
 

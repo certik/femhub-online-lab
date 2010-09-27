@@ -68,6 +68,7 @@ class PythonInterpreter(object):
 
             return {
                 'source': source,
+                'index': self.index,
                 'out': self.trap.out,
                 'err': self.trap.err,
                 'traceback': traceback,
