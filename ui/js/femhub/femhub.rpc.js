@@ -81,3 +81,25 @@ FEMhub.RPC.call = function(method, params, handler, scope, url) {
     });
 }
 
+FEMhub.RPC.Engine = {};
+
+FEMhub.RPC.Engine.init = function(params, handler, scope) {
+    FEMhub.RPC.call('init', params, handler, scope, FEMhub.async);
+}
+
+FEMhub.RPC.Engine.kill = function(params, handler, scope) {
+    FEMhub.RPC.call('kill', params, handler, scope, FEMhub.async);
+}
+
+FEMhub.RPC.Engine.stat = function(params, handler, scope) {
+    FEMhub.RPC.call('stat', params, handler, scope, FEMhub.async);
+}
+
+FEMhub.RPC.Engine.evaluate = function(params, handler, scope) {
+    FEMhub.RPC.call('evaluate', params, handler, scope, FEMhub.async);
+}
+
+FEMhub.RPC.Engine.interrupt = function(params, handler, scope) {
+    FEMhub.RPC.call('interrupt', params, handler, scope, FEMhub.async);
+}
+
