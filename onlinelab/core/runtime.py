@@ -130,11 +130,9 @@ def stop(args):
             pid = lock.read_pid()
             logging.info("Sending TERM signal to core process (pid=%s)" % pid)
             os.kill(pid, signal.SIGTERM)
-            sys.exit(0)
         else:
             logging.warning("No core running but lock file found. Cleaning up.")
             os.unlink(args.pid_file)
-            sys.exit(1)
 
 def restart(args):
     """Restart a running core server. """
