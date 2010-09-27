@@ -47,9 +47,9 @@ FEMhub.RPC.init = function(ready, scope) {
     });
 }
 
-FEMhub.RPC.call = function(method, params, handler, scope) {
+FEMhub.RPC.call = function(method, params, handler, scope, url) {
     Ext.Ajax.request({
-        url: FEMhub.json,
+        url: url || FEMhub.json,
         method: "POST",
         jsonData: Ext.encode({
             jsonrpc: "2.0",
