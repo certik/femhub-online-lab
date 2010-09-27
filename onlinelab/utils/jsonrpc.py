@@ -103,6 +103,9 @@ class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
                     else:
                         raise InvalidRequest("'%s' parameter is mandatory" % name)
 
+                if '.' in self.method:
+                    self.method = self.method.replace('.', '__')
+
                 if self.method not in self.__methods__:
                     raise MethodNotFound("'%s' is not a valid method" % self.method)
 
