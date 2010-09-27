@@ -470,33 +470,31 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.fireEvent('postevaluate', this, input, cells);
         }
 
-        function evalFailure(output) {
-            this.evaluating = false;
+        FEMhub.RPC.Engine.evaluate({
+            uuid: this.owner.guid,
+            source: input,
+            cellid: this.id,
+        }, function(result) {
+            var cells = [];
 
-            this.el_evaluate.addClass('femhub-enabled');
-            this.el_clear.addClass('femhub-enabled');
-            this.el_interrupt.removeClass('femhub-enabled');
+            if (result.out) {
+                cells.push({ output: result.out, type: 'output' });
+            }
 
-            FEMhub.log(output);
-        }
+            if (result.err) {
+                cells.push({ output: result.err, type: 'error' });
+            }
 
-        Ext.Ajax.request({
-            url: this.owner.getAsyncURL(),
-            method: "POST",
-            jsonData: Ext.encode({
-                method: 'evaluate',
-                cellid: this.id,    // XXX: currently not supported
-                input: input,
-            }),
-            success: function(result, request) {
-                var result = Ext.decode(result.responseText);
-                evalSuccess.call(this, result.index, result.cells)
-            },
-            failure: function(result, request) {
-                evalFailure.call(this, result.statusText);
-            },
-            scope: this,
-        });
+            if (result.traceback) {
+                cells.push({ output: result.traceback, type: 'error' });
+            }
+
+            if (result.interrupted) {
+                cells.push({ output: '$Interrupted', type: 'error' });
+            }
+
+            evalSuccess.call(this, result.index, cells);
+        }, this);
     },
 
     clearCell: function() {
@@ -512,24 +510,18 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             return;
         }
 
-        Ext.Ajax.request({
-            url: this.owner.getAsyncURL(),
-            method: "POST",
-            jsonData: Ext.encode({
-                method: 'interrupt',
-            }),
-            success: function(result, request) {
-                this.evaluating = false;
+        FEMhub.RPC.Engine.interrupt({
+            uuid: this.owner.guid,
+            cellid: this.id,
+        }, function(result) {
+            this.evaluating = false;
 
-                this.el_evaluate.addClass('femhub-enabled');
-                this.el_clear.addClass('femhub-enabled');
-                this.el_interrupt.removeClass('femhub-enabled');
+            this.el_evaluate.addClass('femhub-enabled');
+            this.el_clear.addClass('femhub-enabled');
+            this.el_interrupt.removeClass('femhub-enabled');
 
-                this.focusCell();
-            },
-            failure: Ext.emptyFn,
-            scope: this,
-        });
+            this.focusCell();
+        }, this);
     },
 
     insertInputCellAfter: function() {

@@ -207,25 +207,11 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         return '/notebook/' + this.guid + '/';
     },
 
-    getAsyncURL: function() {
-        return '/asyncnotebook/' + this.guid + '/';
-    },
-
     initBackend: function() {
         if (!this.isInitialized) {
-            // XXX: FEMhub.RPC.Engine.init({ guid: this.guid }, ... );
-            Ext.Ajax.request({
-                url: this.getAsyncURL(),
-                method: "POST",
-                jsonData: Ext.encode({
-                    method: 'start', // XXX: change to 'init'
-                }),
-                success: function() {
-                    this.isInitialized = true;
-                },
-                failure: Ext.emptyFn,
-                scope: this,
-            });
+            FEMhub.RPC.Engine.init({ uuid: this.guid }, function() {
+                this.isInitialized = true;
+            }, this);
         }
 
         Ext.Ajax.request({
@@ -287,32 +273,14 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     interruptEngine: function() {
-        Ext.Ajax.request({
-            url: this.getAsyncURL(),
-            method: "POST",
-            jsonData: Ext.encode({
-                method: 'interrupt',
-            }),
-            success: Ext.emptyFn,
-            failure: Ext.emptyFn,
-            scope: this,
-        });
+        FEMhub.RPC.Engine.interrupt({ uuid: this.guid });
     },
 
     killEngine: function() {
         if (this.isInitialized) {
-            Ext.Ajax.request({
-                url: this.getAsyncURL(),
-                method: "POST",
-                jsonData: Ext.encode({
-                    method: 'kill',
-                }),
-                success: function() {
-                    this.isInitialized = false;
-                },
-                failure: Ext.emptyFn,
-                scope: this,
-            });
+            FEMhub.RPC.Engine.kill({ uuid: this.guid }, function() {
+                this.isInitialized = false;
+            }, this);
         };
     },
 
@@ -409,23 +377,10 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         }, this);
     },
 
-    evaluateCode: function(code) {
-        Ext.Ajax.request({
-            url: this.getAsyncURL(),
-            method: 'POST',
-            jsonData: Ext.encode({
-                method: 'evaluate',
-                cellid: null,
-                input: code,
-            }),
-            success: function(result, request) {
-                var result = Ext.decode(result.responseText);
-                FEMhub.log(result.out + result.err);
-            },
-            failure: function(result, request) {
-                FEMhub.log(result.statusText);
-            },
-            scope: this,
+    evaluateCode: function(source) {
+        FEMhub.RPC.Engine.evaluate({
+            uuid: this.guid,
+            source: source,
         });
     },
 
