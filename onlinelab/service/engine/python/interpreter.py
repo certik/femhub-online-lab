@@ -10,8 +10,9 @@ class PythonInterpreter(object):
 
     filename = '<online-lab>'
 
-    def __init__(self, locals={}):
+    def __init__(self, locals={}, debug=False):
         self.locals = locals
+        self.debug = debug
         self.trap = OutputTrap()
         self.index = 0
 
@@ -35,7 +36,11 @@ class PythonInterpreter(object):
                 exec_source = source
                 eval_source = None
 
-        self.trap.set()
+        # If in debug mode, then don't setup output trap so that we can
+        # run a debugger (e.g. pdb). Note that stdout and stderr won't
+        # be captured and stored in the resulting dict object.
+        if not self.debug:
+            self.trap.set()
 
         try:
             interrupted = False
