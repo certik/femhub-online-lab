@@ -6,14 +6,14 @@ import sys
 import logging
 import argparse
 
-def sys_path_hack():
+def sys_path_hack(args):
     """Hook in-tree Online Lab mode into Python path. """
     script_dir = os.path.dirname(__file__)              # bin/onlinelab
     module_top = os.path.split(script_dir)[0]           # ../
     module_dir = os.path.join(module_top, 'onlinelab')  # ../onlinelab/
 
     if os.path.isdir(module_dir):
-        sys.path.insert(0, os.path.abspath(module_top))
+        args.python_path.insert(0, os.path.abspath(module_top))
 
 def path(string):
     """Convert a string to an absolute path. """
@@ -292,7 +292,7 @@ class OnlineLab(object):
         """Parse command-line and run appropriate module. """
         args = self.parser.parse_args()
 
-        sys_path_hack()
+        sys_path_hack(args)
 
         for path in args.python_path:
             sys.path.insert(0, path)

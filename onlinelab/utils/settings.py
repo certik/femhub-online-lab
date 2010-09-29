@@ -45,6 +45,15 @@ def configure(args, **kwargs):
 
         settings[option] = value
 
+    python_path = args.python_path
+
+    try:
+        python_path.extend(config['PYTHON_PATH'])
+    except KeyError:
+        pass
+
+    settings['python_path'] = python_path
+
     for option, value in config.iteritems():
         option = option.lower()
 
@@ -68,4 +77,8 @@ class Settings(dict):
             return self[option]
         except KeyError:
             raise AttributeError("'%s' wasn't set although is required" % option)
+
+    def get_PYTHONPATH(self):
+        """Collect custom Python modules' paths into PYTHONPATH. """
+        return os.pathsep.join(self.python_path)
 
