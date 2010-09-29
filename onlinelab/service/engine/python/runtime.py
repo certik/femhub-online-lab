@@ -22,7 +22,7 @@ class PythonEngine(object):
     def find_port(cls):
         """Find a free port for this engine. """
         sock = socket.socket()
-        sock.bind(('',0))
+        sock.bind(('', 0))
         port = sock.getsockname()[1]
         sock.close()
         del sock
@@ -38,7 +38,7 @@ class PythonEngine(object):
         self.notify_ready(port)
         server.serve_forever(interactive)
 
-    def run(self, interactive=False):
+    def run(self, interactive=False, port=None):
         """Find a free port and run server for this engine. """
-        self.run_server(self.find_port(), interactive)
+        self.run_server(port or self.find_port(), interactive)
 
