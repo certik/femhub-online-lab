@@ -1,19 +1,19 @@
 
 FEMhub.ImageCell = Ext.extend(FEMhub.OutputCell, {
     ctype: 'image',
-    imageURL: null,
+    imageData: null,
 
     initComponent: function() {
         FEMhub.ImageCell.superclass.initComponent.call(this);
     },
 
     getOutput: function() {
-        return this.imageURL;
+        return this.imageData;
     },
 
-    setOutput: function(url) {
-        this.el_image.dom.setAttribute('src', '/data/' + url);
-        this.imageURL = url;
+    setOutput: function(data) {
+        this.el_image.dom.setAttribute('src', data);
+        this.imageData = data;
     },
 
     onRender: function(container, position) {

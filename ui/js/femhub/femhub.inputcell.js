@@ -485,6 +485,13 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 cells.push({ output: result.err, type: 'error' });
             }
 
+            if (result.plots) {
+                Ext.each(result.plots, function(plot) {
+                    var contents = 'data:' + plot.type + ';' + plot.encoding + ',' + plot.data;
+                    cells.push({ output: contents, type: 'image' });
+                }, this);
+            }
+
             if (result.traceback) {
                 cells.push({ output: result.traceback, type: 'error' });
             }

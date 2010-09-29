@@ -48,6 +48,11 @@ class PythonInterpreter(object):
             self.trap.set()
 
         try:
+            try:
+                del self.locals['__plots__']
+            except KeyError:
+                pass
+
             interrupted = False
             traceback = False
 
@@ -74,16 +79,24 @@ class PythonInterpreter(object):
             except:
                 traceback = self.traceback()
 
+            try:
+                plots = self.locals['__plots__']
+            except KeyError:
+                plots = []
+
             self.index += 1
 
-            return {
+            result = {
                 'source': source,
                 'index': self.index,
                 'out': self.trap.out,
                 'err': self.trap.err,
+                'plots': plots,
                 'traceback': traceback,
                 'interrupted': interrupted,
             }
+
+            return result
         finally:
             self.trap.reset()
 
