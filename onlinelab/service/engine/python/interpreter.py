@@ -4,6 +4,7 @@ import sys
 import traceback
 
 from outputtrap import OutputTrap
+from namespace import PythonNamespace
 
 class PythonInterpreter(object):
     """Customized Python interpreter with two-stage evaluation. """
@@ -11,7 +12,11 @@ class PythonInterpreter(object):
     filename = '<online-lab>'
 
     def __init__(self, locals={}, debug=False):
-        self.locals = locals
+        if not isinstance(locals, PythonNamespace):
+            self.locals = dict(PythonNamespace(locals))
+        else:
+            self.locals = dict(locals)
+
         self.debug = debug
         self.trap = OutputTrap()
         self.index = 0
