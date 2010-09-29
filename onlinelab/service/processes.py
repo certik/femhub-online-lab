@@ -1,18 +1,24 @@
 """Engine process manager for Online Lab services. """
 
+import os
 import re
 import time
 import signal
-import psutil
+import shutil
 import logging
 import functools
 import subprocess
 import collections
 
+import psutil
+import pyinotify
+
 import tornado.ioloop
 import tornado.httpclient
 
 import utilities
+
+from ..utils import settings
 
 class ProcessManager(object):
     """Start and manage system processes for engines. """
@@ -21,9 +27,67 @@ class ProcessManager(object):
 
     _timeout = 20 # XXX: put this into config file
 
+    _inotify_mask = pyinotify.IN_CREATE \
+                  | pyinotify.IN_MODIFY \
+                  | pyinotify.IN_DELETE
+
     def __init__(self):
         self.ioloop = tornado.ioloop.IOLoop.instance()
+        self.settings = settings.Settings.instance()
+
         self.processes = {}
+
+        self.watches = pyinotify.WatchManager()
+        self.notifier = pyinotify.Notifier(self.watches, timeout=0)
+
+        self.ioloop.add_handler(self.watches.get_fd(),
+            self._on_inotify, self.ioloop.READ)
+
+        self.user_path = os.path.join(self.settings.home, 'user')
+
+        self.watches.add_watch(self.user_path, self._inotify_mask,
+            self._process_events, rec=True, auto_add=True)
+
+    def _on_inotify(self, fd, events):
+        """Get executed when new inotify's events arrive. """
+        while self.notifier.check_events():
+            self.notifier.read_events()
+            self.notifier.process_events()
+
+    def _process_events(self, event):
+        if event.dir:
+            return
+
+        user = self.user_path
+        path = event.pathname
+
+        parts = []
+
+        while path != user:
+            path, part = os.path.split(path)
+            parts.insert(0, part)
+
+        if len(parts) < 2:
+            return
+
+        uuid = parts[0]
+
+        try:
+            process = self.processes[uuid]
+        except KeyError:
+            return
+
+        if not (process and process.is_evaluating):
+            return
+
+        file = os.path.join(*parts[1:])
+
+        if event.mask & (pyinotify.IN_CREATE | pyinotify.IN_MODIFY):
+            self.processes[uuid].add_file(file)
+        else:
+            self.processes[uuid].rm_file(file)
+
+        logging.info("Processed inotify event for '%s' (file='%s')" % (uuid, file))
 
     @classmethod
     def instance(cls):
@@ -44,13 +108,27 @@ class ProcessManager(object):
             from engine.python import boot
             command = ["python", "-c", "%s" % boot]
 
+        env = {'PYTHONPATH': self.settings.get_PYTHONPATH()}
+
+        # Create a directory for a process that we will spawn in a moment. If
+        # it already exists, make sure it is empty (just remove it and create
+        # once again).
+
+        cwd = os.path.join(self.user_path, guid)
+
+        if os.path.exists(cwd):
+            shutil.rmtree(cwd)
+
+        os.mkdir(cwd)
+
         # Lets start the engine's process. We must close all non-standard file
         # descriptors (via 'close_fds'), because otherwise IOLoop will hang.
         # When the process will be ready to handle requests from the core, it
         # will tell us this by sending a single line of well formatted output
         # (containing port numer and PID) via a pipe.
 
-        proc = subprocess.Popen(command, close_fds=True, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(command, cwd=cwd, env=env,
+            close_fds=True, stdout=subprocess.PIPE)
 
         # File descriptor of the pipe (fd) is our connector the process, so
         # we will monitor this descriptor to see the change in status of the
@@ -58,13 +136,13 @@ class ProcessManager(object):
 
         fd = proc.stdout.fileno()
 
-        timeout = functools.partial(self._on_run_timeout, guid, proc, fail, fd)
+        timeout = functools.partial(self._on_run_timeout, guid, proc, cwd, fail, fd)
         tm = self.ioloop.add_timeout(time.time() + self._timeout, timeout)
 
-        handler = functools.partial(self._on_run_handler, guid, proc, okay, fail, tm)
+        handler = functools.partial(self._on_run_handler, guid, proc, cwd, okay, fail, tm)
         self.ioloop.add_handler(fd, handler, self.ioloop.READ | self.ioloop.ERROR)
 
-    def _on_run_timeout(self, guid, proc, fail, fd):
+    def _on_run_timeout(self, guid, proc, cwd, fail, fd):
         """Hard deadline on engine's process startup (start or die). """
         self.ioloop.remove_handler(fd)
 
@@ -76,12 +154,14 @@ class ProcessManager(object):
         # are running out of memory.
 
         del self.processes[guid]
+        shutil.rmtree(cwd)
+
         proc.kill()
         proc.poll()
 
         fail('timeout')
 
-    def _on_run_handler(self, guid, proc, okay, fail, tm, fd, events):
+    def _on_run_handler(self, guid, proc, cwd, okay, fail, tm, fd, events):
         """Startup handler that gets executed on pipe write or error. """
         self.ioloop.remove_timeout(tm)
         self.ioloop.remove_handler(fd)
@@ -98,7 +178,7 @@ class ProcessManager(object):
 
             if result is not None:
                 port = int(result.groupdict()['port'])
-                process = EngineProcess(guid, proc, port)
+                process = EngineProcess(guid, proc, cwd, port)
 
                 self.processes[guid] = process
 
@@ -114,6 +194,8 @@ class ProcessManager(object):
                 # process) and gracefully fail.
 
                 del self.processes[guid]
+                shutil.rmtree(cwd)
+
                 proc.kill()
                 proc.poll()
 
@@ -204,23 +286,26 @@ class ProcessManager(object):
     def killall(self):
         """Forcibly kill all processes that belong to this manager. """
         for guid, process in self.processes.iteritems():
-            logging.warning("Forced kill of %s (pid=%s)" % (guid, process.pid))
-            process.proc.kill()
-            process.proc.poll()
+            if process is not None:
+                logging.warning("Forced kill of %s (pid=%s)" % (guid, process.pid))
+                process.proc.kill()
+                process.proc.poll()
 
 class EngineProcess(object):
     """Bridge between a logical engine and a physical process. """
 
-    def __init__(self, guid, proc, port):
+    def __init__(self, guid, proc, path, port):
         """Initialize an engine based on existing system process. """
         self.guid = guid
         self.proc = proc
         self.port = port
+        self.path = path
 
         self.util = psutil.Process(proc.pid)
         self.evaluating = False
         self.queue = collections.deque()
         self.url = "http://localhost:%s" % port
+        self.files = []
 
     @property
     def pid(self):
@@ -229,6 +314,24 @@ class EngineProcess(object):
     @property
     def is_running(self):
         return self.proc.poll() is None
+
+    @property
+    def is_evaluating(self):
+        return self.evaluating
+
+    def add_file(self, file):
+        """Register a new or modified file. """
+        self.rm_file(file)
+        self.files.append(file)
+
+    def rm_file(self, file):
+        """Remove file from registered files. """
+        try:
+            i = self.files.index(file)
+        except ValueError:
+            pass
+        else:
+            del self.files[i]
 
     def kill(self, args, okay, fail):
         """Terminate this engine's process. """
@@ -316,7 +419,12 @@ class EngineProcess(object):
         self._evaluate()
 
         if response.code == 200:
-            okay(utilities.xml_decode(response.body))
+            self._process_response(utilities.xml_decode(response.body), okay)
         else:
             fail('response-code: %s' % response.code)
+
+    def _process_response(self, result, okay):
+        """Perform final processing of evaluation results. """
+        result['files'] = self.files
+        okay(result)
 
