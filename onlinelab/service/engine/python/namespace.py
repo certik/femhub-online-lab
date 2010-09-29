@@ -73,6 +73,7 @@ class PythonNamespace(dict):
 
                 plots.append({
                     'data': data,
+                    'size': len(value),
                     'type': 'image/png',
                     'encoding': 'base64',
                     'checksum': hash,
