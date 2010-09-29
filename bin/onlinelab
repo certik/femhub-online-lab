@@ -110,8 +110,10 @@ class ConfigureAction(argparse.Action):
 class Module(object):
     """Base class for Online Lab modules. """
 
-    def __init__(self, args):
-        getattr(self, args.func)(args)
+    def __init__(self, func):
+        from onlinelab.utils import Settings
+        settings = Settings.instance()
+        getattr(self, func)(settings)
 
 class Core(Module):
     """Online Lab core module. """
@@ -172,12 +174,6 @@ class Service(Module):
 class OnlineLab(object):
     """Command-line based interface to Online Lab. """
 
-    DEFAULT_CORE_PORT    = 8000
-    DEFAULT_SERVICE_PORT = 9000
-
-    DEFAULT_MAX_SIZE     = 10*1000*1000      # store 10 MB in a log file
-    DEFAULT_NUM_BACKUPS  = 10                # keep 10 log files at most
-
     options = {
         'python-path': (
             ('--python-path',), {
@@ -191,120 +187,82 @@ class OnlineLab(object):
                 'action': VersionAction,
             },
         ),
-        'debug': (
-            ('--debug',), {
-                'default': False,
-                'action': ConfigureAction,
-            },
-        ),
         'home': (
             ('--home',), {
                 'default': '.',
                 'type': path,
             },
         ),
+        'config': (
+            ('--config',), {
+                'type': path,
+            },
+        ),
         'port': (
             ('--port',), {
-                'default': None,
                 'type': int,
+            },
+        ),
+        'debug': (
+            ('--debug',), {
+                'action': ConfigureAction,
             },
         ),
         'daemon': (
             ('--daemon',), {
-                'default': True,
                 'action': ConfigureAction,
             },
         ),
-        'settings': (
-            ('--settings',), {
-                'default': 'frontend.settings',
-            },
-        ),
-        'ui-path': (
-            ('--ui-path',), {
-                'default': None,
-                'type': path,
-            },
-        ),
         'pid-file': (
-            ('--pid-file',), {
-                'default': None,
-                'type': path,
-            },
+            ('--pid-file',), {},
         ),
         'log-file': (
-            ('--log-file',), {
-                'default': None,
-                'type': path,
-            },
+            ('--log-file',), {},
         ),
         'log-level': (
             ('--log-level',), {
-                'default': 'info',
                 'choices': ('none', 'info', 'warning', 'error'),
             },
         ),
         'log-max-size': (
             ('--log-max-size',), {
-                'default': DEFAULT_MAX_SIZE,
                 'type': int,
             },
         ),
         'log-num-backups': (
             ('--log-num-backups',), {
-                'default': DEFAULT_NUM_BACKUPS,
                 'type': int,
             },
         ),
         'core-url': (
-            ('--core-url',), {
-                'default': None,
-            },
+            ('--core-url',), {},
         ),
         'service-url': (
-            ('--service-url',), {
-                'default': None,
-            },
+            ('--service-url',), {},
+        ),
+        'settings': (
+            ('--settings',), {},
         ),
     }
 
     modules = {
         ('core', Core): {
             'init': [],
-            'start': [('port', {'default': DEFAULT_CORE_PORT}), 'daemon', 'settings', 'ui-path',
-                'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
-            'stop': [('port', {'default': DEFAULT_CORE_PORT}), 'pid-file', 'log-file', 'log-level'],
+            'start': ['settings', 'port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
+            'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
         },
         ('service', Service): {
             'init': [],
-            'start': [('port', {'default': DEFAULT_SERVICE_PORT}), 'daemon', 'core-url', 'service-url',
-                'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
-            'stop': [('port', {'default': DEFAULT_SERVICE_PORT}), 'pid-file', 'log-file', 'log-level'],
+            'start': ['port', 'daemon', 'core-url', 'service-url', 'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
+            'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
         },
     }
 
-    commons = ['debug', 'python-path', 'home']
-
-    def postprocess_log_file(self, args):
-        """'log_file' default configuration depends on 'home' and 'port'. """
-        if not args.log_file:
-            args.log_file = os.path.join(args.home,
-                'onlinelab-%s-%s.log' % (args.module.__name__.lower(), args.port))
-
-    def postprocess_pid_file(self, args):
-        """'pid_file' default configuration depends on 'home' and 'port'. """
-        if not args.pid_file:
-            args.pid_file = os.path.join(args.home,
-                'onlinelab-%s-%s.pid' % (args.module.__name__.lower(), args.port))
-
-    def postprocess_service_url(self, args):
-        """'service_url' default configuration depends on 'port'. """
-        if not args.service_url:
-            args.service_url = 'http://localhost:%s' % args.port
+    commons = ['python-path', 'debug', 'home', 'config']
 
     def __init__(self):
         """Construct command-line parser based on global settings. """
@@ -325,17 +283,7 @@ class OnlineLab(object):
                 func_parser.set_defaults(func=func)
 
                 for spec in self.commons + specs:
-                    override = None
-
-                    if isinstance(spec, tuple):
-                        spec, override = spec
-
                     args, kwargs = self.options[spec]
-
-                    if override is not None:
-                        kwargs = dict(kwargs)
-                        kwargs.update(override)
-
                     func_parser.add_argument(*args, **kwargs)
 
         self.parser = parser
@@ -344,21 +292,15 @@ class OnlineLab(object):
         """Parse command-line and run appropriate module. """
         args = self.parser.parse_args()
 
-        # XXX: load settings from file(s)
-
         sys_path_hack()
 
         for path in args.python_path:
             sys.path.insert(0, path)
 
-        for name in dir(self):
-            if name.startswith('postprocess_'):
-                arg_name = name.split('_', 1)[1]
+        import onlinelab.utils
+        onlinelab.utils.configure(args)
 
-                if hasattr(args, arg_name):
-                    getattr(self, name)(args)
-
-        args.module(args)
+        args.module(args.func)
 
 if __name__ == "__main__":
     OnlineLab().run()
