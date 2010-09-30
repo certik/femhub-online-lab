@@ -9,6 +9,8 @@ import tornado.web
 import tornado.escape
 import tornado.httpclient
 
+import extensions
+
 class JSONRPCError(Exception):
     """Base class for JSON-RPC errors. """
 
@@ -30,7 +32,14 @@ class InvalidParams(JSONRPCError):
 class InternalError(JSONRPCError):
     name = 'internal_error'
 
-class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
+class AuthenticationRequired(JSONRPCError):
+    name = 'authentication_required'
+
+def authenticated(func):
+    """Mark a function as requiring authentication. """
+    func.authenticated = True
+
+class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
     """Simple handler of JSON-RPC requests. """
 
     __methods__ = None
@@ -62,7 +71,7 @@ class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
         self.write(body)
         self.finish()
 
-        logging.info("JSON-RPC: error: %(message)s (%(code)s)" % vars())
+        logging.info("JSON-RPC: error: %s (%s, %s)" % (message, code, data))
 
     def return_parse_error(self, data=None):
         """Return 'Parse error' JSON-RPC error response. """
@@ -84,6 +93,19 @@ class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
         """Return 'Server error' JSON-RPC error response. """
         self.return_error(-32603, "Server error", data)
 
+    def return_authentication_required(self, data=None):
+        """Return 'Authentication required' JSON-RPC error response. """
+        self.return_error(-1, "Authentication required", data)
+
+    def return_description(self):
+        """Return description of methods available in this handler. """
+        procs = []
+
+        for name in self.__methods__:
+            procs.append({'name': name})
+
+        self.return_result({'procs': procs})
+
     @tornado.web.asynchronous
     def post(self):
         """Receive and process JSON-RPC requests. """
@@ -103,16 +125,20 @@ class AsyncJSONRPCRequestHandler(tornado.web.RequestHandler):
                     else:
                         raise InvalidRequest("'%s' parameter is mandatory" % name)
 
-                if '.' in self.method:
-                    self.method = self.method.replace('.', '__')
+                if self.method == 'system.describe':
+                    self.return_description()
+                    return
 
                 if self.method not in self.__methods__:
                     raise MethodNotFound("'%s' is not a valid method" % self.method)
 
-                func = getattr(self, self.method)
+                func = getattr(self, self.method.replace('.', '__'))
 
                 if func is None:
                     raise InternalError("'%s' method hasn't been implemented" % self.method)
+
+                if getattr(func, 'authenticated', False) and not self.current_user.is_authenticated():
+                    raise AuthenticationRequired("%s' method requires authentication" % self.method)
 
                 if type(self.params) == dict:
                     try:
