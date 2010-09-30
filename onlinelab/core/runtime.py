@@ -15,6 +15,7 @@ except ImportError:
 import django.core.handlers.wsgi
 
 import tornado.httpserver
+import tornado.template
 import tornado.options
 import tornado.ioloop
 import tornado.wsgi
@@ -92,16 +93,19 @@ def start(args):
     else:
         os.chdir(args.home)
 
-    os.environ['DJANGO_SETTINGS_MODULE'] = args.settings
-
     wsgi_app = tornado.wsgi.WSGIContainer(
         django.core.handlers.wsgi.WSGIHandler())
+
+    app_settings = {
+        'static_path': args.static_path,
+        'template_loader': tornado.template.Loader(args.templates_path),
+    }
 
     application = tornado.web.Application([
         (r"/async/?", handlers.AsyncHandler),
         (r"/service/?", handlers.ServiceHandler),
         (r".*", tornado.web.FallbackHandler, dict(fallback=wsgi_app)),
-    ]);
+    ], **app_settings)
 
     server = tornado.httpserver.HTTPServer(application)
     server.listen(args.port)

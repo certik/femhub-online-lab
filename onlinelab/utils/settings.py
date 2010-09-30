@@ -9,9 +9,9 @@ def configure(args, **kwargs):
     if args.config is not None:
         conf_file = args.config
     else:
-        conf_file = os.path.join(args.home, 'onlinelab.py')
+        conf_file = os.path.join(args.home, 'settings.py')
 
-    config = {}
+    config = {'HOME': args.home}
 
     if os.path.exists(conf_file):
         with open(conf_file) as conf:
@@ -55,10 +55,29 @@ def configure(args, **kwargs):
     settings['python_path'] = python_path
 
     for option, value in config.iteritems():
+        if option.startswith('_'):
+            continue
+
         option = option.lower()
 
         if option not in settings:
-            setttings[option] = value
+            settings[option] = value
+
+    if module == 'core':
+        import django.conf as conf
+
+        django_settings = {}
+
+        for option in dir(conf.global_settings):
+            if option.startswith('_'):
+                continue
+
+            low_option = option.lower()
+
+            if low_option in settings:
+                django_settings[option] = settings[low_option]
+
+        conf.settings.configure(**django_settings)
 
     return settings
 

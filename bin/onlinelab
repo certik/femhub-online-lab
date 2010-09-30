@@ -240,22 +240,36 @@ class OnlineLab(object):
         'service-url': (
             ('--service-url',), {},
         ),
-        'settings': (
-            ('--settings',), {},
+        'data-path': (
+            ('--data-path',), {
+                'type': path,
+            },
+        ),
+        'static-path': (
+            ('--static-path',), {
+                'type': path,
+            },
+        ),
+        'templates-path': (
+            ('--templates-path',), {
+                'type': path,
+            },
         ),
     }
 
     modules = {
         ('core', Core): {
             'init': [],
-            'start': ['settings', 'port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
+            'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
+                'log-num-backups', 'data-path', 'static-path', 'templates-path'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
         },
         ('service', Service): {
             'init': [],
-            'start': ['port', 'daemon', 'core-url', 'service-url', 'pid-file', 'log-file', 'log-level', 'log-max-size', 'log-num-backups'],
+            'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
+                'log-num-backups', 'data-path', 'core-url', 'service-url'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
