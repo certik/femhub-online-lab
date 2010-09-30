@@ -8,8 +8,13 @@
 
         <link href="/static/external/ext/css/ext-all.css" rel="stylesheet" type="text/css" />
 
-        <script src="/static/external/ext/js/ext-base{{ debug }}.js" type="text/javascript"></script>
-        <script src="/static/external/ext/js/ext-all{{ debug }}.js" type="text/javascript"></script>
+        {% if debug %}
+        <script src="/static/external/ext/js/ext-base-debug.js" type="text/javascript"></script>
+        <script src="/static/external/ext/js/ext-all-debug.js" type="text/javascript"></script>
+        {% else %}
+        <script src="/static/external/ext/js/ext-base.js" type="text/javascript"></script>
+        <script src="/static/external/ext/js/ext-all.js" type="text/javascript"></script>
+        {% end %}
 
         <script src="/static/external/ext/js/ux/StatusBar.js" type="text/javascript"></script>
 

@@ -12,8 +12,6 @@ try:
 except ImportError:
     import daemon.pidlockfile as pidlockfile
 
-import django.core.handlers.wsgi
-
 import tornado.httpserver
 import tornado.template
 import tornado.options
@@ -93,18 +91,16 @@ def start(args):
     else:
         os.chdir(args.home)
 
-    wsgi_app = tornado.wsgi.WSGIContainer(
-        django.core.handlers.wsgi.WSGIHandler())
-
     app_settings = {
         'static_path': args.static_path,
         'template_loader': tornado.template.Loader(args.templates_path),
     }
 
     application = tornado.web.Application([
+        (r"/", handlers.MainHandler),
+        (r"/json/?", handlers.JSONHandler),
         (r"/async/?", handlers.AsyncHandler),
         (r"/service/?", handlers.ServiceHandler),
-        (r".*", tornado.web.FallbackHandler, dict(fallback=wsgi_app)),
     ], **app_settings)
 
     server = tornado.httpserver.HTTPServer(application)

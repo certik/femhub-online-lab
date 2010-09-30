@@ -171,21 +171,13 @@ FEMhub.Login = Ext.extend(Ext.Window, {
             remember: remember.getValue(),
         }
 
-        FEMhub.RPC.Account.login(params, function(result) {
+        FEMhub.RPC.User.login(params, function(result) {
             if (result.ok === true) {
                 this.fireEvent('loginsuccess');
                 this.close();
             } else {
-                switch (result.reason) {
-                case 'disabled':
-                    Ext.MessageBox.show({
-                        title: 'Login failed',
-                        msg: 'Your account has been disabled.',
-                        buttons: Ext.MessageBox.OK,
-                        icon: Ext.MessageBox.WARNING,
-                    });
-                    break;
-                case 'failed':
+                switch (result.error) {
+                case 'credentials':
                     Ext.MessageBox.show({
                         title: 'Login failed',
                         msg: 'You have entered wrong username or password!',
@@ -196,6 +188,14 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                             this.focusUsername();
                         },
                         scope: this,
+                    });
+                    break;
+                case 'disabled':
+                    Ext.MessageBox.show({
+                        title: 'Login failed',
+                        msg: 'Your account has been disabled.',
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.WARNING,
                     });
                     break;
                 }
@@ -378,7 +378,7 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
                 scope: this,
             });
         } else {
-            FEMhub.RPC.Account.createAccount(params, function(result) {
+            FEMhub.RPC.User.createAccount(params, function(result) {
                 if (result.ok === true) {
                     this.login.setUsername(params.username);
                     this.closeAndReturn();
@@ -495,7 +495,7 @@ FEMhub.RemindPassword = Ext.extend(Ext.Window, {
             username: username.getValue(),
         }
 
-        FEMhub.RPC.Account.remindPassword(params, function(result) {
+        FEMhub.RPC.User.remindPassword(params, function(result) {
             if (result.ok === true) {
                 Ext.MessageBox.show({
                     title: 'Remind password',
@@ -545,7 +545,7 @@ FEMhub.Modules.Logout = Ext.extend(FEMhub.Module, {
             icon: Ext.MessageBox.QUESTION,
             fn: function(button) {
                 if (button === 'yes') {
-                    FEMhub.RPC.Account.logout({}, function() {
+                    FEMhub.RPC.User.logout({}, function() {
                         FEMhub.lab.restartLab();
                     }, this);
                 }

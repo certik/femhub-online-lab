@@ -1,7 +1,7 @@
 
 FEMhub = {
     version: [0, 0, 1],
-    json: "/femhub/json/",
+    json: "/json/",
     async: "/async/",
 };
 
