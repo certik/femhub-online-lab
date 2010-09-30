@@ -1,6 +1,7 @@
 """Customized interpreter for Python engines. """
 
 import sys
+import time
 import traceback
 
 from outputtrap import OutputTrap
@@ -56,6 +57,8 @@ class PythonInterpreter(object):
             interrupted = False
             traceback = False
 
+            start = time.clock()
+
             try:
                 if code is not None:
                     exec code in self.locals
@@ -79,6 +82,8 @@ class PythonInterpreter(object):
             except:
                 traceback = self.traceback()
 
+            end = time.clock()
+
             try:
                 plots = self.locals['__plots__']
             except KeyError:
@@ -89,6 +94,7 @@ class PythonInterpreter(object):
             result = {
                 'source': source,
                 'index': self.index,
+                'time': end - start,
                 'out': self.trap.out,
                 'err': self.trap.err,
                 'plots': plots,
