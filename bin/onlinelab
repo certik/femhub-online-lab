@@ -120,56 +120,56 @@ class Core(Module):
 
     def init(self, args):
         """Initialize a new core server. """
-        import onlinelab.core
-        onlinelab.core.init(args)
+        import onlinelab.core.runtime
+        onlinelab.core.runtime.init(args)
 
     def start(self, args):
         """Start an existing core server. """
-        import onlinelab.core
-        onlinelab.core.start(args)
+        import onlinelab.core.runtime
+        onlinelab.core.runtime.start(args)
 
     def stop(self, args):
         """Stop a running core server. """
-        import onlinelab.core
-        onlinelab.core.stop(args)
+        import onlinelab.core.runtime
+        onlinelab.core.runtime.stop(args)
 
     def restart(self, args):
         """Restart a running core server. """
-        import onlinelab.core
-        onlinelab.core.restart(args)
+        import onlinelab.core.runtime
+        onlinelab.core.runtime.restart(args)
 
     def status(self, args):
         """Display information about a core server. """
-        import onlinelab.core
-        onlinelab.core.status(args)
+        import onlinelab.core.runtime
+        onlinelab.core.runtime.status(args)
 
 class Service(Module):
     """Online Lab service module. """
 
     def init(self, args):
         """Initialize a new service. """
-        import onlinelab.service
-        onlinelab.service.init(args)
+        import onlinelab.service.runtime
+        onlinelab.service.runtime.init(args)
 
     def start(self, args):
         """Start an existing service. """
-        import onlinelab.service
-        onlinelab.service.start(args)
+        import onlinelab.service.runtime
+        onlinelab.service.runtime.start(args)
 
     def stop(self, args):
         """Stop a running service. """
-        import onlinelab.service
-        onlinelab.service.stop(args)
+        import onlinelab.service.runtime
+        onlinelab.service.runtime.stop(args)
 
     def restart(self, args):
         """Restart a running service. """
-        import onlinelab.service
-        onlinelab.service.restart(args)
+        import onlinelab.service.runtime
+        onlinelab.service.runtime.restart(args)
 
     def status(self, args):
         """Display information about a service. """
-        import onlinelab.service
-        onlinelab.service.status(args)
+        import onlinelab.service.runtime
+        onlinelab.service.runtime.status(args)
 
 class OnlineLab(object):
     """Command-line based interface to Online Lab. """
