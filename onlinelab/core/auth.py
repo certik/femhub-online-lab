@@ -1,9 +1,6 @@
 """Django-based session and user management. """
 
 from datetime import datetime, timedelta
-
-from django.contrib.sessions.backends.db import SessionStore
-from django.contrib.auth.models import AnonymousUser
 from django.contrib import auth
 
 SESSION_COOKIE = 'sessionid'
@@ -22,6 +19,7 @@ class DjangoMixin(object):
 
     def get_current_session(self):
         """Session management using database backend. """
+        from django.contrib.sessions.backends.db import SessionStore
         return SessionStore(self.get_cookie(SESSION_COOKIE))
 
     def get_current_user(self):
@@ -37,7 +35,8 @@ class DjangoMixin(object):
             pass
 
         if user is None:
-            user = AnonymousUser()
+            from django.contrib.auth import models
+            user = models.AnonymousUser()
 
         return user
 
@@ -74,7 +73,8 @@ class DjangoMixin(object):
 
     def logout(self):
         """Remove user's ID form the request and flush session data. """
-        self._current_user = AnonymousUser()
+        from django.contrib.auth import models
+        self._current_user = models.AnonymousUser()
         self.session.flush()
 
     def _before_finish(self):
