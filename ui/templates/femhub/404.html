@@ -1,0 +1,33 @@
+{% extends error.html %}
+
+{% block extra_css %}
+.femhub-error .body {
+    text-align: justify;
+    display: block;
+}
+.femhub-error .look {
+    display: block;
+    margin-top: 1em;
+}
+.femhub-error .link {
+    text-align: center;
+    display: block;
+    margin: 1em 0;
+}
+{% end %}
+
+{% block extra_html %}
+<span class="body">
+The page you've requested does not exist, possibly it has been
+moved to another location or taken off the site. We apologize
+for the inconvenience.
+</span>
+<span class="look">
+Looking for FEMhub Online Lab? Click the following link:
+</span>
+<span class="link">
+<a href="/">Enter <b>FEMhub Online Lab</b></a>
+</span>
+and you will be redirected.
+{% end %}
+

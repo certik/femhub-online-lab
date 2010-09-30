@@ -1,6 +1,7 @@
 """HTTP request handlers for Online Lab core. """
 
 import logging
+import httplib
 import functools
 
 import tornado.web
@@ -218,4 +219,27 @@ class ServiceHandler(jsonrpc.AsyncJSONRPCRequestHandler):
             registered = True
 
         self.return_result({ 'registered': registered })
+
+class ErrorHandler(tornado.web.RequestHandler):
+    """Custom HTTP error handler (based on http://gist.github.com/398252). """
+
+    def __init__(self, application, request, status_code):
+        tornado.web.RequestHandler.__init__(self, application, request)
+        self.set_status(status_code)
+
+    def get_error_html(self, status_code, **kwargs):
+        name = 'femhub/%d.html' % status_code
+
+        try:
+            template = self.settings['template_loader'].load(name)
+        except IOError:
+            template = self.settings['template_loader'].load('femhub/error.html')
+
+        return template.generate(error_code=status_code,
+            error_text=httplib.responses[status_code])
+
+    def prepare(self):
+        raise tornado.web.HTTPError(self._status_code)
+
+tornado.web.ErrorHandler = ErrorHandler
 
