@@ -23,7 +23,7 @@ FEMhub.Help = Ext.extend(Ext.Window, {
     onRender: function() {
         FEMhub.Help.superclass.onRender.apply(this, arguments);
 
-        FEMhub.RPC.Template.render({ template: 'femhub/help.html' }, function(result) {
+        FEMhub.RPC.Template.render({ name: 'femhub/help.html' }, function(result) {
             if (result.ok === true) {
                 this.body.createChild({
                     tag: 'div',

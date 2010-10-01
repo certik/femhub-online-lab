@@ -26,7 +26,7 @@ FEMhub.MeshEditor = Ext.extend(Ext.Window, {
     onRender: function() {
         FEMhub.MeshEditor.superclass.onRender.apply(this, arguments);
 
-        FEMhub.RPC.Template.render({ template: 'femhub/mesheditor.html' }, function(result) {
+        FEMhub.RPC.Template.render({ name: 'femhub/mesheditor.html' }, function(result) {
             if (result.ok === true) {
                 this.body.createChild({
                     tag: 'div',
@@ -44,3 +44,4 @@ FEMhub.Modules.MeshEditor = Ext.extend(FEMhub.Module, {
     },
     winCls: FEMhub.MeshEditor,
 });
+
