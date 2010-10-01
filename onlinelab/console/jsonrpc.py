@@ -1,5 +1,6 @@
 """Convenient interface to JSON RPC services. """
 
+from uuid import uuid4
 from urllib import urlopen
 from simplejson import dumps, loads
 
@@ -34,7 +35,7 @@ class JSONRPCMethod(object):
             'jsonrpc': '2.0',
             'method': self.method,
             'params': params,
-            'id': 'jsonrpc',
+            'id': uuid4().hex,
         })
 
         url = urlopen(self.url, data)
@@ -75,13 +76,13 @@ class JSONRPCService(object):
 
                 namespace = getattr(namespace, name)
 
-            if proc['auth']:
+            if proc.get('authenticated', False):
                 auth = self.auth
             else:
                 auth = None
 
             method = JSONRPCMethod(self.url, proc['name'], auth)
-            method.__doc__ = proc['summary']
+            method.__doc__ = proc.get('summary', None)
 
             setattr(namespace, names[-1], method)
 

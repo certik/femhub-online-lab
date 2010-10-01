@@ -103,7 +103,14 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
         procs = []
 
         for name in self.__methods__:
-            procs.append({'name': name})
+            func = getattr(self, name.replace('.', '__'), None)
+
+            if func is not None:
+                procs.append({
+                    'name': name,
+                    'summary': func.__doc__,
+                    'authenticated': getattr(func, 'authenticated', False),
+                })
 
         self.return_result({'procs': procs})
 
