@@ -4,17 +4,17 @@ import os
 
 def configure(args, **kwargs):
     """Setup Online Lab using a config file, command-line options, etc. """
-    module = args.module.__name__.lower()
+    module = args.module
 
-    if args.config is not None:
-        conf_file = args.config
+    if args.config_file is not None:
+        config_file = args.config_file
     else:
-        conf_file = os.path.join(args.home, 'settings.py')
+        config_file = os.path.join(args.home, 'settings.py')
 
     config = {'HOME': args.home}
 
-    if os.path.exists(conf_file):
-        with open(conf_file) as conf:
+    if os.path.exists(config_file):
+        with open(config_file) as conf:
             exec conf.read() in config
 
     if module == 'core':
@@ -24,6 +24,8 @@ def configure(args, **kwargs):
 
     settings = Settings.instance()
     settings['home'] = args.home
+
+    settings.update(kwargs)
 
     for option, _ in options:
         if option not in kwargs:
@@ -40,8 +42,6 @@ def configure(args, **kwargs):
                     else:
                         if isinstance(value, str):
                             value = value % settings
-        else:
-            value = kwargs[option]
 
         settings[option] = value
 

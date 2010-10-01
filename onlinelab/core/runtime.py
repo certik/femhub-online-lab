@@ -6,6 +6,7 @@ import signal
 import daemon
 import logging
 import lockfile
+import textwrap
 
 try:
     import daemon.pidfile as pidlockfile
@@ -19,7 +20,7 @@ import tornado.ioloop
 import tornado.wsgi
 import tornado.web
 
-import handlers
+from ..utils import configure
 
 def _setup_console_logging(args):
     """Configure :mod:`logging` to log to the terminal. """
@@ -55,7 +56,79 @@ def _setup_logging(args):
 
 def init(args):
     """Initialize a new core server. """
-    raise NotImplementedError("'init' is not implemented yet")
+    from django.core.management import call_command
+
+    config_text = '''\
+    """Online Lab core configuration. """
+
+    import os as _os
+
+    DATABASE_ENGINE    = 'sqlite3'
+    DATABASE_NAME      = _os.path.join(HOME, 'onlinelab.db')
+    DATABASE_USER      = ''
+    DATABASE_PASSWORD  = ''
+    DATABASE_HOST      = ''
+    DATABASE_PORT      = ''
+
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+    '''
+
+    if not os.path.exists(args.home):
+        os.makedirs(args.home)
+
+    if args.config_file is not None:
+        config_file = args.config_file
+    else:
+        config_file = os.path.join(args.home, 'settings.py')
+
+    if os.path.exists(config_file) and not args.force:
+        print "warning: '%s' exists, use --force to overwrite it" % config_file
+    else:
+        with open(config_file, 'w') as conf:
+            conf.write(textwrap.dedent(config_text))
+
+    INSTALLED_APPS = (
+        'django.contrib.auth',
+        'django.contrib.sessions',
+        'django.contrib.contenttypes',
+    )
+
+    settings = configure(args, installed_apps=INSTALLED_APPS)
+    call_command('syncdb')
+
+    if not os.path.exists(settings.logs_path):
+        os.makedirs(settings.logs_path)
+
+    if not os.path.exists(settings.data_path):
+        os.makedirs(settings.data_path)
+
+    if not os.path.exists(settings.static_path):
+        os.makedirs(settings.static_path)
+
+    for elem in ['js', 'css', 'img', 'external']:
+        static_path_elem = os.path.join(settings.static_path, elem)
+
+        if not os.path.exists(static_path_elem):
+            os.makedirs(static_path_elem)
+
+            ui_path_elem = os.path.join(args.ui_path, elem)
+
+            for ui_elem in os.listdir(ui_path_elem):
+                dst = os.path.join(static_path_elem, ui_elem)
+                src = os.path.join(ui_path_elem, ui_elem)
+                os.symlink(src, dst)
+
+    if not os.path.exists(settings.templates_path):
+        os.makedirs(settings.templates_path)
+
+        template_ui_path = os.path.join(args.ui_path, 'templates')
+
+        for template_elem in os.listdir(template_ui_path):
+            dst = os.path.join(settings.templates_path, template_elem)
+            src = os.path.join(template_ui_path, template_elem)
+            os.symlink(src, dst)
+
+    print "Done."
 
 def start(args):
     """Start an existing core server. """
@@ -95,6 +168,8 @@ def start(args):
         'static_path': args.static_path,
         'template_loader': tornado.template.Loader(args.templates_path),
     }
+
+    import handlers
 
     application = tornado.web.Application([
         (r"/", handlers.MainHandler),

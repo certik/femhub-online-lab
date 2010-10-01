@@ -110,10 +110,12 @@ class ConfigureAction(argparse.Action):
 class Module(object):
     """Base class for Online Lab modules. """
 
-    def __init__(self, func):
-        from onlinelab.utils import Settings
-        settings = Settings.instance()
-        getattr(self, func)(settings)
+    def __init__(self, args):
+        getattr(self, args.func)(args)
+
+    def _configure(self, args):
+        from onlinelab.utils import configure
+        return configure(args)
 
 class Core(Module):
     """Online Lab core module. """
@@ -126,22 +128,26 @@ class Core(Module):
     def start(self, args):
         """Start an existing core server. """
         import onlinelab.core.runtime
-        onlinelab.core.runtime.start(args)
+        settings = self._configure(args)
+        onlinelab.core.runtime.start(settings)
 
     def stop(self, args):
         """Stop a running core server. """
         import onlinelab.core.runtime
-        onlinelab.core.runtime.stop(args)
+        settings = self._configure(args)
+        onlinelab.core.runtime.stop(settings)
 
     def restart(self, args):
         """Restart a running core server. """
         import onlinelab.core.runtime
-        onlinelab.core.runtime.restart(args)
+        settings = self._configure(args)
+        onlinelab.core.runtime.restart(settings)
 
     def status(self, args):
         """Display information about a core server. """
         import onlinelab.core.runtime
-        onlinelab.core.runtime.status(args)
+        settings = self._configure(args)
+        onlinelab.core.runtime.status(settings)
 
 class Service(Module):
     """Online Lab service module. """
@@ -154,22 +160,26 @@ class Service(Module):
     def start(self, args):
         """Start an existing service. """
         import onlinelab.service.runtime
-        onlinelab.service.runtime.start(args)
+        settings = self._configure(args)
+        onlinelab.service.runtime.start(settings)
 
     def stop(self, args):
         """Stop a running service. """
         import onlinelab.service.runtime
-        onlinelab.service.runtime.stop(args)
+        settings = self._configure(args)
+        onlinelab.service.runtime.stop(settings)
 
     def restart(self, args):
         """Restart a running service. """
         import onlinelab.service.runtime
-        onlinelab.service.runtime.restart(args)
+        settings = self._configure(args)
+        onlinelab.service.runtime.restart(settings)
 
     def status(self, args):
         """Display information about a service. """
         import onlinelab.service.runtime
-        onlinelab.service.runtime.status(args)
+        settings = self._configure(args)
+        onlinelab.service.runtime.status(settings)
 
 class OnlineLab(object):
     """Command-line based interface to Online Lab. """
@@ -193,9 +203,10 @@ class OnlineLab(object):
                 'type': path,
             },
         ),
-        'config': (
-            ('--config',), {
-                'type': path,
+        'force': (
+            ('--force',), {
+                'default': False,
+                'action': ConfigureAction,
             },
         ),
         'port': (
@@ -240,6 +251,17 @@ class OnlineLab(object):
         'service-url': (
             ('--service-url',), {},
         ),
+        'ui-path': (
+            ('--ui-path',), {
+                'required': True,
+                'type': path,
+            },
+        ),
+        'logs-path': (
+            ('--data-path',), {
+                'type': path,
+            },
+        ),
         'data-path': (
             ('--data-path',), {
                 'type': path,
@@ -255,18 +277,23 @@ class OnlineLab(object):
                 'type': path,
             },
         ),
+        'config-file': (
+            ('--config-file',), {
+                'type': path,
+            },
+        ),
     }
 
     modules = {
-        ('core', Core): {
-            'init': [],
+        'core': {
+            'init': ['ui-path'],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
                 'log-num-backups', 'data-path', 'static-path', 'templates-path'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
         },
-        ('service', Service): {
+        'service': {
             'init': [],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
                 'log-num-backups', 'data-path', 'core-url', 'service-url'],
@@ -276,7 +303,9 @@ class OnlineLab(object):
         },
     }
 
-    commons = ['python-path', 'debug', 'home', 'config']
+    module_map = {'core': Core, 'service': Service}
+
+    commons = ['python-path', 'home', 'config-file', 'force', 'debug']
 
     def __init__(self):
         """Construct command-line parser based on global settings. """
@@ -286,9 +315,9 @@ class OnlineLab(object):
         args, kwargs = self.options['version']
         parser.add_argument(*args, **kwargs)
 
-        for (module, cls), funcs in self.modules.iteritems():
+        for module, funcs in self.modules.iteritems():
             module_parser = subparsers.add_parser(module)
-            module_parser.set_defaults(module=cls)
+            module_parser.set_defaults(module=module)
 
             module_subparsers = module_parser.add_subparsers()
 
@@ -311,10 +340,7 @@ class OnlineLab(object):
         for path in args.python_path:
             sys.path.insert(0, path)
 
-        import onlinelab.utils
-        onlinelab.utils.configure(args)
-
-        args.module(args.func)
+        self.module_map[args.module](args)
 
 if __name__ == "__main__":
     OnlineLab().run()
