@@ -4,6 +4,8 @@ options = [
     ('port', 'int'),
     ('debug', 'bool'),
     ('daemon', 'bool'),
+    ('logs_path', 'path'),
+    ('data_path', 'path'),
     ('pid_file', 'path'),
     ('log_file', 'path'),
     ('log_level', 'str'),
@@ -17,8 +19,10 @@ defaults = {
     'port': 9000,
     'debug': False,
     'daemon': True,
-    'pid_file': "onlinelab-service-%(port)s.pid",
-    'log_file': "onlinelab-service-%(port)s.log",
+    'logs_path': '%(home)s/logs',
+    'data_path': '%(home)s/data',
+    'pid_file': "%(home)s/onlinelab-service-%(port)s.pid",
+    'log_file': "%(logs_path)s/onlinelab-service-%(port)s.log",
     'log_level': 'info',
     'log_max_size': 10*1000*1000,      # store 10 MB in a log file
     'log_num_backups': 10,             # keep 10 log files at most

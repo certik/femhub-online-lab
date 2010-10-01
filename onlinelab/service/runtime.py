@@ -5,6 +5,7 @@ import sys
 import daemon
 import logging
 import lockfile
+import textwrap
 import functools
 
 try:
@@ -23,6 +24,7 @@ import handlers
 import processes
 
 from ..utils.jsonrpc import JSONRPCProxy
+from ..utils import configure
 
 def _setup_console_logging(args):
     """Configure :mod:`logging` to log to the terminal. """
@@ -58,7 +60,31 @@ def _setup_logging(args):
 
 def init(args):
     """Initialize a new service. """
-    raise NotImplementedError("'init' is not implemented yet")
+    if not os.path.exists(args.home):
+        os.makedirs(args.home)
+
+    config_text = '''\
+    """Online Lab service configuration. """
+    '''
+
+    if args.config_file is not None:
+        config_file = args.config_file
+    else:
+        config_file = os.path.join(args.home, 'settings.py')
+
+    if os.path.exists(config_file) and not args.force:
+        print "warning: '%s' exists, use --force to overwrite it" % config_file
+    else:
+        with open(config_file, 'w') as conf:
+            conf.write(textwrap.dedent(config_text))
+
+    settings = configure(args)
+
+    if not os.path.exists(settings.logs_path):
+        os.makedirs(settings.logs_path)
+
+    if not os.path.exists(settings.data_path):
+        os.makedirs(settings.data_path)
 
 def start(args):
     """Start an existing service. """
