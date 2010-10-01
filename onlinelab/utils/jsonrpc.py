@@ -38,6 +38,7 @@ class AuthenticationRequired(JSONRPCError):
 def authenticated(func):
     """Mark a function as requiring authentication. """
     func.authenticated = True
+    return func
 
 class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
     """Simple handler of JSON-RPC requests. """
