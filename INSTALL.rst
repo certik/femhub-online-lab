@@ -1,118 +1,129 @@
 
-Online Lab prerequisites
-========================
-
-The required packages for Online Lab are:
-
-* Twisted >= 9.0
-* Django >= 1.0
-* simplejson
-
-For example, in Ubuntu Lucid issue::
-
-    $ sudo apt-get install python-django
-    $ sudo apt-get install python-twisted
-    $ sudo apt-get install python-simplejson
-
-Make sure that ``python-twisted-runner`` is also installed.
-
 Installing Online Lab
 =====================
 
-The following steps will allow you to install Online Lab from GIT::
-
-    $ mkdir online-lab
-    $ cd online-lab
-
-    $ mkdir bin base root home
-
-    $ cd base
+Currently Online Lab is available only from its ``git`` repository
+hosted at GitHub. To get a copy of this repository, issue::
 
     $ git clone git://github.com/hpfem/femhub-online-lab.git
-    $ git clone git://github.com/hpfem/codenode-unr.git
 
-    $ cd codenode-unr
-    $ bin/link-online-lab-ui ../femhub-online-lab
+or, alternatively::
 
-If you plan on developing Online Lab then follow the steps below::
+    $ git clone http://git.hpfem.org/git/femhub-online-lab.git
 
-    $ echo "codenode/frontend/static/css/femhub" >> .git/info/exclude
-    $ echo "codenode/frontend/static/external/ext" >> .git/info/exclude
-    $ echo "codenode/frontend/static/img/femhub" >> .git/info/exclude
-    $ echo "codenode/frontend/static/js/femhub" >> .git/info/exclude
+to clone via HTTP protocol (in case of e.g. firewall issues).
 
-Now you have to create an environment in which Online Lab will run::
+Prerequisites
+=============
 
-    $ cd ../..
-    $ cp base/codenode-unr/scripts/* bin/
+Online Lab runs under any Unix-like operating system that implements
+non-blocking polling functionality, e.g. ``epoll`` (Linux), ``kqueue``
+(BSD) or ``select`` (universal, worst case scenario). To obtain best
+performance, Linux operating system distribution with ``epoll`` support
+should be used (kernel 2.6 or better is required).
 
-    $ bin/init
+The required packages for Online Lab are:
 
-If you plan on any customisations then adjust ``bin/defs`` first, before
-running ``bin/init``, e.g. when multiple backends are required.
+* Python >= 2.6 (http://www.python.org)
+* Tornado >= 1.1 (http://www.tornadoweb.org)
+* Django >= 1.0 (http://www.djangoproject.com)
 
-To adjust backend's settings (e.g. port, host), edit::
+and smaller, but not less important, are:
 
-    backend/settings.py
+* pyinotify (http://github.com/seb-m/pyinotify)
+* argparse (http://code.google.com/p/argparse)
+* lockfile (http://pypi.python.org/pypi/lockfile)
+* daemon (http://pypi.python.org/pypi/python-daemon)
+* psutil (http://code.google.com/p/psutil)
 
-To adjust frontend's settings (e.g. port, debug), edit::
+For example, in Ubuntu Lucid issue::
 
-    frontend/settings.py
+    $ sudo apt-get install python
+    $ sudo apt-get install python-django
+    $ sudo apt-get install python-pyinotify
+    $ sudo apt-get install python-argparse
+    $ sudo apt-get install python-lockfile
+    $ sudo apt-get install python-daemon
+    $ sudo apt-get install python-psutil
 
-If you run ``tree`` on the current directory then you will see that many
-files and directories, especially static files, are links to Online Lab's
-source repositories in ``online-lab/base``. This way, whenever you modify
-Online Lab, you don't have to update or recreate ``online-lab/root``.
+to get those packages installed. Note that Tornado didn't manage to get
+into software package management systems yet (e.g. apt-get or portage),
+so you have to install it manually, either by downloading its source
+code tarball from Tornado's website::
 
-If you plan on publishing your installation of Online Lab outside your
-machine, then make sure that ``DEBUG`` option in frontend's settings is
-set to ``False``. Otherwise, any error like 404 will print a stack trace
-with important system configuration to the client instead of the default
-404 page.
+    $ wget http://github.com/downloads/facebook/tornado/tornado-1.1.tar.gz
 
-If you want to checkout the database then issue the following commands::
+or by cloning its ``git`` repository that is hosted at GitHub. Make sure
+that all required packages are available on ``PYTHONPATH`` before running
+Online Lab.
 
-    $ cd root/data
-    $ sqlite3 codenode.db
+If you use Python 2.7 or better, then you don't need to install argparse
+module, because it is included in Python standard library since 2.7 (see
+PEP 389 for details).
 
-This will be handy, e.g. if you would like to setup multiple backends.
+You can also run Online Lab in FEMhub numerical software distribution,
+where all necessary packages were included in appropriate versions,
+together with Online Lab it self.
+
+Setting up Online Lab
+=====================
+
+Suppose Online Lab's repository was cloned into ``/home/lab``::
+
+    $ cd /home/lab/femhub-online-lab
+
+We have to create two work environments, one for Online Lab core server
+and the other for Online Lab services::
+
+    $ bin/onlinelab core init --home=../core-home --ui-path=ui
+    $ bin/onlinelab service init --home=../service-home
+
+``onlinelab`` script automatically adds current directory to ``PYTHONPATH``
+so you don't have to worry about module visibility issues. The directories
+with work environments will contain some configuration files and additional
+subdirectories for storing runtime data (logs, PID files, blobs, etc.). In
+the case of the core server, a database is also created and user interface
+(UI) is set up.
 
 Running Online Lab
 ==================
 
 Now open two terminals in parallel and run the following commands::
 
-    $ bin/run-backend
-    $ bin/run-frontend
+    $ bin/onlinelab core start --no-daemon --home=../core-home
+    $ bin/onlinelab service start --no-daemon --home=../service-home
 
-These will start two servers listening on localhost (9337, 9000). Now
+These will start two servers listening on localhost (8000, 9000). Now
 go to your browser (preferably Firefox or Chrome) and redirect to::
 
-    http://localhost:9000
+    http://localhost:8000
 
 Login screen will appear, where you can create an account and finally
 proceed to Online Lab's desktop. Click 'Help' icon to show a tutorial
-about main features of the systems.
+about main features of the system.
 
 If you are not interested in watching the output from Online Lab, the
-you may consider running both backend and frontend servers as daemons
-(just add ``-daemon`` to the commands above). In this case, you still
-will be able to read the logs in ``online-lab/root``.
+you may consider running both core server and services as daemons
+(just remove ``--no-daemon`` from the commands above). In this case,
+you still will be able to read the logs that are stored in Online Lab
+home directories.
 
 To stop Online Lab simply press ``Ctrl+C`` in terminals in which
-backend and frontend servers are running. In daemon mode use the
-following commands::
+core and services are running. In daemon mode use the following
+commands::
 
-    $ bin/stop-backend
-    $ bin/stop-frontend
+    $ bin/onlinelab core stop --home=../core-home
+    $ bin/onlinelab service stop --home=../service-home
 
-Note that order of running and stopping servers is irrelevant.
+Note that the order of running servers is relevant and core server
+must be started before services are started. However, stopping can
+done in any order.
 
 Importing Sage notebooks
 ========================
 
-Go to http://localhost:9000/femhub and click 'Import'. Copy plain
-text from Sage notebook, e.g.::
+Go to http://localhost:8000, open Bookshelf and click 'Import'. Copy
+plain text from Sage notebook, e.g.::
 
     {{{id=0|
     some code
