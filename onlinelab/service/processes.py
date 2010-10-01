@@ -43,9 +43,9 @@ class ProcessManager(object):
         self.ioloop.add_handler(self.watches.get_fd(),
             self._on_inotify, self.ioloop.READ)
 
-        self.user_path = os.path.join(self.settings.home, 'user')
+        mask = self._inotify_mask
 
-        self.watches.add_watch(self.user_path, self._inotify_mask,
+        self.watches.add_watch(self.settings.data_path, mask,
             self._process_events, rec=True, auto_add=True)
 
     def _on_inotify(self, fd, events):
@@ -58,7 +58,7 @@ class ProcessManager(object):
         if event.dir:
             return
 
-        user = self.user_path
+        user = self.settings.data_path
         path = event.pathname
 
         parts = []
@@ -114,7 +114,7 @@ class ProcessManager(object):
         # it already exists, make sure it is empty (just remove it and create
         # once again).
 
-        cwd = os.path.join(self.user_path, guid)
+        cwd = os.path.join(self.settings.data_path, guid)
 
         if os.path.exists(cwd):
             shutil.rmtree(cwd)

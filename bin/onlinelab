@@ -258,7 +258,7 @@ class OnlineLab(object):
             },
         ),
         'logs-path': (
-            ('--data-path',), {
+            ('--logs-path',), {
                 'type': path,
             },
         ),
@@ -288,7 +288,7 @@ class OnlineLab(object):
         'core': {
             'init': ['ui-path'],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
-                'log-num-backups', 'data-path', 'static-path', 'templates-path'],
+                'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
@@ -296,7 +296,7 @@ class OnlineLab(object):
         'service': {
             'init': [],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
-                'log-num-backups', 'data-path', 'core-url', 'service-url'],
+                'log-num-backups', 'logs-path', 'data-path', 'core-url', 'service-url'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
