@@ -225,7 +225,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             self.return_api_result()
 
     @jsonrpc.authenticated
-    def RPC__Folder__getFolders(self, uuid=None, recursive=True):
+    def RPC__Folder__getFolders(self, uuid=None, recursive=True, notebooks=False):
         """Get a list of sub-folders for the given parent ``uuid``. """
         try:
             if uuid is not None:
@@ -235,8 +235,17 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         except Folder.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
+            def _get_notebooks(folder):
+                """Collect all notebooks in ``folder``. """
+                notebooks = []
+
+                for notebook in Notebook.objects.filter(user=self.user, folder=folder):
+                    notebooks.append({'uuid': notebook.uuid, 'name': notebook.name})
+
+                return notebooks
+
             def _get_folders(parent):
-                """Collect all sub-folders for ``parent``. """
+                """Collect all sub-folders of ``parent``. """
                 folders = []
 
                 for folder in Folder.objects.filter(user=self.user, parent=parent):
@@ -250,6 +259,9 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
                     if recursive:
                         data['folders'] = _get_folders(folder)
+
+                    if notebooks:
+                        data['notebooks'] = _get_notebooks(folder)
 
                     folders.append(data)
 
