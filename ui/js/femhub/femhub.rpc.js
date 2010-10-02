@@ -57,6 +57,7 @@ FEMhub.RPC.call = function(method, params, handler, scope, url) {
             params: params || {},
             id: 0,
         }),
+        timeout: 86400000,
         success: function(result, request) {
             if (Ext.isDefined(handler)) {
                 handler.call(scope || this, Ext.decode(result.responseText).result);
