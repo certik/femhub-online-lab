@@ -13,7 +13,7 @@ import services
 from ..utils import jsonrpc
 from ..utils import Settings
 
-from django.contrib.auth.models import User
+from models import User, Engine, Folder, Notebook, Cell
 
 class MainHandler(tornado.web.RequestHandler):
     """Render default Online Lab user interface. """
@@ -26,7 +26,7 @@ class MainHandler(tornado.web.RequestHandler):
         except:
             raise tornado.web.HTTPError(500)
 
-class JSONHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
+class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
     """Handle JSON-RPC method calls from the user interface. """
 
     __methods__ = [
@@ -37,6 +37,20 @@ class JSONHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.User.logout',
         'RPC.User.createAccount',
         'RPC.User.remindPassword',
+        'RPC.Core.getEngines',
+        'RPC.Folder.getRoot',
+        'RPC.Folder.create',
+        'RPC.Folder.remove',
+        'RPC.Folder.rename',
+        'RPC.Folder.move',
+        'RPC.Folder.getFolders',
+        'RPC.Folder.getNotebooks',
+        'RPC.Notebook.create',
+        'RPC.Notebook.remove',
+        'RPC.Notebook.rename',
+        'RPC.Notebook.move',
+        'RPC.Notebook.load',
+        'RPC.Notebook.store',
     ]
 
     def return_api_result(self, result=None):
@@ -129,6 +143,268 @@ class JSONHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             rendered = template.generate(username=username, password=password)
 
             user.email_user(head, rendered)
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Core__getEngines(self):
+        """Return a list of all available engines. """
+        engines = []
+
+        for engine in Engine.objects.all():
+            engines.append({
+                'uuid': engine.uuid,
+                'name': engine.name,
+                'description': engine.description,
+            })
+
+        self.return_api_result({'engines': engines})
+
+    @jsonrpc.authenticated
+    def RPC__Folder__getRoot(self):
+        """Return the main folder for the current user ("My folders"). """
+        try:
+            folder = Folder.objects.get(user=self.user, parent=None)
+        except Folder.DoesNotExist:
+            folder = Folder(user=self.user, name="My folders")
+            folder.save()
+
+        self.return_api_result({'uuid': folder.uuid, 'name': folder.name})
+
+    @jsonrpc.authenticated
+    def RPC__Folder__create(self, name, uuid=None):
+        """Create a new folder and add it to a parent with the given ``uuid``. """
+        try:
+            if uuid is not None:
+                parent = Folder.objects.get(user=self.user, uuid=uuid)
+            else:
+                parent = None
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            folder = Folder(user=self.user, parent=parent, name=name)
+            folder.save()
+
+            self.return_api_result({'uuid': folder.uuid})
+
+    @jsonrpc.authenticated
+    def RPC__Folder__remove(self, uuid):
+        """Remove folder pointed by the given ``uuid``. """
+        try:
+            folder = Folder.objects.get(user=self.user, uuid=uuid)
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            folder.delete()
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Folder__rename(self, name, uuid):
+        """Assign new name to a folder pointed by the given ``uuid``.  """
+        try:
+            folder = Folder.objects.get(user=self.user, uuid=uuid)
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            folder.name = name
+            folder.save()
+
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Folder__move(self, folder_uuid, target_uuid):
+        """Move a folder pointed by ``folder_uuid`` to ``target_uuid``. """
+        try:
+            folder = Folder.objects.get(user=self.user, uuid=folder_uuid)
+            target = Folder.objects.get(user=self.user, uuid=target_uuid)
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            folder.parent = target
+            folder.save()
+
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Folder__getFolders(self, uuid=None, recursive=True):
+        """Get a list of sub-folders for the given parent ``uuid``. """
+        try:
+            if uuid is not None:
+                parent = Folder.objects.get(user=self.user, uuid=uuid)
+            else:
+                parent = None
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            def _get_folders(parent):
+                """Collect all sub-folders for ``parent``. """
+                folders = []
+
+                for folder in Folder.objects.filter(user=self.user, parent=parent):
+                    data = {
+                        'uuid': folder.uuid,
+                        'name': folder.name,
+                        'created': jsonrpc.datetime(folder.created),
+                        'modified': jsonrpc.datetime(folder.modified),
+                        'description': folder.description,
+                    }
+
+                    if recursive:
+                        data['folders'] = _get_folders(folder)
+
+                    folders.append(data)
+
+                return folders
+
+            self.return_api_result({'folders': _get_folders(parent)})
+
+    @jsonrpc.authenticated
+    def RPC__Folder__getNotebooks(self, uuid):
+        """Get all notebooks from the given folder. """
+        try:
+            folder = Folder.objects.get(user=self.user, uuid=uuid)
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            notebooks = []
+
+            for notebook in Notebook.objects.filter(user=self.user, folder=folder):
+                notebooks.append({
+                    'uuid': notebook.uuid,
+                    'name': notebook.name,
+                    'created': jsonrpc.datetime(notebook.created),
+                    'modified': jsonrpc.datetime(notebook.modified),
+                    'engine': {
+                        'uuid': notebook.engine.uuid,
+                        'name': notebook.engine.name,
+                    },
+                })
+
+            self.return_api_result({'notebooks': notebooks})
+
+    @jsonrpc.authenticated
+    def RPC__Notebook__create(self, name, engine_uuid, folder_uuid):
+        """Create new notebook and add it to the given folder. """
+        try:
+            if folder_uuid is not None:
+                folder = Folder.objects.get(user=self.user, uuid=folder_uuid)
+            else:
+                folder = None
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            try:
+                engine = Engine.objects.get(uuid=engine_uuid)
+            except Folder.DoesNotExist:
+                self.return_api_error('does-not-exist')
+            else:
+                notebook = Notebook(user=self.user,
+                    name=name, engine=engine, folder=folder)
+                notebook.save()
+
+                self.return_api_result({'uuid': notebook.uuid})
+
+    @jsonrpc.authenticated
+    def RPC__Notebook__remove(self, uuid):
+        """Remove a notebook pointed by the given ``uuid``. """
+        try:
+            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
+        except Notebook.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            notebook.delete()
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Notebook__rename(self, uuid, name):
+        """Assign a new name to a notebook pointed by the given ``uuid``.  """
+        try:
+            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
+        except Notebook.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            notebook.name = name
+            notebook.save()
+
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Notebook__move(self, uuid, target_uuid):
+        """Move a notebook (or notebooks) to another folder. """
+        try:
+            target = Folder.objects.get(user=self.user, uuid=target_uuid)
+        except Folder.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            if isinstance(uuid, list):
+                uuids = uuid
+            else:
+                uuids = [uuid]
+
+            for uuid in uuids:
+                try:
+                    notebook = Notebook.objects.get(user=self.user, uuid=uuid)
+                except Notebook.DoesNotExist:
+                    self.return_api_error('does-not-exist')
+                else:
+                    notebook.folder = target
+                    notebook.save()
+
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Notebook__load(self, uuid, type=None):
+        """Load cells (in order) associated with a notebook. """
+        try:
+            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
+        except Notebook.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            data, cells = {}, []
+
+            for cell in Cell.objects.filter(user=self.user, notebook=notebook):
+                if type is None or cell.type == type:
+                    data[cell.uuid] = {
+                        'uuid': cell.uuid,
+                        'content': cell.content,
+                        'type': cell.type,
+                        'parent': cell.parent.uuid,
+                    }
+
+            for uuid in notebook.order.split(','):
+                if uuid in data:
+                    cells.append(data[uuid])
+
+            self.return_api_result({'cells': cells})
+
+    @jsonrpc.authenticated
+    def RPC__Notebook__store(self, uuid, cells):
+        """Store cells (and their order) associated with a notebook. """
+        try:
+            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
+        except Notebook.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            order = []
+
+            for data in cells:
+                try:
+                    cell = Cell.objects.get(user=self.user, uuid=data.uuid)
+                except Cell.DoesNotExist:
+                    cell = Cell(uuid=data.uuid,
+                                user=self.user,
+                                notebook=notebook,
+                                content=data.content,
+                                type=data.type)
+                else:
+                    cell.content = data.content
+                    cell.type = data.type
+
+                order.append(cell.uuid)
+                cell.save()
+
+            notebook.order = ','.join(order)
+            notebook.save()
+
             self.return_api_result()
 
 class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):

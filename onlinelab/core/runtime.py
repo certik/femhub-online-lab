@@ -91,10 +91,17 @@ def init(args):
         'django.contrib.auth',
         'django.contrib.sessions',
         'django.contrib.contenttypes',
+        'onlinelab.core',
     )
 
     settings = configure(args, installed_apps=INSTALLED_APPS)
     call_command('syncdb')
+
+    from models import Engine
+
+    print "Added default 'Python' engine to the database."
+    engine = Engine(name='Python')
+    engine.save()
 
     if not os.path.exists(settings.logs_path):
         os.makedirs(settings.logs_path)
@@ -173,8 +180,8 @@ def start(args):
 
     application = tornado.web.Application([
         (r"/", handlers.MainHandler),
-        (r"/json/?", handlers.JSONHandler),
         (r"/async/?", handlers.AsyncHandler),
+        (r"/client/?", handlers.ClientHandler),
         (r"/service/?", handlers.ServiceHandler),
     ], **app_settings)
 

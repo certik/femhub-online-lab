@@ -11,6 +11,10 @@ import tornado.httpclient
 
 import extensions
 
+def datetime(obj):
+    """Encode ``datetime`` object as a string. """
+    return obj.strftime("%Y-%m-%d %H:%M:%S")
+
 class JSONRPCError(Exception):
     """Base class for JSON-RPC errors. """
 
