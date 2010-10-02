@@ -419,41 +419,46 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.el_clear.addClass('femhub-enabled');
             this.el_interrupt.removeClass('femhub-enabled');
 
-            this.owner.setEvalIndex(index);
-
-            this.setLabel();
-            this.autosize();
-            this.showLabel();
-
             this.destroyOutputCells();
 
-            var after = this, i = 0;
+            if (!index) {
+                this.hideLabel();
+                this.autosize();
+            } else {
+                this.owner.setEvalIndex(index);
 
-            Ext.each(cells, function(cell) {
-                var output = cell.output;
-                var type = cell.type;
+                this.setLabel();
+                this.autosize();
+                this.showLabel();
 
-                while (/\n$/.test(output)) {
-                    output = output.slice(0, output.length-1);
-                }
+                var after = this, i = 0;
 
-                if (output.length > 0) {
-                    var cell = this.owner.newCell({
-                        type: type,
-                        after: after,
-                        setup: {
-                            id: this.id + 'o' + i++,
-                        },
-                    });
+                Ext.each(cells, function(cell) {
+                    var output = cell.output;
+                    var type = cell.type;
 
-                    cell.setOutput(output);
-                    cell.setLabel();
-                    cell.autosize();
-                    cell.showLabel();
+                    while (/\n$/.test(output)) {
+                        output = output.slice(0, output.length-1);
+                    }
 
-                    after = cell;
-                }
-            }, this);
+                    if (output.length > 0) {
+                        var cell = this.owner.newCell({
+                            type: type,
+                            after: after,
+                            setup: {
+                                id: this.id + 'o' + i++,
+                            },
+                        });
+
+                        cell.setOutput(output);
+                        cell.setLabel();
+                        cell.autosize();
+                        cell.showLabel();
+
+                        after = cell;
+                    }
+                }, this);
+            }
 
             this.saved = false;
 
