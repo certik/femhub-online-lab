@@ -366,17 +366,36 @@ class EngineProcess(object):
             okay('not-evaluating')
             return
 
-        cellid = args.get('cellid', None)
-
-        if cellid == 'all':
+        if args.get('all', False):
             self.queue.clear()
-        elif cellid and self.evaluating.args.cellid != cellid:
-            for i, (args, okay, fail) in enumerate(self.queue):
-                if args.cellid == self.evaluating.args.cellid:
-                    okay(dict(source=args.source, index=None, out='',
-                        err='', traceback=False, interrupted=True))
-                    del self.queue[i]
-                    return
+        else:
+            try:
+                cellid = args['cellid']
+            except KeyError:
+                pass
+            else:
+                _args, _, _ = self.evaluating
+
+                if cellid != _args.cellid:
+                    for i, (_args, _okay, _) in enumerate(self.queue):
+                        if cellid == _args.cellid:
+                            del self.queue[i]
+                            okay('interrupted')
+
+                            result = {
+                                'source': _args.source,
+                                'index': None,
+                                'time': 0,
+                                'out': u'',
+                                'err': u'',
+                                'files': [],
+                                'plots': [],
+                                'traceback': False,
+                                'interrupted': True,
+                            }
+
+                            _okay(result)
+                            return
 
         # Now the most interesting part. To physically interrupt
         # the interpreter associated with this engine, we send
