@@ -203,7 +203,7 @@ class JSONRPCProxy(object):
 
         logging.info("JSON-RPC: call '%s' method on %s" % (method, self.url))
 
-        http_request = tornado.httpclient.HTTPRequest(self.url, method='POST', body=body)
+        http_request = tornado.httpclient.HTTPRequest(self.url, method='POST', body=body, request_timeout=0)
         http_client.fetch(http_request, functools.partial(self._on_response_handler, okay, fail))
 
     def _on_response_handler(self, okay, fail, response):
