@@ -325,8 +325,12 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         }, this);
     },
 
-    isRootNode: function(node) {
+    isMyFolders: function(node) {
         return node.getDepth() == 1;
+    },
+
+    getMyFolders: function() {
+        return this.foldersTree.getRootNode().firstChild;
     },
 
     fillFoldersTree: function() {
@@ -350,6 +354,8 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 FEMhub.RPC.Folder.getFolders({}, function(result) {
                     if (result.ok === true) {
                         recFillTree.call(this, result.folders, root);
+                        this.getMyFolders().select();
+                        this.getNotebooks();
                         root.expand(true);
                     }
                 }, this);
@@ -391,7 +397,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     renameFolder: function(node) {
         var node = this.getCurrentNode(node);
 
-        if (this.isRootNode(node)) {
+        if (this.isMyFolders(node)) {
             Ext.MessageBox.show({
                 title: 'Rename folder',
                 msg: "Can't rename root node. Sorry. ",
@@ -425,7 +431,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     deleteFolder: function(node) {
         var node = this.getCurrentNode(node);
 
-        if (this.isRootNode(node)) {
+        if (this.isMyFolders(node)) {
             Ext.MessageBox.show({
                 title: 'Delete folder',
                 msg: "Can't delete root node. Sorry. ",
@@ -504,7 +510,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             return node;
         } else {
             var model = this.foldersTree.getSelectionModel();
-            return model.getSelectedNode() || this.rootNode;
+            return model.getSelectedNode() || this.getMyFolders();
         }
     },
 
