@@ -54,10 +54,13 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
         response = { 'result': result, 'error': None, 'id': self.id }
         body = tornado.escape.json_encode(response)
 
-        self.write(body)
-        self.finish()
-
-        logging.info("JSON-RPC: method call ended successfully")
+        try:
+            self.write(body)
+            self.finish()
+        except IOError:
+            logging.warning("JSON-RPC: warning: connection was closed")
+        else:
+            logging.info("JSON-RPC: method call ended successfully")
 
     def return_error(self, code, message, data=None):
         """Return properly formatted JSON-RPC error response. """
@@ -73,10 +76,13 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 
         body = tornado.escape.json_encode(response)
 
-        self.write(body)
-        self.finish()
-
-        logging.info("JSON-RPC: error: %s (%s, %s)" % (message, code, data))
+        try:
+            self.write(body)
+            self.finish()
+        except IOError:
+            logging.warning("JSON-RPC: warning: connection was closed")
+        else:
+            logging.info("JSON-RPC: error: %s (%s, %s)" % (message, code, data))
 
     def return_parse_error(self, data=None):
         """Return 'Parse error' JSON-RPC error response. """
