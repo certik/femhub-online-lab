@@ -447,7 +447,7 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
                 if method == 'init':
                     service = self.manager.bind(uuid)
                 else:
-                    self.return_error(1, "'%s' method called before 'init'" % method)
+                    self.return_result({'initialized': False})
                     return
             except services.Disconnected:
                 if method == 'init':
