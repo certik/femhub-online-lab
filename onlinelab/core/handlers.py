@@ -13,7 +13,10 @@ import services
 from ..utils import jsonrpc
 from ..utils import Settings
 
-from models import User, Engine, Folder, Notebook, Cell
+from models import (
+    User, Engine, Folder, Notebook, Cell,
+    ctype_to_int, int_to_ctype,
+)
 
 class MainHandler(tornado.web.RequestHandler):
     """Render default Online Lab user interface. """
@@ -50,7 +53,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.Notebook.rename',
         'RPC.Notebook.move',
         'RPC.Notebook.load',
-        'RPC.Notebook.store',
+        'RPC.Notebook.save',
     ]
 
     def return_api_result(self, result=None):
@@ -366,6 +369,9 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
     @jsonrpc.authenticated
     def RPC__Notebook__load(self, uuid, type=None):
         """Load cells (in order) associated with a notebook. """
+        if type is not None:
+            type = ctype_to_int(type)
+
         try:
             notebook = Notebook.objects.get(user=self.user, uuid=uuid)
         except Notebook.DoesNotExist:
@@ -378,8 +384,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
                         'content': cell.content,
-                        'type': cell.type,
-                        'parent': cell.parent.uuid,
+                        'type': int_to_ctype(cell.type),
                     }
 
             for uuid in notebook.order.split(','):
@@ -389,7 +394,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             self.return_api_result({'cells': cells})
 
     @jsonrpc.authenticated
-    def RPC__Notebook__store(self, uuid, cells):
+    def RPC__Notebook__save(self, uuid, cells):
         """Store cells (and their order) associated with a notebook. """
         try:
             notebook = Notebook.objects.get(user=self.user, uuid=uuid)
@@ -399,23 +404,29 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             order = []
 
             for data in cells:
+                uuid = data['uuid']
+                content = data['content']
+                type = ctype_to_int(data['type'])
+
                 try:
-                    cell = Cell.objects.get(user=self.user, uuid=data.uuid)
+                    cell = Cell.objects.get(user=self.user, uuid=uuid)
                 except Cell.DoesNotExist:
-                    cell = Cell(uuid=data.uuid,
+                    cell = Cell(uuid=uuid,
                                 user=self.user,
                                 notebook=notebook,
-                                content=data.content,
-                                type=data.type)
+                                content=content,
+                                type=type)
                 else:
-                    cell.content = data.content
-                    cell.type = data.type
+                    cell.content = content
+                    cell.type = type
 
-                order.append(cell.uuid)
+                order.append(uuid)
                 cell.save()
 
             notebook.order = ','.join(order)
             notebook.save()
+
+            # XXX: implement garbage collection
 
             self.return_api_result()
 

@@ -26,8 +26,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         return this.cells.getCellsManager();
     },
 
-    getGUID: function() {
-        return this.getCellsManager().getGUID();
+    getUUID: function() {
+        return this.getCellsManager().getUUID();
     },
 
     initToolbar: function() {
@@ -124,7 +124,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 tooltip: 'Save changes to this notebook.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().saveToBackend();
+                    this.getCellsManager().saveCells();
                 },
                 scope: this,
             }, {
@@ -133,10 +133,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 tooltip: 'Save changes and close this window.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().saveToBackend({
-                        postsave: this.close,
-                        scope: this,
-                    });
+                    this.getCellsManager().saveCells(this.close, this);
                 },
                 scope: this,
             }, '-', {
@@ -168,7 +165,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     close: function() {
         var manager = this.getCellsManager();
 
-        if (manager.isSavedToBackend()) {
+        if (manager.isSaved()) {
             FEMhub.Notebook.superclass.close.call(this);
         } else {
             Ext.MessageBox.show({
@@ -178,7 +175,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 fn: function(button) {
                     switch (button) {
                         case 'yes':
-                            manager.saveToBackend();
+                            manager.saveCells();
                         case 'no':
                             FEMhub.Notebook.superclass.close.call(this);
                             break;
@@ -271,9 +268,9 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
-                    var guid = this.getGUID();
+                    var uuid = this.getUUID();
 
-                    FEMhub.RPC.Notebooks.renameNotebook({guid: guid, title: title}, function(result) {
+                    FEMhub.RPC.Notebook.rename({uuid: uuid, name: title}, function(result) {
                         if (result.ok === true) {
                             this.setTitle(title);
 
@@ -295,11 +292,11 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         var checked = [];
 
         Ext.each(this.imports, function(notebook) {
-            checked.push(notebook.guid);
+            checked.push(notebook.uuid);
         });
 
         var chooser = new FEMhub.NotebookChooser({
-            guid: this.getGUID(),
+            uuid: this.getUUID(),
             exclude: true,
             checked: checked,
             listeners: {
@@ -322,8 +319,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         var index = 0;
 
         Ext.each(this.imports, function(notebook) {
-            FEMhub.RPC.Notebooks.getCells({
-                guid: notebook.guid,
+            FEMhub.RPC.Notebook.load({
+                uuid: notebook.uuid,
                 type: 'input',
             }, function(result) {
                 if (result.ok === true) {

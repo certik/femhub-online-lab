@@ -71,62 +71,50 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
         this.fillTree();
     },
 
-    recFillTree: function(node) {
-        FEMhub.RPC.Folders.getFolders({guid: node.id}, function(folders) {
-            Ext.each(folders, function(folder) {
-                var subNode = new Ext.tree.TreeNode({
-                    id: folder.guid,
-                    text: folder.title,
-                    cls: 'femhub-folder',
-                });
-
-                node.appendChild(subNode);
-                this.recFillTree(subNode);
-            }, this);
-
-            FEMhub.RPC.Notebooks.getNotebooks({guid: node.id}, function(result) {
-                Ext.each(result.notebooks, function(notebook) {
-                    if (!this.exclude || notebook.guid != this.guid) {
-                        var checked = this.checked.indexOf(notebook.guid) != -1;
-
-                        if (checked) {
-                            var cls = 'femhub-notebook femhub-chosen';
-                        } else {
-                            var cls = 'femhub-notebook';
-                        }
-
-                        var nbNode = new Ext.tree.TreeNode({
-                            leaf: true,
-                            checked: checked,
-                            id: notebook.guid,
-                            text: notebook.title,
-                            cls: cls,
-                        });
-
-                        node.appendChild(nbNode);
-                    }
-                }, this);
-            }, this);
-
-            node.expand();
-        }, this);
-    },
-
     fillTree: function() {
-        FEMhub.RPC.Folders.getRoot({}, function(folder) {
-            this.root = new Ext.tree.TreeNode({
-                id: folder.guid,
-                text: folder.title,
-                cls: 'femhub-folder',
-            });
+        function recFillTree(folders, notebooks, node) {
+            Ext.each(folders, function(folder) {
+                var subNode = node.appendChild(
+                    new Ext.tree.TreeNode({
+                        id: folder.uuid,
+                        text: folder.name,
+                        cls: 'femhub-folder',
+                    })
+                );
 
-            var root = this.tree.getRootNode();
-            root.appendChild(this.root);
+                recFillTree.call(this, folder.folders, folder.notebooks, subNode);
+            }, this);
 
-            var model = this.tree.getSelectionModel();
-            model.select(this.root);
+            Ext.each(notebooks, function(notebook) {
+                if (!this.exclude || notebook.uuid != this.uuid) {
+                    var checked = this.checked.indexOf(notebook.uuid) != -1;
 
-            this.recFillTree(this.root);
+                    if (checked) {
+                        var cls = 'femhub-notebook femhub-chosen';
+                    } else {
+                        var cls = 'femhub-notebook';
+                    }
+
+                    var nbNode = new Ext.tree.TreeNode({
+                        leaf: true,
+                        checked: checked,
+                        id: notebook.uuid,
+                        text: notebook.name,
+                        cls: cls,
+                    });
+
+                    node.appendChild(nbNode);
+                }
+            }, this);
+        }
+
+        var root = this.tree.getRootNode();
+
+        FEMhub.RPC.Folder.getFolders({notebooks: true}, function(result) {
+            if (result.ok === true) {
+                recFillTree.call(this, result.folders, result.notebooks, root);
+                root.expand(true);
+            }
         }, this);
     },
 
@@ -136,7 +124,7 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
 
         for (var i = 0; i < nodes.length; i++) {
             notebooks.push({
-                guid: nodes[i].id,
+                uuid: nodes[i].id,
                 text: nodes[i].text,
             });
         }

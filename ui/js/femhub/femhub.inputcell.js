@@ -471,7 +471,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
 
         FEMhub.RPC.Engine.evaluate({
-            uuid: this.owner.guid,
+            uuid: this.owner.uuid,
             source: input,
             cellid: this.id,
         }, function(result) {
@@ -518,7 +518,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
 
         FEMhub.RPC.Engine.interrupt({
-            uuid: this.owner.guid,
+            uuid: this.owner.uuid,
             cellid: this.id,
         }, function(result) {
             this.evaluating = false;

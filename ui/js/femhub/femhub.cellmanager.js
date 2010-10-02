@@ -39,8 +39,8 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         'content': 'ContentCell',
     },
 
-    getGUID: function() {
-        return this.guid;
+    getUUID: function() {
+        return this.uuid;
     },
 
     newCell: function(config) {
@@ -203,24 +203,32 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         }, this);
     },
 
-    getDataURL: function() {
-        return '/notebook/' + this.guid + '/';
-    },
-
-    initBackend: function() {
+    initEngine: function() {
         if (!this.isInitialized) {
-            FEMhub.RPC.Engine.init({ uuid: this.guid }, function() {
+            FEMhub.RPC.Engine.init({ uuid: this.uuid }, function() {
                 this.isInitialized = true;
             }, this);
         }
+    },
 
-        Ext.Ajax.request({
-            url: this.getDataURL() + 'nbobject',
-            method: "GET",
-            success: function(result, request) {
-                var result = Ext.decode(result.responseText);
+    killEngine: function() {
+        if (this.isInitialized) {
+            FEMhub.RPC.Engine.kill({ uuid: this.uuid }, function() {
+                this.isInitialized = false;
+            }, this);
+        };
+    },
 
-                if (result.orderlist == 'orderlist') {
+    interruptEngine: function() {
+        if (this.isInitialized) {
+            FEMhub.RPC.Engine.interrupt({ uuid: this.uuid });
+        }
+    },
+
+    loadCells: function() {
+        FEMhub.RPC.Notebook.load({uuid: this.uuid}, function(result) {
+            if (result.ok === true) {
+                if (result.cells.length == 0) {
                     if (this.startEmpty !== false) {
                         this.newCell({
                             type: 'input',
@@ -230,33 +238,11 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
                         });
                     }
                 } else {
-                    Ext.each(Ext.decode(result.orderlist), function(id) {
-                        var data = result.cells[id];
-
-                        if (data.cellstyle == 'outputtext') {
-                            if (this.loadOutputCells) {
-                                data.cellstyle = 'output';
-                            } else {
-                                return;
-                            }
-                        }
-
-                        if (data.cellstyle == 'outputimage') {
-                            if (this.loadOutputCells) {
-                                data.cellstyle = 'image';
-                            } else {
-                                return;
-                            }
-                        }
-
-                        if (data.cellstyle == 'text') {
-                            data.cellstyle = 'content';
-                        }
-
+                    Ext.each(result.cells, function(data) {
                         var cell = this.newCell({
-                            type: data.cellstyle,
+                            type: data.type,
                             setup: {
-                                id: id,
+                                id: data.uuid,
                                 saved: true,
                             },
                         });
@@ -266,33 +252,41 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
 
                     this.statusSaved = true;
                 }
-            },
-            failure: Ext.emptyFn,
-            scope: this,
-        });
+            }
+        }, this);
     },
 
-    interruptEngine: function() {
-        FEMhub.RPC.Engine.interrupt({ uuid: this.guid });
-    },
-
-    killEngine: function() {
-        if (this.isInitialized) {
-            FEMhub.RPC.Engine.kill({ uuid: this.guid }, function() {
-                this.isInitialized = false;
-            }, this);
-        };
-    },
-
-    destroy: function() {
-        this.killEngine();
+    saveCells: function(handler, scope) {
+        var cells = [], data = [];
 
         this.each(function(cell) {
-            cell.destroy();
-        });
+            cells.push(cell);
+
+            data.push({
+                uuid: cell.id,
+                content: cell.getText(),
+                type: cell.ctype,
+            });
+        }, this);
+
+        var params = {uuid: this.uuid, cells: data};
+
+        FEMhub.RPC.Notebook.save(params, function(result) {
+            if (result.ok === true) {
+                Ext.each(cells, function(cell) {
+                    cell.saved = true;
+                });
+
+                this.statusSaved = true;
+
+                if (Ext.isDefined(handler)) {
+                    handler.call(scope || this);
+                }
+            }
+        }, this);
     },
 
-    isSavedToBackend: function() {
+    isSaved: function() {
         var cells = this.getRawCells();
 
         for (var i = 0; i < cells.length; i++) {
@@ -304,83 +298,18 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         return this.statusSaved;
     },
 
-    saveToBackend: function(args) {
-        var cells = this.getRawCells();
-
-        var orderlist = [];
-        var cellsdata = {};
-        var savedlist = [];
-
-        for (var i = 0; i < cells.length; i++) {
-            var cell = Ext.getCmp(cells[i].id);
-
-            orderlist.push(cell.id);
-
-            if (!cell.saved) {
-                var cellstyle;
-
-                switch (cell.ctype) {
-                    case 'input':
-                        cellstyle = 'input';
-                        break;
-                    case 'output':
-                    case 'error':
-                    case 'text':
-                        cellstyle = 'outputtext';
-                        break;
-                    case 'image':
-                        cellstyle = 'outputimage';
-                        break;
-                    case 'content':
-                        cellstyle = 'text'
-                        break;
-                }
-
-                var content = cell.getText();
-
-                var props = Ext.encode({
-                    cellstyle: cellstyle,
-                    cellevel: 0,
-                    open: true,
-                });
-
-                cellsdata[cell.id] = {
-                    cellstyle: cellstyle,
-                    content: content,
-                    props: props,
-                };
-
-                savedlist.push(cell);
-            }
-        }
-
-        var params = {
-            guid: this.guid,
-            cellsdata: cellsdata,
-            orderlist: Ext.encode(orderlist),
-        }
-
-        FEMhub.RPC.Notebooks.saveNotebook(params, function(result) {
-            if (result.ok === true) {
-                Ext.each(savedlist, function(cell) {
-                    cell.saved = true;
-                });
-
-                this.statusSaved = true;
-
-                if (FEMhub.util.hasArg(args, 'postsave')) {
-                    args.postsave.call(args.scope);
-                }
-            } else {
-                FEMhub.log("Failed to save cells for: " + this.guid);
-            }
-        }, this);
-    },
-
     evaluateCode: function(source) {
         FEMhub.RPC.Engine.evaluate({
-            uuid: this.guid,
+            uuid: this.uuid,
             source: source,
+        });
+    },
+
+    destroy: function() {
+        this.killEngine();
+
+        this.each(function(cell) {
+            cell.destroy();
         });
     },
 

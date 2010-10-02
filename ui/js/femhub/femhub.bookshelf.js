@@ -102,7 +102,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 
     initEngines: function() {
-        FEMhub.RPC.Backend.getEngines({}, function(result) {
+        FEMhub.RPC.Core.getEngines({}, function(result) {
             if (result.ok === true) {
                 var engines = result.engines;
 
@@ -121,13 +121,11 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 
     initFoldersTree: function() {
-        this.root = new Ext.tree.TreeNode();
-
         this.foldersTree = new Ext.tree.TreePanel({
             region: 'west',
             width: 200,
             split: true,
-            root: this.root,
+            root: new Ext.tree.TreeNode(),
             rootVisible: false,
             useArrows: true,
             animate: true,
@@ -145,29 +143,29 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 beforenodedrop: {
                     fn: function(evt) {
                         if (Ext.isDefined(evt.source.tree)) {
-                            FEMhub.RPC.Folders.moveFolder({
-                                parent_guid: evt.target.id,
-                                folder_guid: evt.dropNode.id,
+                            FEMhub.RPC.Folder.move({
+                                folder_uuid: evt.dropNode.id,
+                                target_uuid: evt.target.id,
                             });
                         } else {
                             var selections = evt.data.selections;
 
                             if (Ext.isArray(selections)) {
-                                var guids = [];
+                                var uuids = [];
 
                                 for (var i = 0; i < selections.length; i++) {
-                                    guids.push(selections[i].id);
+                                    uuids.push(selections[i].id);
                                 }
 
-                                FEMhub.RPC.Notebooks.moveNotebooks({
-                                    folder_guid: evt.target.id,
-                                    notebooks_guid: guids,
+                                FEMhub.RPC.Notebook.move({
+                                    uuid: uuids,
+                                    target_uuid: evt.target.id,
                                 }, function(result) {
                                     if (result.ok === true) {
                                         var store = this.notebooksGrid.getStore();
 
-                                        for (var i = 0; i < guids.length; i++) {
-                                            store.remove(store.getById(guids[i]));
+                                        for (var i = 0; i < uuids.length; i++) {
+                                            store.remove(store.getById(uuids[i]));
                                         }
                                     } else {
                                         FEMhub.log("Couldn't move notebooks");
@@ -192,10 +190,10 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 }
 
                 engines.push({
-                    engine: engine.id,
+                    uuid: engine.uuid,
                     text: text,
                     handler: function(item) {
-                        this.addNotebookAt(node, item.engine);
+                        this.addNotebookAt(node, item.uuid);
                     },
                     scope: this,
                 });
@@ -275,7 +273,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             var record = grid.getStore().getAt(row);
 
             this.openNotebook({
-                guid: record.id,
+                uuid: record.id,
                 name: record.data.title,
             });
         }, this);
@@ -291,7 +289,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                         text: 'Open without output cells',
                         handler: function() {
                             this.openNotebook({
-                                guid: record.id,
+                                uuid: record.id,
                                 name: record.data.title,
                                 loadOutputCells: false,
                             });
@@ -300,7 +298,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                     }],
                     handler: function() {
                         this.openNotebook({
-                            guid: record.id,
+                            uuid: record.id,
                             name: record.data.title,
                         });
                     },
@@ -328,39 +326,34 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 
     isRootNode: function(node) {
-        return node.id == this.rootNode.id;
+        return node.getDepth() == 1;
     },
 
     fillFoldersTree: function() {
-        function recFillFoldersTree(node) {
-            FEMhub.RPC.Folders.getFolders({guid: node.id}, function(folders) {
-                Ext.each(folders, function(folder) {
-                    var subNode = new Ext.tree.TreeNode({
-                        id: folder.guid,
-                        text: folder.title,
-                        cls: 'femhub-folder',
-                    });
-
-                    node.appendChild(subNode);
-                    recFillFoldersTree(subNode);
+        function recFillTree(folders, node) {
+            Ext.each(folders, function(folder) {
+                var subNode = new Ext.tree.TreeNode({
+                    id: folder.uuid,
+                    text: folder.name,
+                    cls: 'femhub-folder',
                 });
 
-                node.expand();
-            });
+                node.appendChild(subNode);
+                recFillTree.call(this, folder.folders, subNode);
+            }, this);
         }
 
-        FEMhub.RPC.Folders.getRoot({}, function(folder) {
-            this.rootNode = new Ext.tree.TreeNode({
-                id: folder.guid,
-                text: folder.title,
-                cls: 'femhub-folder',
-            });
+        var root = this.foldersTree.getRootNode();
 
-            this.root.appendChild(this.rootNode);
-            recFillFoldersTree(this.rootNode);
-
-            this.foldersTree.getSelectionModel().select(this.rootNode);
-            this.getNotebooks(this.rootNode);
+        FEMhub.RPC.Folder.getRoot({}, function(result) {
+            if (result.ok === true) {
+                FEMhub.RPC.Folder.getFolders({}, function(result) {
+                    if (result.ok === true) {
+                        recFillTree.call(this, result.folders, root);
+                        root.expand(true);
+                    }
+                }, this);
+            }
         }, this);
     },
 
@@ -377,10 +370,10 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
-                    FEMhub.RPC.Folders.addFolder({guid: node.id, title: title}, function(result) {
+                    FEMhub.RPC.Folder.create({uuid: node.id, name: title}, function(result) {
                         if (result.ok === true) {
                             node.appendChild(new Ext.tree.TreeNode({
-                                id: result.guid,
+                                id: result.uuid,
                                 text: title,
                                 cls: 'femhub-folder',
                             }));
@@ -416,7 +409,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                             icon: Ext.MessageBox.ERROR,
                         });
                     } else {
-                        FEMhub.RPC.Folders.renameFolder({guid: node.id, title: title}, function(result) {
+                        FEMhub.RPC.Folder.rename({uuid: node.id, name: title}, function(result) {
                             if (result.ok === true) {
                                 node.setText(title);
                             } else {
@@ -447,7 +440,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                 icon: Ext.MessageBox.QUESTION,
                 fn: function(button) {
                     if (button === 'yes') {
-                        FEMhub.RPC.Folders.deleteFolder({guid: node.id}, function(result) {
+                        FEMhub.RPC.Folder.remove({uuid: node.id}, function(result) {
                             if (result.ok === true) {
                                 node.remove(true);
                             } else {
@@ -472,7 +465,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
-                    FEMhub.RPC.Notebooks.renameNotebook({guid: record.id, title: title}, function(result) {
+                    FEMhub.RPC.Notebook.rename({uuid: record.id, name: title}, function(result) {
                         if (result.ok === true) {
                             record.set('title', title);
                             record.commit();
@@ -493,7 +486,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             icon: Ext.MessageBox.QUESTION,
             fn: function(button) {
                 if (button === 'yes') {
-                    FEMhub.RPC.Notebooks.deleteNotebook({guid: record.id}, function(result) {
+                    FEMhub.RPC.Notebook.remove({uuid: record.id}, function(result) {
                         if (result.ok === true) {
                             this.notebooksGrid.getStore().remove(record);
                         } else {
@@ -518,21 +511,21 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     getNotebooks: function(node) {
         var node = this.getCurrentNode(node);
 
-        FEMhub.RPC.Notebooks.getNotebooks({ guid: node.id }, function(result) {
+        FEMhub.RPC.Folder.getNotebooks({uuid: node.id}, function(result) {
             if (result.ok === true) {
                 var store = this.notebooksGrid.getStore();
                 store.removeAll();
 
                 var record = Ext.data.Record.create([
-                    'title', 'engine', 'datetime'
+                    'title', 'engine', 'created'
                 ]);
 
                 Ext.each(result.notebooks, function(notebook) {
                     store.add(new record({
-                        title: notebook.title,
-                        engine: notebook.engine,
-                        datetime: notebook.datetime,
-                    }, notebook.guid));
+                        title: notebook.name,
+                        engine: notebook.engine.name,
+                        datetime: notebook.created,
+                    }, notebook.uuid));
                 }, this);
             } else {
                 FEMhub.log("Failed to get notebooks");
@@ -546,14 +539,14 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
 
     newNotebook: function(engine, handler, scope, node) {
         var node = this.getCurrentNode(node);
-        engine = engine || this.engines[0].id;
+        engine = engine || this.engines[0].uuid;
 
-        var params = { engine_guid: engine, folder_guid: node.id };
+        var params = { name: 'untitled', engine_uuid: engine, folder_uuid: node.id };
 
-        FEMhub.RPC.Notebooks.addNotebook(params, function(result) {
+        FEMhub.RPC.Notebook.create(params, function(result) {
             if (result.ok === true) {
                 var notebook = this.openNotebook({
-                    guid: result.guid,
+                    uuid: result.uuid,
                 });
 
                 if (Ext.isDefined(handler)) {
@@ -571,7 +564,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         var desktop = FEMhub.lab.getDesktop();
 
         var notebooks = desktop.getGroup().getBy(function(wnd) {
-            return Ext.isDefined(wnd.getGUID) && wnd.getGUID() == conf.guid;
+            return Ext.isDefined(wnd.getUUID) && wnd.getUUID() == conf.uuid;
         }, this);
 
         if (notebooks.length) {
@@ -597,7 +590,7 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
             'Please enter plain text:',
             function(button, text) {
                 if (button === 'ok') {
-                    this.newNotebook(this.engines[0].id, function(notebook) {
+                    this.newNotebook(this.engines[0].uuid, function(notebook) {
                         notebook.importCells(text);
                     });
                 }

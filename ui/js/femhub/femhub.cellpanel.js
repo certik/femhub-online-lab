@@ -15,7 +15,8 @@ FEMhub.CellPanel = Ext.extend(Ext.BoxComponent, {
             Ext.applyIf({ root: this.el }, this.conf)
         );
 
-        this.cellsManager.initBackend();
+        this.cellsManager.initEngine();
+        this.cellsManager.loadCells();
     },
 
     beforeDestroy: function() {
