@@ -96,9 +96,9 @@ class ProcessManager(object):
             cls._instance = cls()
         return cls._instance
 
-    def _run(self, guid, args, okay, fail):
+    def _run(self, uuid, args, okay, fail):
         """Take engine's configuration and start process for it. """
-        self.processes[guid] = None
+        self.processes[uuid] = None
 
         # XXX: this is temporary solution for development convenience
 
@@ -114,7 +114,7 @@ class ProcessManager(object):
         # it already exists, make sure it is empty (just remove it and create
         # once again).
 
-        cwd = os.path.join(self.settings.data_path, guid)
+        cwd = os.path.join(self.settings.data_path, uuid)
 
         if os.path.exists(cwd):
             shutil.rmtree(cwd)
@@ -136,13 +136,13 @@ class ProcessManager(object):
 
         fd = proc.stdout.fileno()
 
-        timeout = functools.partial(self._on_run_timeout, guid, proc, cwd, fail, fd)
+        timeout = functools.partial(self._on_run_timeout, uuid, proc, cwd, fail, fd)
         tm = self.ioloop.add_timeout(time.time() + self._timeout, timeout)
 
-        handler = functools.partial(self._on_run_handler, guid, proc, cwd, okay, fail, tm)
+        handler = functools.partial(self._on_run_handler, uuid, proc, cwd, okay, fail, tm)
         self.ioloop.add_handler(fd, handler, self.ioloop.READ | self.ioloop.ERROR)
 
-    def _on_run_timeout(self, guid, proc, cwd, fail, fd):
+    def _on_run_timeout(self, uuid, proc, cwd, fail, fd):
         """Hard deadline on engine's process startup (start or die). """
         self.ioloop.remove_handler(fd)
 
@@ -153,7 +153,7 @@ class ProcessManager(object):
         # this handler shouldn't be executed at all, unless e.g. we
         # are running out of memory.
 
-        del self.processes[guid]
+        del self.processes[uuid]
         shutil.rmtree(cwd)
 
         proc.kill()
@@ -161,7 +161,7 @@ class ProcessManager(object):
 
         fail('timeout')
 
-    def _on_run_handler(self, guid, proc, cwd, okay, fail, tm, fd, events):
+    def _on_run_handler(self, uuid, proc, cwd, okay, fail, tm, fd, events):
         """Startup handler that gets executed on pipe write or error. """
         self.ioloop.remove_timeout(tm)
         self.ioloop.remove_handler(fd)
@@ -178,11 +178,11 @@ class ProcessManager(object):
 
             if result is not None:
                 port = int(result.groupdict()['port'])
-                process = EngineProcess(guid, proc, cwd, port)
+                process = EngineProcess(uuid, proc, cwd, port)
 
-                self.processes[guid] = process
+                self.processes[uuid] = process
 
-                handler = functools.partial(self._on_disconnect, guid)
+                handler = functools.partial(self._on_disconnect, uuid)
                 self.ioloop.add_handler(fd, handler, self.ioloop.ERROR)
 
                 logging.info("Started new child process (pid=%s)" % process.pid)
@@ -193,7 +193,7 @@ class ProcessManager(object):
                 # clean up (remove process entry marker and kill the
                 # process) and gracefully fail.
 
-                del self.processes[guid]
+                del self.processes[uuid]
                 shutil.rmtree(cwd)
 
                 proc.kill()
@@ -201,12 +201,12 @@ class ProcessManager(object):
 
                 fail('invalid-output')
 
-    def _on_disconnect(self, guid, fd, events):
+    def _on_disconnect(self, uuid, fd, events):
         """Handler that gets executed when a process dies. """
         self.ioloop.remove_handler(fd)
 
         try:
-            process = self.processes[guid]
+            process = self.processes[uuid]
         except KeyError:
             # We don't want to pass 'fd' everywhere so we don't
             # remove this handler on process kill. We remove it
@@ -228,75 +228,75 @@ class ProcessManager(object):
         # of this and tell the caller that the process died (we can't do it
         # here because we can't initiate communication with the core).
 
-        self.processes[guid] = False
+        self.processes[uuid] = False
 
-    def init(self, guid, args, okay, fail):
+    def init(self, uuid, args, okay, fail):
         """Initialize new engine (start a process). """
-        if guid in self.processes:
-            if self.processes[guid] is None:
+        if uuid in self.processes:
+            if self.processes[uuid] is None:
                 fail('starting')
             else:
                 fail('running')
         else:
-            self._run(guid, args, okay, fail)
+            self._run(uuid, args, okay, fail)
 
-    def _get_process(self, guid, fail):
-        if guid not in self.processes:
+    def _get_process(self, uuid, fail):
+        if uuid not in self.processes:
             fail('no-such-process')
         else:
-            process = self.processes[guid]
+            process = self.processes[uuid]
 
             if process is None:
                 fail('starting')
             elif process is False:
-                del self.processes[guid]
+                del self.processes[uuid]
                 fail('died')
             else:
                 return process
 
-    def kill(self, guid, args, okay, fail):
+    def kill(self, uuid, args, okay, fail):
         """Stop an existing engine (kill a process). """
-        process = self._get_process(guid, fail)
+        process = self._get_process(uuid, fail)
 
         if process is not None:
             process.kill(args, okay, fail)
-            del self.processes[guid]
+            del self.processes[uuid]
 
-    def stat(self, guid, args, okay, fail):
+    def stat(self, uuid, args, okay, fail):
         """Gather data about a process. """
-        process = self._get_process(guid, fail)
+        process = self._get_process(uuid, fail)
 
         if process is not None:
             process.stat(args, okay, fail)
 
-    def evaluate(self, guid, args, okay, fail):
+    def evaluate(self, uuid, args, okay, fail):
         """Evaluate a piece of source code. """
-        process = self._get_process(guid, fail)
+        process = self._get_process(uuid, fail)
 
         if process is not None:
             process.evaluate(args, okay, fail)
 
-    def interrupt(self, guid, args, okay, fail):
+    def interrupt(self, uuid, args, okay, fail):
         """Stop evaluation of specified requests. """
-        process = self._get_process(guid, fail)
+        process = self._get_process(uuid, fail)
 
         if process is not None:
             process.interrupt(args, okay, fail)
 
     def killall(self):
         """Forcibly kill all processes that belong to this manager. """
-        for guid, process in self.processes.iteritems():
+        for uuid, process in self.processes.iteritems():
             if process is not None:
-                logging.warning("Forced kill of %s (pid=%s)" % (guid, process.pid))
+                logging.warning("Forced kill of %s (pid=%s)" % (uuid, process.pid))
                 process.proc.kill()
                 process.proc.poll()
 
 class EngineProcess(object):
     """Bridge between a logical engine and a physical process. """
 
-    def __init__(self, guid, proc, path, port):
+    def __init__(self, uuid, proc, path, port):
         """Initialize an engine based on existing system process. """
-        self.guid = guid
+        self.uuid = uuid
         self.proc = proc
         self.port = port
         self.path = path
@@ -366,13 +366,13 @@ class EngineProcess(object):
             okay('not-evaluating')
             return
 
-        guid = args.get('guid', None)
+        cellid = args.get('cellid', None)
 
-        if guid == 'all':
+        if cellid == 'all':
             self.queue.clear()
-        elif guid and self.evaluating.args.guid != guid:
+        elif cellid and self.evaluating.args.cellid != cellid:
             for i, (args, okay, fail) in enumerate(self.queue):
-                if args.guid == self.evaluating.args.guid:
+                if args.cellid == self.evaluating.args.cellid:
                     okay(dict(source=args.source, index=None, out='',
                         err='', traceback=False, interrupted=True))
                     del self.queue[i]
