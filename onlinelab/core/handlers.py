@@ -441,26 +441,17 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     def forward(self, uuid, method, params):
         """Forward a method call to the assigned service. """
         try:
-            try:
-                service = self.manager.get_service(uuid)
-            except services.NotAssignedYet:
-                if method == 'init':
+            service = self.manager.get_service(uuid)
+        except services.NotAssignedYet:
+            if method == 'init':
+                try:
                     service = self.manager.bind(uuid)
-                else:
-                    self.return_result({'initialized': False})
+                except services.NoServicesAvailable:
+                    self.return_error(1, "No services are currently available")
                     return
-            except services.Disconnected:
-                if method == 'init':
-                    service = self.manager.bind(uuid)
-                else:
-                    if self.method == 'kill':
-                        self.manager.unbind(uuid)
-
-                    self.return_result({'disconnected': True})
-                    return
-        except services.NoServicesAvailable:
-            self.return_error(2, "No services are currently available")
-            return
+            else:
+                self.return_error(2, "Service disconnected or not assigned yet")
+                return
 
         okay = functools.partial(self.on_forward_okay, uuid)
         fail = functools.partial(self.on_forward_fail, uuid)
@@ -508,16 +499,10 @@ class ServiceHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     def initialize(self):
         self.manager = services.ServiceManager().instance()
 
-    def register(self, service_url):
+    def register(self, url, uuid, provider, description):
         """Process registration request from a service. """
-        try:
-            self.manager.add_service(service_url)
-        except services.AlreadyExists:
-            registered = False
-        else:
-            registered = True
-
-        self.return_result({ 'registered': registered })
+        self.manager.add_service(url, uuid, provider, description)
+        self.return_result()
 
 class ErrorHandler(tornado.web.RequestHandler):
     """Custom HTTP error handler (based on http://gist.github.com/398252). """

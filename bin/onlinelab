@@ -282,6 +282,12 @@ class OnlineLab(object):
                 'type': path,
             },
         ),
+        'provider': (
+            ('--provider',), {},
+        ),
+        'description': (
+            ('--description',), {},
+        ),
     }
 
     modules = {
@@ -296,7 +302,8 @@ class OnlineLab(object):
         'service': {
             'init': [],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
-                'log-num-backups', 'logs-path', 'data-path', 'core-url', 'service-url'],
+                'log-num-backups', 'logs-path', 'data-path', 'core-url', 'service-url',
+                'provider', 'description'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],

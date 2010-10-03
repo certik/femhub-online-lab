@@ -2,6 +2,8 @@
 
 import os
 import sys
+import uuid
+import signal
 import daemon
 import logging
 import lockfile
@@ -120,10 +122,17 @@ def start(args):
     else:
         os.chdir(args.home)
 
+    # This is our identification token. This will be sent to a core
+    # and later used to verify if we talk between the same parties
+    # or not (useful to determine if core/service was restarted).
+
+    service_uuid = uuid.uuid4().hex
+
     application = tornado.web.Application([
         (r"/", handlers.MainHandler),
+        (r"/core/?", handlers.CoreHandler),
         (r"/engine/?", handlers.EngineHandler),
-    ]);
+    ], service_uuid=service_uuid);
 
     server = tornado.httpserver.HTTPServer(application)
     server.listen(args.port)
@@ -149,7 +158,10 @@ def start(args):
         proxy = JSONRPCProxy(args.core_url, 'service')
 
         proxy.call('register', {
-            'service_url': args.service_url,
+            'url': args.service_url,
+            'uuid': service_uuid,
+            'provider': args.provider,
+            'description': args.description,
         }, functools.partial(_on_registred_okay, args))
 
     ioloop = tornado.ioloop.IOLoop.instance()

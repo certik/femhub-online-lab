@@ -9,6 +9,7 @@ import tornado.escape
 import processes
 
 from ..utils import jsonrpc
+from ..utils import Settings
 
 class Args(dict):
     """Dictionary with object-like access. """
@@ -24,6 +25,23 @@ class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
         self.write("Online Lab")
+
+class CoreHandler(jsonrpc.AsyncJSONRPCRequestHandler):
+    """Handle communication from Online Lab core. """
+
+    __methods__ = ['ping']
+
+    def ping(self, uuid=None):
+        """Process ping request from a core. """
+        logging.info("Got ping from a core. Told that we're ready.")
+
+        settings = Settings.instance()
+
+        self.return_result({
+            'uuid': self.settings['service_uuid'],
+            'provider': settings.provider,
+            'description': settings.description,
+        })
 
 class EngineHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     """Handle method calls to be executed on an engine. """

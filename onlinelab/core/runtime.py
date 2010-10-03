@@ -2,11 +2,13 @@
 
 import os
 import sys
+import uuid
 import signal
 import daemon
 import logging
 import lockfile
 import textwrap
+import functools
 
 try:
     import daemon.pidfile as pidlockfile
@@ -20,6 +22,7 @@ import tornado.ioloop
 import tornado.wsgi
 import tornado.web
 
+from ..utils import jsonrpc
 from ..utils import configure
 
 def _setup_console_logging(args):
@@ -171,12 +174,22 @@ def start(args):
     else:
         os.chdir(args.home)
 
+    core_uuid = uuid.uuid4().hex
+
     app_settings = {
+        'core_uuid': core_uuid,
         'static_path': args.static_path,
         'template_loader': tornado.template.Loader(args.templates_path),
     }
 
+    import models
     import handlers
+
+    # Before proceeding further lets clear routing table, because
+    # services may be out of order or their capabilities changed,
+    # we have to bind services from scratch.
+
+    models.Route.objects.all().delete()
 
     application = tornado.web.Application([
         (r"/", handlers.MainHandler),
@@ -190,8 +203,45 @@ def start(args):
 
     logging.info("Started core at localhost:%s (pid=%s)" % (args.port, os.getpid()))
 
+    ioloop = tornado.ioloop.IOLoop.instance()
+
+    def _on_ping_okay(service, result):
+        """Gets executed when a service responds properly. """
+        if service.uuid != result['uuid']:
+            logging.info("'%s' service has been updated" % service.url)
+
+            service.uuid = result['uuid']
+
+            if 'provider' in result:
+                service.provider = result['provider']
+            if 'description' in result:
+                service.description = result['description']
+
+            service.save()
+
+        logging.info("'%s' service is ready for requests" % service.url)
+
+    def _on_ping_fail(service, error, http_code):
+        """Gets executed when communication with a service fails. """
+        logging.warning("Removed '%s' service from services cache" % service.url)
+        service.delete()
+
+    def _services_callback():
+        """Gets executed when IOLoop is started. """
+        for service in models.Service.objects.all():
+            proxy = jsonrpc.JSONRPCProxy(service.url, 'core')
+
+            okay = functools.partial(_on_ping_okay, service)
+            fail = functools.partial(_on_ping_fail, service)
+
+            proxy.call('ping', {
+                'uuid': core_uuid,
+            }, okay, fail)
+
+    ioloop.add_callback(_services_callback)
+
     try:
-        tornado.ioloop.IOLoop.instance().start()
+        ioloop.start()
     except KeyboardInterrupt:
         print # SIGINT prints '^C' so lets make logs more readable
     except SystemExit:

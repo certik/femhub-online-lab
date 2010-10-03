@@ -48,6 +48,16 @@ class UUIDField(models.CharField):
         """Construct new universally unique identifier. """
         return unicode(uuid.uuid4().hex)
 
+class Service(models.Model):
+    url = models.CharField(max_length=MAX_NAME, unique=True)
+    uuid = UUIDField()
+    provider = models.TextField()
+    description = models.TextField()
+
+class Route(models.Model):
+    uuid = UUIDField()
+    service = models.ForeignKey(Service, related_name='routes')
+
 class Engine(models.Model):
     uuid = UUIDField()
     name = models.CharField(max_length=MAX_NAME)

@@ -1,8 +1,11 @@
 """Service manager for Online Lab core server. """
 
 import uuid
+import logging
 
-import tornado.ioloop
+from django.db.models import Count
+
+from models import Service, Route
 
 class AlreadyExists(Exception):
     """Raised when trying to add an existing service. """
@@ -10,19 +13,11 @@ class AlreadyExists(Exception):
 class NotAssignedYet(Exception):
     """Raised when a notebook wasn't assigned to a service yet. """
 
-class Disconnected(Exception):
-    """Service has disconnected since last non-kill request from client. """
-
 class NoServicesAvailable(Exception):
     """There are currently no services to which we could bind a resource. """
 
 class ServiceManager(object):
     """Manage access and message routing to services. """
-
-    def __init__(self):
-        self.ioloop = tornado.ioloop.IOLoop.instance()
-        self.services = {}
-        self.routing = {}
 
     @classmethod
     def instance(cls):
@@ -31,70 +26,56 @@ class ServiceManager(object):
             cls._instance = cls()
         return cls._instance
 
-    def add_service(self, url):
+    def add_service(self, url, uuid, provider, description):
         """Register a new service in our database. """
-        if url not in self.services:
-            self.services[uuid.uuid4().hex] = Service(url)
+        try:
+            service = Service.objects.get(url=url)
+        except Service.DoesNotExist:
+            logging.info("New service: %s (%s)" % (url, provider))
+
+            service = Service.objects.create(url=url, uuid=uuid,
+                provider=provider, description=description)
         else:
-            raise AlreadyExists
+            service.uuid = uuid
+            service.provider = provider
+            service.description = description
+
+            service.save()
+
+            logging.info("Updated '%s' service" % service.url)
+
+        return service
 
     def get_service(self, uuid):
         """Get service that was bound to ``uuid``. """
         try:
-            sid = self.routing[uuid]
-        except KeyError:
+            route = Route.objects.get(uuid=uuid)
+        except Route.DoesNotExist:
             raise NotAssignedYet
         else:
-            if sid is not None:
-                return self.services[sid]
-            else:
-                raise Disconnected
+            return route.service
 
     def bind(self, uuid):
         """Bind ``uuid`` resource to a service. """
-        sid, load = None, None
+        services = Service.objects.annotate(
+            num_routes=Count('routes')).order_by('num_routes')
 
-        for _sid, service in self.services.iteritems():
-            _load = service.load
-
-            if load is None or _load < load:
-                sid, load = _sid, _load
-
-            if not load:
-                break
-
-        if sid is None:
+        if not services:
             raise NoServicesAvailable
 
-        self.routing[uuid] = sid
+        service = services[0]
 
-        service = self.services[sid]
-        service.increase_load()
+        route = Route(uuid=uuid, service=service)
+        route.save()
 
         return service
 
     def unbind(self, uuid):
         """Remove ``uuid`` from routing table. """
         try:
-            sid = self.routing[uuid]
-        except KeyError:
+            route = Route.objects.get(uuid=uuid)
+        except Route.DoesNotExist:
             pass
         else:
-            self.services[sid].decrease_load()
-            del self.routing[uuid]
-
-class Service(object):
-    """Represents a single Online Lab service. """
-
-    def __init__(self, url):
-        self.url = url
-        self.load = 0
-
-    def increase_load(self, count=1):
-        """Increase service load. """
-        self.load += count
-
-    def decrease_load(self, count=1):
-        """Decrease service load. """
-        self.load -= count
+            route.delete()
 

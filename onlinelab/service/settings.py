@@ -13,6 +13,8 @@ options = [
     ('log_num_backups', 'int'),
     ('core_url', 'str'),
     ('service_url', 'str'),
+    ('provider', 'str'),
+    ('description', 'str'),
 ]
 
 defaults = {
@@ -28,5 +30,7 @@ defaults = {
     'log_num_backups': 10,             # keep 10 log files at most
     'core_url': 'http://localhost:8000',
     'service_url': 'http://localhost:%(port)s',
+    'provider': 'Unknown service provider',
+    'description': '',
 }
 
