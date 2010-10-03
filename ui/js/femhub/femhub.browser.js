@@ -1,5 +1,5 @@
 
-FEMhub.Bookshelf = Ext.extend(Ext.Window, {
+FEMhub.Browser = Ext.extend(Ext.Window, {
     toolbar: null,
     foldersTree: null,
     notebooksGrid: null,
@@ -16,14 +16,14 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
         config = config || {};
 
         Ext.apply(config, {
-            title: "Bookshelf",
-            iconCls: 'femhub-bookshelf-icon',
+            title: "Browser",
+            iconCls: 'femhub-browser-icon',
             layout: 'border',
             tbar: this.toolbar,
             items: [this.foldersTree, this.notebooksGrid],
         });
 
-        FEMhub.Bookshelf.superclass.constructor.call(this, config);
+        FEMhub.Browser.superclass.constructor.call(this, config);
     },
 
     initToolbar: function() {
@@ -604,13 +604,13 @@ FEMhub.Bookshelf = Ext.extend(Ext.Window, {
     },
 });
 
-Ext.reg('x-femhub-bookshelf', FEMhub.Bookshelf);
+Ext.reg('x-femhub-browser', FEMhub.Browser);
 
-FEMhub.Modules.Bookshelf = Ext.extend(FEMhub.Module, {
+FEMhub.Modules.Browser = Ext.extend(FEMhub.Module, {
     launcher: {
-        text: 'Bookshelf',
-        icon: 'femhub-bookshelf-launcher-icon',
+        text: 'Browser',
+        icon: 'femhub-browser-launcher-icon',
     },
-    winCls: FEMhub.Bookshelf,
+    winCls: FEMhub.Browser,
 });
 

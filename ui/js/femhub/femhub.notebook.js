@@ -275,7 +275,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                             this.setTitle(title);
 
                             FEMhub.getDesktop().getManager().each(function(wnd) {
-                                if (wnd.getXType() === 'x-femhub-bookshelf') {
+                                if (wnd.getXType() === 'x-femhub-browser') {
                                     wnd.getNotebooks();
                                 }
                             });

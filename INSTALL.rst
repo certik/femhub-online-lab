@@ -137,7 +137,7 @@ double-click Mesh Editor icon on the desktop, the plug-in will be loaded.
 Importing Sage notebooks
 ========================
 
-Go to http://localhost:8000, open Bookshelf and click 'Import'. Copy
+Go to http://localhost:8000, open Browser and click 'Import'. Copy
 plain text from Sage notebook, e.g.::
 
     {{{id=0|
