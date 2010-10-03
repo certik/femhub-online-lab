@@ -246,7 +246,6 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
 
     initNotebooksGrid: function() {
         this.notebooksGrid = new Ext.grid.GridPanel({
-            border: false,
             ds: new Ext.data.Store({
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'title' },
