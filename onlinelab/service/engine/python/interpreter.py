@@ -26,21 +26,18 @@ class PythonInterpreter(object):
         """Evaluate a piece of Python source code. """
         source, code = source.replace('\r', ''), None
 
+        if '\n' in source:
+            exec_source, eval_source = source.rsplit('\n', 1)
+        else:
+            exec_source, eval_source = None, source
+
+        eval_source += '\n'
+
         try:
-            code = self.compile(source + '\n', 'single')
-        except SyntaxError:
-            if '\n' in source:
-                exec_source, eval_source = source.rsplit('\n', 1)
-            else:
-                exec_source, eval_source = None, source
-
-            eval_source += '\n'
-
-            try:
-                self.compile(eval_source, 'eval')
-            except SyntaxError:
-                exec_source = source
-                eval_source = None
+            self.compile(eval_source, 'eval')
+        except (OverflowError, SyntaxError, ValueError):
+            exec_source = source
+            eval_source = None
 
         # If in debug mode, then don't setup output trap so that we can
         # run a debugger (e.g. pdb). Note that stdout and stderr won't
@@ -60,21 +57,18 @@ class PythonInterpreter(object):
             start = time.clock()
 
             try:
-                if code is not None:
-                    exec code in self.locals
-                else:
-                    if exec_source is not None:
-                        try:
-                            exec_code = self.compile(exec_source, 'exec')
-                        except SyntaxError:
-                            traceback = self.syntaxerror()
-                            eval_source = None
-                        else:
-                            exec exec_code in self.locals
+                if exec_source is not None:
+                    try:
+                        exec_code = self.compile(exec_source, 'exec')
+                    except (OverflowError, SyntaxError, ValueError):
+                        traceback = self.syntaxerror()
+                        eval_source = None
+                    else:
+                        exec exec_code in self.locals
 
-                    if eval_source is not None:
-                        eval_code = self.compile(eval_source, 'single')
-                        exec eval_code in self.locals
+                if eval_source is not None:
+                    eval_code = self.compile(eval_source, 'single')
+                    exec eval_code in self.locals
             except SystemExit:
                 raise
             except KeyboardInterrupt:
