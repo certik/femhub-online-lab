@@ -119,6 +119,21 @@ Note that the order of running servers is relevant and core server
 must be started before services are started. However, stopping can
 done in any order.
 
+Installing Mesh Editor
+======================
+
+To install Mesh Editor (Flex) in Online Lab, clone its repository:
+
+    http://github.com/hpfem/mesheditor-flex
+
+and follow its build instructions (see README). Next copy ``MeshEditor.swf``
+into ``static/external`` in core server's home directory, e.g.::
+
+    $ cp MeshEditor.swf /home/lab/core-home/static/external
+
+and reload Online Lab user interface in your web browser. Next time you
+double-click Mesh Editor icon on the desktop, the plug-in will be loaded.
+
 Importing Sage notebooks
 ========================
 
