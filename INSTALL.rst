@@ -26,7 +26,7 @@ The required packages for Online Lab are:
 
 * Python >= 2.6 (http://www.python.org)
 * Tornado >= 1.1 (http://www.tornadoweb.org)
-* Django >= 1.0 (http://www.djangoproject.com)
+* Django >= 1.1 (http://www.djangoproject.com)
 
 and smaller, but not less important, are:
 
