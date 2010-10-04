@@ -2,7 +2,10 @@
 
 import sys
 import time
+import tokenize
 import traceback
+
+from StringIO import StringIO
 
 from outputtrap import OutputTrap
 from namespace import PythonNamespace
@@ -24,10 +27,10 @@ class PythonInterpreter(object):
 
     def evaluate(self, source):
         """Evaluate a piece of Python source code. """
-        source, code = source.replace('\r', ''), None
+        source = source.replace('\r', '')
 
         if '\n' in source:
-            exec_source, eval_source = source.rsplit('\n', 1)
+            exec_source, eval_source = self.split(source)
         else:
             exec_source, eval_source = None, source
 
@@ -99,6 +102,22 @@ class PythonInterpreter(object):
             return result
         finally:
             self.trap.reset()
+
+    def split(self, source):
+        """Extract last logical line from multi-line source code. """
+        string = StringIO(source).readline
+        tokens = tokenize.generate_tokens(string)
+
+        for tok, _, (n, _), _, _ in reversed(list(tokens)):
+            if tok == tokenize.NEWLINE:
+                lines = source.split('\n')
+
+                exec_source = '\n'.join(lines[:n])
+                eval_source = '\n'.join(lines[n:])
+
+                return exec_source, eval_source
+        else:
+            return None, source
 
     def compile(self, source, mode):
         """Wrapper over Python's built-in :func:`compile` function. """
