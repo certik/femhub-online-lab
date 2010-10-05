@@ -72,6 +72,7 @@ class PythonInterpreter(object):
 
                 if eval_source is not None:
                     result = eval(eval_source, self.locals)
+                    sys.displayhook(result)
             except SystemExit:
                 raise
             except KeyboardInterrupt:
@@ -95,13 +96,10 @@ class PythonInterpreter(object):
                 self.locals['__'] = self.locals.get('_')
                 self.locals['_'] = result
 
-                result = repr(result)
-
             return {
                 'source': source,
                 'index': self.index,
                 'time': end - start,
-                'result': result,
                 'out': self.trap.out,
                 'err': self.trap.err,
                 'plots': plots,
