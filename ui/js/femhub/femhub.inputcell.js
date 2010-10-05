@@ -482,6 +482,14 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }, function(result) {
             var cells = [];
 
+            if (result.result) {
+                if (result.out) {
+                    result.out += '\n' + result.result;
+                } else {
+                    result.out = result.result;
+                }
+            }
+
             if (result.out) {
                 cells.push({ output: result.out, type: 'output' });
             }

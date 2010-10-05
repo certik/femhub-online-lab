@@ -56,6 +56,7 @@ class PythonInterpreter(object):
 
             interrupted = False
             traceback = False
+            result = None
 
             start = time.clock()
 
@@ -70,8 +71,7 @@ class PythonInterpreter(object):
                         exec exec_code in self.locals
 
                 if eval_source is not None:
-                    eval_code = self.compile(eval_source, 'single')
-                    exec eval_code in self.locals
+                    result = eval(eval_source, self.locals)
             except SystemExit:
                 raise
             except KeyboardInterrupt:
@@ -88,18 +88,26 @@ class PythonInterpreter(object):
 
             self.index += 1
 
-            result = {
+            if result is not None:
+                self.locals['_%d' % self.index] = result
+
+                self.locals['___'] = self.locals.get('__')
+                self.locals['__'] = self.locals.get('_')
+                self.locals['_'] = result
+
+                result = repr(result)
+
+            return {
                 'source': source,
                 'index': self.index,
                 'time': end - start,
+                'result': result,
                 'out': self.trap.out,
                 'err': self.trap.err,
                 'plots': plots,
                 'traceback': traceback,
                 'interrupted': interrupted,
             }
-
-            return result
         finally:
             self.trap.reset()
 
