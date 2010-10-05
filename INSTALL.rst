@@ -119,6 +119,25 @@ Note that the order of running servers is relevant and core server
 must be started before services are started. However, stopping can
 done in any order.
 
+Extending PYTHONPATH
+====================
+
+If you have auxiliary Python modules that you would like to expose in
+Online Lab (e.g. SymPy) and those modules aren't available on system-wide
+``PYTHONPATH`` for some reason (e.g. you would like to expose a certain
+branch of a development repository), then add paths to those modules via
+``--python-path`` command-line option, e.g.::
+
+    $ bin/onlinelab service start --python-path=/devel/sympy
+
+assuming that SymPy's module is located in ``/devel/sympy``. You can also
+use colon-syntax to add multiple paths::
+
+    $ bin/onlinelab service start --python-path=/devel/sympy:../numpy
+
+You can also add multiple ``--python-path`` options and/or store them in
+services' configuration files.
+
 Installing Mesh Editor
 ======================
 
