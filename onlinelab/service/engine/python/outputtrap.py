@@ -2,10 +2,11 @@
 
 import sys
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+# We can't use cStringIO here because it doesn't support Unicode
+# strings. Note that we can use cStringIO in other modules where
+# Unicode support is not needed (e.g. plotting).
+
+from StringIO import StringIO
 
 class OutputTrap(object):
     """Traps stdout and stderr into :class:`StringIO` containers. """
