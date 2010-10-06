@@ -96,6 +96,10 @@ FEMhub.RPC.Engine.stat = function(params, handler, scope) {
     FEMhub.RPC.call('stat', params, handler, scope, FEMhub.async);
 }
 
+FEMhub.RPC.Engine.complete = function(params, handler, scope) {
+    FEMhub.RPC.call('complete', params, handler, scope, FEMhub.async);
+}
+
 FEMhub.RPC.Engine.evaluate = function(params, handler, scope) {
     FEMhub.RPC.call('evaluate', params, handler, scope, FEMhub.async);
 }

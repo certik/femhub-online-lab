@@ -391,12 +391,69 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     autocomplete: function() {
-        var menu = new Ext.menu.Menu({
-            id: 'femhub-completion-menu',
-            items: [],
-        });
+        var selection = this.getSelection();
 
-        menu.showAt([0, 0]);
+        if (selection.start == selection.end) {
+            var input = this.getInput();
+            var end = selection.start;
+
+            var start = end;
+
+            while (start >= 0) {
+                var c = input[start-1];
+
+                if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                    (c >= '0' && c <= '9') || (c == '_' || c == '.')) {
+                    start--;
+                } else {
+                    break;
+                }
+            }
+
+            source = input.slice(start, end);
+
+            FEMhub.RPC.Engine.complete({
+                uuid: this.owner.uuid,
+                source: source,
+            }, function(result) {
+                if (!result.error) {
+                    var completions = result.completions;
+
+                    if (!completions || !completions.length) {
+                        var items = [{
+                            text: '&lt;no matches&gt;',
+                            disabled: true,
+                        }];
+                    } else {
+                        var items = [];
+
+                        Ext.each(result.completions, function(completion) {
+                            items.push({
+                                text: completion.match,
+                                // TODO: icon based on info
+                            });
+                        }, this);
+                    }
+
+                    var menu = new Ext.menu.Menu({
+                        id: 'femhub-completion-menu',
+                        items: items,
+                        listeners: {
+                            click: {
+                                fn: function(menu, item, evt) {
+                                    this.setInput(input.slice(0, start) + item.text + input.slice(end));
+                                    this.focusCell();
+                                    menu.destroy()
+                                },
+                                scope: this,
+                            },
+                        },
+                    });
+
+                    menu.showAt([0, 0]);
+                }
+            }, this);
+        }
     },
 
     evaluateCell: function(config) {
