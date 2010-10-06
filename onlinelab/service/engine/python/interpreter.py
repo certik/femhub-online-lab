@@ -4,11 +4,13 @@ import sys
 import time
 import tokenize
 import traceback
+import rlcompleter
 
 from StringIO import StringIO
 
 from outputtrap import OutputTrap
 from namespace import PythonNamespace
+from inspector import Inspector
 
 class PythonInterpreter(object):
     """Customized Python interpreter with two-stage evaluation. """
@@ -23,11 +25,71 @@ class PythonInterpreter(object):
 
         self.debug = debug
         self.trap = OutputTrap()
+        self.inspector = Inspector()
         self.index = 0
+
+    def complete(self, source):
+        """Get all completions for an initial source code. """
+        interrupted = False
+
+        try:
+            completer = rlcompleter.Completer(self.locals)
+
+            matches = set([])
+            state = 0
+
+            while True:
+                result = completer.complete(source, state)
+
+                if result is not None:
+                    matches.add(result)
+                    state += 1
+                else:
+                    break
+
+            completions = []
+
+            for match in sorted(matches):
+                if match[-1] == '(':
+                    match = match[:-1]
+
+                if '.' in match:
+                    name, attrs = match.split('.', 1)
+                else:
+                    name, attrs = match, None
+
+                try:
+                    obj = self.locals[name]
+                except KeyError:
+                    obj = None
+                else:
+                    if attrs is not None:
+                        for attr in attrs.split('.'):
+                            obj = getattr(obj, attr)
+
+                if obj is not None:
+                    info = self.inspector.get_basic_info(obj)
+                else:
+                    info = {'type': 'keyword'}
+
+                completions.append({
+                    'match': match,
+                    'info': info,
+                })
+        except KeyboardInterrupt:
+            completions = None
+            interrupted = True
+
+        return {
+            'completions': completions,
+            'interrupted': interrupted,
+        }
 
     def evaluate(self, source):
         """Evaluate a piece of Python source code. """
         source = source.replace('\r', '')
+
+        # XXX: make all this SIGINT aware
 
         if '\n' in source:
             exec_source, eval_source = self.split(source)
@@ -39,6 +101,9 @@ class PythonInterpreter(object):
         try:
             self.compile(eval_source, 'eval')
         except (OverflowError, SyntaxError, ValueError):
+            if '\n' not in source and self.is_inspect(source):
+                return self.inspect(source)
+
             exec_source = source
             eval_source = None
 
@@ -108,6 +173,66 @@ class PythonInterpreter(object):
             }
         finally:
             self.trap.reset()
+
+    def inspect(self, source):
+        """Collect information about a Python object. """
+        text = source
+        extended = False
+
+        if text.startswith('??'):
+            text = text[2:]
+            extended = True
+
+        if text.endswith('??'):
+            text = text[:-2]
+            extended = True
+
+        if not extended:
+            if text.startswith('?'):
+                text = text[1:]
+
+            if text.endswith('?'):
+                text = text[:-1]
+
+        text = text.strip()
+
+        if '.' in text:
+            name, attrs = text.split('.', 1)
+        else:
+            name, attrs = text, None
+
+        try:
+            obj = self.locals[name]
+        except KeyError:
+            obj = None
+        else:
+            if attrs is not None:
+                for attr in attrs.split('.'):
+                    try:
+                        obj = getattr(obj, attr)
+                    except KeyError:
+                        obj = None
+                        break
+
+        if obj is not None:
+            info = self.inspector.get_all_info(obj)
+        else:
+            info = None
+
+        self.index += 1
+
+        return {
+            'source': source,
+            'text': text,
+            'info': info,
+            'extended': extended,
+            'index': self.index,
+            'interrupted': False,
+        }
+
+    def is_inspect(self, source):
+        """Return ``True`` if user requested code inspection. """
+        return source.startswith('?') or source.endswith('?')
 
     def split(self, source):
         """Extract last logical line from multi-line source code. """

@@ -269,6 +269,13 @@ class ProcessManager(object):
         if process is not None:
             process.stat(args, okay, fail)
 
+    def complete(self, uuid, args, okay, fail):
+        """Complete a piece of source code. """
+        process = self._get_process(uuid, fail)
+
+        if process is not None:
+            process.complete(args, okay, fail)
+
     def evaluate(self, uuid, args, okay, fail):
         """Evaluate a piece of source code. """
         process = self._get_process(uuid, fail)
@@ -355,6 +362,14 @@ class EngineProcess(object):
             'memory': { 'percent': memory_percent, 'rss': rss, 'vms': vms },
         })
 
+    def complete(self, args, okay, fail):
+        """Complete code in this engine's process. """
+        if self.evaluating:
+            fail('busy')
+        else:
+            self._schedule(args, okay, fail)
+            self._evaluate(method='complete')
+
     def evaluate(self, args, okay, fail):
         """Evaluate code in this engine's process. """
         self._schedule(args, okay, fail)
@@ -414,12 +429,12 @@ class EngineProcess(object):
         """Push evaluation request at the end of the queue. """
         self.queue.append((args, okay, fail))
 
-    def _evaluate(self):
+    def _evaluate(self, method='evaluate'):
         """Evaluate next pending request if engine not busy. """
         if not self.evaluating and self.queue:
             args, okay, fail = self.evaluating = self.queue.pop()
 
-            body = utilities.xml_encode(args.source, 'evaluate')
+            body = utilities.xml_encode(args.source, method)
 
             http_client = tornado.httpclient.AsyncHTTPClient()
             http_request = tornado.httpclient.HTTPRequest(self.url,

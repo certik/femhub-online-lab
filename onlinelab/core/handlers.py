@@ -433,7 +433,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     """Handle message routing between clients and services. """
 
-    __methods__ = ['init', 'kill', 'stat', 'evaluate', 'interrupt']
+    __methods__ = ['init', 'kill', 'stat', 'complete', 'evaluate', 'interrupt']
 
     def initialize(self):
         self.manager = services.ServiceManager().instance()
@@ -482,6 +482,10 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     def stat(self, uuid):
         """Forward 'stat' method call to the assigned service. """
         self.forward(uuid, 'stat', {'uuid': uuid})
+
+    def complete(self, uuid, source):
+        """Forward 'complete' method call to the assigned service. """
+        self.forward(uuid, 'complete', {'uuid': uuid, 'source': source})
 
     def evaluate(self, uuid, source, cellid=None):
         """Forward 'evaluate' method call to the assigned service. """

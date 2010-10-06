@@ -46,7 +46,7 @@ class CoreHandler(jsonrpc.AsyncJSONRPCRequestHandler):
 class EngineHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     """Handle method calls to be executed on an engine. """
 
-    __methods__ = ['init', 'kill', 'stat', 'evaluate', 'interrupt']
+    __methods__ = ['init', 'kill', 'stat', 'complete', 'evaluate', 'interrupt']
 
     def initialize(self):
         self.manager = processes.ProcessManager.instance()
@@ -76,6 +76,10 @@ class EngineHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     def stat(self, uuid):
         """Process 'stat' method call from a client. """
         self.manager.stat(uuid, Args({}), self.okay, self.fail)
+
+    def complete(self, uuid, source):
+        """Process 'complete' method call from a client. """
+        self.manager.complete(uuid, Args(source=source), self.okay, self.fail)
 
     def evaluate(self, uuid, source, cellid=None):
         """Process 'evaluate' method call from a client. """

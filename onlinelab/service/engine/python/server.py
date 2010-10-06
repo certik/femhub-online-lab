@@ -10,6 +10,10 @@ class PythonXMLRPCMethods(object):
     def __init__(self, interpreter):
         self.interpreter = interpreter
 
+    def complete(self, source):
+        """Complete a piece of source code. """
+        return self.interpreter.complete(source)
+
     def evaluate(self, source):
         """Evaluate a piece of source code. """
         return self.interpreter.evaluate(source)
