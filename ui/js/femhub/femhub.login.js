@@ -222,7 +222,7 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
             layout: 'form',
             closable: false,
             resizable: false,
-            items: {
+            items: [{
                 id: 'femhub-create-form',
                 xtype: 'form',
                 border: false,
@@ -272,7 +272,7 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
                     },
                 }, {
                     id: 'femhub-create-password',
-                    fieldLabel: 'Choose password (at least 5 characters, containing either a number, or a valid special character (!@#$%^&*()-_=+))',
+                    fieldLabel: 'Choose password',
                     xtype: 'textfield',
                     vtype: 'password',
                     inputType: 'password',
@@ -317,7 +317,10 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
                         },
                     },
                 }],
-            },
+            }, {
+                html: 'Password must be at least 5 characters long, containing either a number, or a valid special character (!@#$%^&*()-_=+)',
+                border: false,
+            }],
             buttons: [{
                 text: 'OK',
                 handler: function() {
