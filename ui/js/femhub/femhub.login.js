@@ -2,15 +2,16 @@
 FEMhub.Login = Ext.extend(Ext.Window, {
     loginHtml: '<div class="femhub-login-head">The FEMhub Online Laboratory</div>' +
                '<div class="femhub-login-text">' +
-               'The goal of the FEMhub online lab is to make scientific computing ' +
-               'accessible to anyone. No need to be a rocket scientist. No need to ' +
-               'own a strong computer or buy expensive software either. Everything ' +
-               'takes place inside the web browser window. Yes, the same browser ' +
-               'that you use for e-mails or to watch YouTube movies. And yes, you ' +
-               'can use your favorite iPhone or iPod. The online lab is backed up ' +
-               'with substantial computing power of the <a href="http://unr.edu/"> ' +
-               'University of Nevada, Reno</a>, that the University gives you free ' +
-               'of charge.</div>',
+               'The goal of the FEMhub Online Lab is to make scientific computing ' +
+               'accessible to anyone. No need to ' +
+               'own a strong computer or buy expensive software. Everything ' +
+               'takes place inside the web browser window, that turns into a ' +
+               'virtual computer desktop. The Online lab is accessible from ' +
+               'PCs, laptops, netbooks, iPads, PDAs, and even web-enabled ' +
+               'smart phones. ' +
+               'The Online Lab is powered by computers of the ' +
+               '<a href="http://hpfem.org">hp-FEM group</a> at the ' +
+               '<a href="http://www.unr.edu/"> University of Nevada, Reno</a>.</div>',
 
                // XXX: add more info link (centered) -> window
 
