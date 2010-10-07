@@ -272,7 +272,7 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
                     },
                 }, {
                     id: 'femhub-create-password',
-                    fieldLabel: 'Choose password',
+                    fieldLabel: 'Choose password (at least 5 characters, containing either a number, or a valid special character (!@#$%^&*()-_=+))',
                     xtype: 'textfield',
                     vtype: 'password',
                     inputType: 'password',
