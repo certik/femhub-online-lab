@@ -43,8 +43,7 @@ def _setup_logging(args):
         level = getattr(logging, args.log_level.upper())
         logger.setLevel(level)
 
-        if not args.daemon:
-            tornado.options.enable_pretty_logging()
+        tornado.options.enable_pretty_logging()
 
         if args.log_file:
             channel = logging.handlers.RotatingFileHandler(
@@ -151,12 +150,8 @@ def start(args):
 
         logger = logging.getLogger()
 
-        if args.debug:
-            stdout = sys.stdout
-            stderr = sys.stderr
-        else:
-            stdout = None
-            stderr = None
+        stdout = sys.stdout
+        stderr = sys.stderr
 
         context = daemon.DaemonContext(
             working_directory=args.home,
