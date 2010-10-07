@@ -1,0 +1,19 @@
+#! /bin/sh
+
+if [ "$SPKG_LOCAL" = "" ]; then
+   echo "SPKG_LOCAL undefined ... exiting";
+   echo "Maybe run 'femhub --shell'?"
+   exit 1
+fi
+
+PACKAGE_NAME=onlinelab
+cp -pr onlinelab $SPKG_LOCAL/lib/python/site-packages/
+cd $SPKG_LOCAL/lib/python/site-packages/onlinelab
+
+bin/onlinelab core init --home=../core-home --ui-path=ui
+bin/onlinelab service init --home=../service-home
+
+if [ $? -ne 0 ]; then
+   echo "Error installing $PACKAGE_NAME."
+   exit 1
+fi
