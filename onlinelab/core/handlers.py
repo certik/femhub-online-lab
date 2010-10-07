@@ -4,6 +4,8 @@ import logging
 import httplib
 import functools
 
+import docutils.core
+
 import tornado.web
 import tornado.escape
 
@@ -17,6 +19,9 @@ from models import (
     User, Engine, Folder, Notebook, Cell,
     ctype_to_int, int_to_ctype,
 )
+
+class ParseError(Exception):
+    """Raised when '{{{' or '}}}' is misplaced. """
 
 class MainHandler(tornado.web.RequestHandler):
     """Render default Online Lab user interface. """
@@ -54,6 +59,9 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.Notebook.move',
         'RPC.Notebook.load',
         'RPC.Notebook.save',
+        'RPC.Docutils.import',
+        'RPC.Docutils.export',
+        'RPC.Docutils.render',
     ]
 
     def return_api_result(self, result=None):
@@ -309,7 +317,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         else:
             try:
                 engine = Engine.objects.get(uuid=engine_uuid)
-            except Folder.DoesNotExist:
+            except Engine.DoesNotExist:
                 self.return_api_error('does-not-exist')
             else:
                 notebook = Notebook(user=self.user,
@@ -429,6 +437,146 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             # XXX: implement garbage collection
 
             self.return_api_result()
+
+    def _parse_source(self, rst):
+        """Transform '{{{' / '}}}' extended source code to a list of cells. """
+        lines = rst.split('\n')
+
+        TEXT, CODE = 0, 1
+        state, skip, content = TEXT, False, []
+
+        cells = []
+
+        for k, line in enumerate(lines):
+            if line.startswith('{{{'):
+                if state == TEXT:
+                    line = line[3:].lstrip()
+                    cells.append((TEXT, content))
+                    content = []
+                    state = CODE
+                else:
+                    raise ParserError("unexpected '{{{' on line %d" % k)
+
+            if line.endswith('}}}'):
+                if state == CODE:
+                    content.append(line[:-3].rstrip())
+                    cells.append((CODE, content))
+                    content = []
+                    state = TEXT
+                    skip = False
+                    continue
+                else:
+                    raise ParserError("unexpected '}}}' on line %d" % k)
+
+            if not skip:
+                if state == CODE and line == '///':
+                    skip = True
+                else:
+                    content.append(line)
+
+        if content:
+            if state == TEXT:
+                cells.append((TEXT, content))
+            else:
+                raise RSTParserError("unterminated '{{{'")
+
+        result = []
+
+        for type, lines in cells:
+            for line in list(lines):
+                if line:
+                    break
+                else:
+                    del lines[0]
+
+            for line in reversed(lines):
+                if line:
+                    break
+                else:
+                    del lines[-1]
+
+            if lines:
+                if type == TEXT:
+                    type = ctype_to_int('rst')
+                else:
+                    type = ctype_to_int('input')
+
+                result.append((type, '\n'.join(lines)))
+
+        return result
+
+    @jsonrpc.authenticated
+    def RPC__Docutils__import(self, name, rst, engine_uuid, folder_uuid):
+        """Import notebook contents from a document with Cell-RST syntax. """
+        try:
+            if folder_uuid is not None:
+                folder = Folder.objects.get(user=self.user, uuid=folder_uuid)
+            else:
+                folder = None
+        except Folder.DoesNotExist:
+            self.return_api_error('folder-does-not-exist')
+        else:
+            try:
+                engine = Engine.objects.get(uuid=engine_uuid)
+            except Engine.DoesNotExist:
+                self.return_api_error('engine-does-not-exist')
+            else:
+                try:
+                    cells = self._parse_source(rst)
+                except ParseError, exc:
+                    self.return_api_error(exc.args[0])
+                else:
+                    notebook = Notebook.objects.create(user=self.user,
+                        name=name, engine=engine, folder=folder)
+
+                    order = []
+
+                    for type, content in cells:
+                        cell = Cell.objects.create(user=self.user,
+                            notebook=notebook, content=content, type=type)
+                        order.append(cell.uuid)
+
+                    notebook.order = ','.join(order)
+                    notebook.save()
+
+                    self.return_api_result({'uuid': notebook.uuid, 'count': len(cells)})
+
+    @jsonrpc.authenticated
+    def RPC__Docutils__export(self, uuid):
+        """Export notebook contents to a document with Cell-RST syntax. """
+        try:
+            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
+        except Notebook.DoesNotExist:
+            self.return_api_error('notebook-does-not-exist')
+        else:
+            rst = []
+
+            for uuid in notebook.order.split(','):
+                try:
+                    cell = Cell.objects.get(user=self.user, uuid=uuid)
+                except Cell.DoesNotExist:
+                    self.return_api_error('cell-does-not-exist')
+                    return
+
+                type = int_to_ctype(cell.type)
+
+                if type == 'rst':
+                    rst.append(cell.content)
+                    continue
+
+                if type == 'input':
+                    rst.append('{{{')
+                    rst.append(cell.content)
+                    rst.append('}}}')
+                    continue
+
+            self.return_api_result({'rst': '\n'.join(rst)})
+
+    @jsonrpc.authenticated
+    def RPC__Docutils__render(self, rst):
+        """Transform RST source code to HTML with Online Lab CSS. """
+        parts = docutils.core.publish_parts(rst, writer_name='html')
+        self.return_api_result({'html': parts['fragment']})
 
 class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     """Handle message routing between clients and services. """

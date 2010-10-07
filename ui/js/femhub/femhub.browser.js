@@ -48,12 +48,26 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                 },
                 scope: this,
             }, '-', {
-                xtype: 'button',
+                xtype: 'tbsplit',
                 cls: 'x-btn-text-icon',
                 text: 'Import Notebook',
                 iconCls: 'femhub-import-notebook-icon',
+                menu: [{
+                    text: 'Import RST',
+                    handler: function() {
+                        this.importFromRST();
+                    },
+                    scope: this,
+                }, {
+                    text: 'Import SAGE',
+                    handler: function() {
+                        // XXX: this is old interface, fix this
+                        this.importNotebook();
+                    },
+                    scope: this,
+                }],
                 handler: function() {
-                    this.importNotebook();
+                    this.importFromRST();
                 },
                 scope: this,
             }, '-', {
@@ -300,6 +314,14 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                             uuid: record.id,
                             name: record.data.title,
                         });
+                    },
+                    scope: this,
+                }, {
+                    text: 'Export',
+                    iconCls: 'femhub-export-notebook-icon',
+                    // TODO: add sub-menu and other targets
+                    handler: function() {
+                        this.exportAsRST(record.id);
                     },
                     scope: this,
                 }, '-', {
@@ -600,6 +622,42 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                     });
                 }
             }, this, true);
+    },
+
+    importFromRST: function() {
+        Ext.MessageBox.prompt(
+            'Import Notebook from RST',
+            'Please enter source code:',
+            function(button, text) {
+                if (button === 'ok') {
+                    FEMhub.RPC.Docutils.import({
+                        name: 'untitled (RST import)',
+                        rst: text,
+                        engine_uuid: this.engines[0].uuid,
+                        folder_uuid: this.getCurrentNode().id,
+                    }, function(result) {
+                        if (result.ok === true) {
+                            Ext.MessageBox.show({
+                                title: 'Import Successful',
+                                msg: result.count + " cells were imported from RST source code",
+                                buttons: Ext.MessageBox.OK,
+                                icon: Ext.MessageBox.INFO,
+                            });
+
+                            // XXX: fix browser's grid reload
+                        }
+                    });
+                }
+            }, this, true);
+    },
+
+    exportAsRST: function(uuid) {
+        FEMhub.RPC.Docutils.export({uuid: uuid}, function(result) {
+            if (result.ok === true) {
+                var viewer = new FEMhub.TextViewer({text: result.rst});
+                viewer.show();
+            }
+        }, this);
     },
 });
 

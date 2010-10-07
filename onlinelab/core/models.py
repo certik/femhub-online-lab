@@ -15,6 +15,7 @@ _ctype_to_int = {
     'error': 3,
     'image': 4,
     'content': 5,
+    'rst': 6,
 }
 
 _int_to_ctype = {
@@ -24,6 +25,7 @@ _int_to_ctype = {
     3: 'error',
     4: 'image',
     5: 'content',
+    6: 'rst',
 }
 
 def ctype_to_int(type):

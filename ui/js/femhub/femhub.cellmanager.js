@@ -37,6 +37,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         'error': 'ErrorCell',
         'image': 'ImageCell',
         'content': 'ContentCell',
+        'rst': 'RSTCell',
     },
 
     getUUID: function() {
