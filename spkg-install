@@ -8,10 +8,12 @@ fi
 
 PACKAGE_NAME=onlinelab
 cp -pr onlinelab $SPKG_LOCAL/lib/python/site-packages/
-cd $SPKG_LOCAL/lib/python/site-packages/onlinelab
+cp bin/onlinelab $SPKG_LOCAL/bin
 
-bin/onlinelab core init --home=../core-home --ui-path=ui
-bin/onlinelab service init --home=../service-home
+CONFIG_DIR="$SPKG_LOCAL/share/onlinelab/"
+mkdir -p $CONFIG_DIR
+onlinelab core init --home=$CONFIG_DIR/core-home --ui-path=ui
+onlinelab service init --home=$CONFIG_DIR/service-home
 
 if [ $? -ne 0 ]; then
    echo "Error installing $PACKAGE_NAME."
