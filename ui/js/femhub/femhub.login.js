@@ -181,7 +181,9 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 case 'credentials':
                     Ext.MessageBox.show({
                         title: 'Login failed',
-                        msg: 'You have entered wrong username or password!',
+                        msg: 'Incorrect username or password. Either ' +
+                        'create a new account or use the "Forgot ' +
+                        'password" button',
                         buttons: Ext.MessageBox.OK,
                         icon: Ext.MessageBox.ERROR,
                         fn: function() {
