@@ -7,10 +7,16 @@ if [ "$SPKG_LOCAL" = "" ]; then
 fi
 
 PACKAGE_NAME=onlinelab
+CONFIG_DIR="$SPKG_LOCAL/share/onlinelab/"
+# remove old install:
+rm -rf $SPKG_LOCAL/lib/python/site-packages/onlinelab
+rm -rf $CONFIG_DIR
+
+# install online lab
 cp -pr onlinelab $SPKG_LOCAL/lib/python/site-packages/
 cp bin/onlinelab $SPKG_LOCAL/bin
 
-CONFIG_DIR="$SPKG_LOCAL/share/onlinelab/"
+# init the online lab
 mkdir -p $CONFIG_DIR
 onlinelab core init --home=$CONFIG_DIR/core-home --ui-path=ui
 onlinelab service init --home=$CONFIG_DIR/service-home
