@@ -410,7 +410,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
             }
 
-            source = input.slice(start, end);
+            var source = input.slice(start, end);
 
             FEMhub.RPC.Engine.complete({
                 uuid: this.owner.uuid,
@@ -442,6 +442,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                             click: {
                                 fn: function(menu, item, evt) {
                                     this.setInput(input.slice(0, start) + item.text + input.slice(end));
+                                    this.setSelection(start + item.text.length);
                                     this.focusCell();
                                     menu.destroy()
                                 },
