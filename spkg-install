@@ -18,7 +18,9 @@ cp bin/onlinelab $SPKG_LOCAL/bin
 
 # init the online lab
 mkdir -p $CONFIG_DIR
-onlinelab core init --home=$CONFIG_DIR/core-home --ui-path=ui
+CUR=`pwd`
+cd $SPKG_LOCAL #to make sure the right lab gets imported
+onlinelab core init --home=$CONFIG_DIR/core-home --ui-path=$CUR/ui
 onlinelab service init --home=$CONFIG_DIR/service-home
 
 if [ $? -ne 0 ]; then
