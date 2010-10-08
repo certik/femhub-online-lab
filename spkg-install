@@ -15,12 +15,13 @@ rm -rf $CONFIG_DIR
 # install online lab
 cp -pr onlinelab $SPKG_LOCAL/lib/python/site-packages/
 cp bin/onlinelab $SPKG_LOCAL/bin
+mkdir -p $CONFIG_DIR
+cp -r ui $CONFIG_DIR/
 
 # init the online lab
-mkdir -p $CONFIG_DIR
 CUR=`pwd`
 cd $SPKG_LOCAL #to make sure the right lab gets imported
-onlinelab core init --home=$CONFIG_DIR/core-home --ui-path=$CUR/ui
+onlinelab core init --home=$CONFIG_DIR/core-home --ui-path=$CONFIG_DIR/ui
 onlinelab service init --home=$CONFIG_DIR/service-home
 
 if [ $? -ne 0 ]; then
