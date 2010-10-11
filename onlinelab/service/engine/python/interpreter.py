@@ -89,7 +89,7 @@ class PythonInterpreter(object):
 
     def evaluate(self, source):
         """Evaluate a piece of Python source code. """
-        source = source.replace('\r', '')
+        source = source.replace('\r', '').rstrip()
 
         # XXX: make all this SIGINT aware
 
