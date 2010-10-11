@@ -108,7 +108,16 @@ class ProcessManager(object):
             from engine.python import boot
             command = ["python", "-c", "%s" % boot]
 
-        env = {'PYTHONPATH': self.settings.get_PYTHONPATH()}
+        PYTHONPATH = self.settings.get_PYTHONPATH()
+
+        try:
+            ENV_PYTHONPATH = os.environ['PYTHONPATH']
+        except KeyError:
+            pass
+        else:
+            PYTHONPATH += os.pathsep + ENV_PYTHONPATH
+
+        env = {'PYTHONPATH': PYTHONPATH}
 
         # Create a directory for a process that we will spawn in a moment. If
         # it already exists, make sure it is empty (just remove it and create
