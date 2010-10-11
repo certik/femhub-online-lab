@@ -8,34 +8,6 @@ from django.contrib.auth.models import User
 MAX_UUID = 32
 MAX_NAME = 200
 
-_ctype_to_int = {
-    'input': 0,
-    'output': 1,
-    'text': 2,
-    'error': 3,
-    'image': 4,
-    'content': 5,
-    'rst': 6,
-}
-
-_int_to_ctype = {
-    0: 'input',
-    1: 'output',
-    2: 'text',
-    3: 'error',
-    4: 'image',
-    5: 'content',
-    6: 'rst',
-}
-
-def ctype_to_int(type):
-    """Return integer equivalent of ``type``. """
-    return _ctype_to_int[type]
-
-def int_to_ctype(type):
-    """Return symbolic equivalent of ``type``. """
-    return _int_to_ctype[type]
-
 class UUIDField(models.CharField):
     """A field that stores a universally unique identifier. """
 
@@ -89,7 +61,7 @@ class Notebook(models.Model):
 class Cell(models.Model):
     uuid = UUIDField()
     user = models.ForeignKey(User)
-    type = models.IntegerField(default=0)
+    type = models.CharField(max_length=16)
     content = models.TextField(default='')
     notebook = models.ForeignKey(Notebook, null=True, default=None)
     parent = models.ForeignKey('self', null=True, default=None)

@@ -15,10 +15,7 @@ import services
 from ..utils import jsonrpc
 from ..utils import Settings
 
-from models import (
-    User, Engine, Folder, Notebook, Cell,
-    ctype_to_int, int_to_ctype,
-)
+from models import User, Engine, Folder, Notebook, Cell
 
 class ParseError(Exception):
     """Raised when '{{{' or '}}}' is misplaced. """
@@ -377,9 +374,6 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
     @jsonrpc.authenticated
     def RPC__Notebook__load(self, uuid, type=None):
         """Load cells (in order) associated with a notebook. """
-        if type is not None:
-            type = ctype_to_int(type)
-
         try:
             notebook = Notebook.objects.get(user=self.user, uuid=uuid)
         except Notebook.DoesNotExist:
@@ -392,7 +386,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
                         'content': cell.content,
-                        'type': int_to_ctype(cell.type),
+                        'type': cell.type,
                     }
 
             for uuid in notebook.order.split(','):
@@ -414,7 +408,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             for data in cells:
                 uuid = data['uuid']
                 content = data['content']
-                type = ctype_to_int(data['type'])
+                type = data['type']
 
                 try:
                     cell = Cell.objects.get(user=self.user, uuid=uuid)
@@ -497,9 +491,9 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
             if lines:
                 if type == TEXT:
-                    type = ctype_to_int('rst')
+                    type = 'rst'
                 else:
-                    type = ctype_to_int('input')
+                    type = 'input'
 
                 result.append((type, '\n'.join(lines)))
 
@@ -558,13 +552,11 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                     self.return_api_error('cell-does-not-exist')
                     return
 
-                type = int_to_ctype(cell.type)
-
-                if type == 'rst':
+                if cell.type == 'rst':
                     rst.append(cell.content)
                     continue
 
-                if type == 'input':
+                if cell.type == 'input':
                     rst.append('{{{')
                     rst.append(cell.content)
                     rst.append('}}}')
