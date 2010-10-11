@@ -5,6 +5,7 @@ import httplib
 import functools
 
 import docutils.core
+import pygments.formatters
 
 import tornado.web
 import tornado.escape
@@ -26,8 +27,11 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         settings = Settings.instance()
 
+        html = pygments.formatters.HtmlFormatter()
+        css = html.get_style_defs(arg='.highlight')
+
         try:
-            self.render('femhub/femhub.html', debug=settings.debug)
+            self.render('femhub/femhub.html', debug=settings.debug, extra_css=css)
         except:
             raise tornado.web.HTTPError(500)
 

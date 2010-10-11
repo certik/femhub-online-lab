@@ -1,18 +1,18 @@
 
-FEMhub.ContentCell = Ext.extend(FEMhub.Cell, {
-    ctype: 'content',
+FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
+    ctype: 'text',
     content: null,
     contentEmpty: "Click here to edit contents",
 
     initComponent: function() {
-        FEMhub.ContentCell.superclass.initComponent.call(this);
+        FEMhub.TextCell.superclass.initComponent.call(this);
     },
 
-    setupContentCellObserver: function() {
+    setupTextCellObserver: function() {
         /* pass */
     },
 
-    setupContentCellEvents: function() {
+    setupTextCellEvents: function() {
         this.el.on('contextmenu', function(evt) {
             var context = this.createContextMenu([{
                 text: 'Edit',
@@ -28,24 +28,24 @@ FEMhub.ContentCell = Ext.extend(FEMhub.Cell, {
         }, this);
     },
 
-    setupContentCellKeyMap: function() {
+    setupTextCellKeyMap: function() {
         /* pass */
     },
 
     onRender: function(container, position) {
-        FEMhub.ContentCell.superclass.onRender.apply(this, arguments);
+        FEMhub.TextCell.superclass.onRender.apply(this, arguments);
 
-        this.el.addClass('femhub-cell-content');
+        this.el.addClass('femhub-cell-text');
 
         this.el_content = this.el.createChild({
             tag: 'div',
-            cls: 'femhub-cell-content-area',
+            cls: 'femhub-cell-text-area',
             html: this.content || this.contentEmpty,
         });
 
-        this.setupContentCellObserver();
-        this.setupContentCellEvents();
-        this.setupContentCellKeyMap();
+        this.setupTextCellObserver();
+        this.setupTextCellEvents();
+        this.setupTextCellKeyMap();
     },
 
     setContent: function(content) {

@@ -28,7 +28,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
                 alt: true,
                 scope: this,
                 stopEvent: true,
-                handler: this.insertContentCellBefore,
+                handler: this.insertTextCellBefore,
             },
             x_shift_alt_down: {
                 key: Ext.EventObject.DOWN,
@@ -37,7 +37,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
                 alt: true,
                 scope: this,
                 stopEvent: true,
-                handler: this.insertContentCellAfter,
+                handler: this.insertTextCellAfter,
             },
         });
     },
@@ -219,11 +219,11 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         /* pass */
     },
 
-    insertContentCellBefore: function() {
+    insertTextCellBefore: function() {
         return this.owner.newCell({ type: 'content', before: this });
     },
 
-    insertContentCellAfter: function() {
+    insertTextCellAfter: function() {
         return this.owner.newCell({ type: 'content', after: this });
     },
 

@@ -31,13 +31,13 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     evalIndex: 1,
 
     types: {
+        'text': 'TextCell',
+        'rst': 'RSTCell',
         'input': 'InputCell',
         'output': 'OutputCell',
-        'text': 'OutputCell',
-        'error': 'ErrorCell',
         'image': 'ImageCell',
-        'content': 'ContentCell',
-        'rst': 'RSTCell',
+        'error': 'ErrorCell',
+        'raw': 'RAWCell',
     },
 
     getUUID: function() {

@@ -540,27 +540,59 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }, function(result) {
             var cells = [];
 
+            if (Ext.isDefined(result.info)) {
+                var type = 'output';
+
+                if (!result.info) {
+                    var output = "Object `" + result.text + "` not found.";
+                } else {
+                    if (result.more && result.info.source) {
+                        if (result.info.source_html) {
+                            var output = result.info.source_html, type = 'raw';
+                        } else {
+                            var output = result.info.source;
+                        }
+                    } else {
+                        if (result.info.docstring) {
+                            if (result.info.docstring_html) {
+                                var output = result.info.docstring_html, type = 'raw';
+                            } else {
+                                var output = result.info.docstring;
+                            }
+                        } else {
+                            var output = '<no docstring>';
+                        }
+                    }
+                }
+
+                cells.push({output: output, type: type});
+            }
+
             if (result.out) {
-                cells.push({ output: result.out, type: 'output' });
+                cells.push({output: result.out, type: 'output'});
             }
 
             if (result.err) {
-                cells.push({ output: result.err, type: 'error' });
+                cells.push({output: result.err, type: 'error'});
             }
 
-            if (result.plots) {
+            if (Ext.isArray(result.plots)) {
                 Ext.each(result.plots, function(plot) {
                     var contents = 'data:' + plot.type + ';' + plot.encoding + ',' + plot.data;
-                    cells.push({ output: contents, type: 'image' });
+                    cells.push({output: contents, type: 'image'});
                 }, this);
             }
 
             if (result.traceback) {
-                cells.push({ output: result.traceback, type: 'error' });
+                if (result.traceback_html) {
+                    cells.push({output: result.traceback_html, type: 'raw'});
+                } else {
+                    cells.push({output: result.traceback, type: 'error'});
+                }
             }
 
             if (result.interrupted) {
-                cells.push({ output: '$Interrupted', type: 'error' });
+                cells.push({output: '$Interrupted', type: 'error'});
             }
 
             evalSuccess.call(this, result.index, cells);

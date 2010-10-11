@@ -11,6 +11,7 @@ from StringIO import StringIO
 from outputtrap import OutputTrap
 from namespace import PythonNamespace
 from inspector import Inspector
+from highlight import Highlight
 
 class PythonInterpreter(object):
     """Customized Python interpreter with two-stage evaluation. """
@@ -26,6 +27,7 @@ class PythonInterpreter(object):
         self.debug = debug
         self.trap = OutputTrap()
         self.inspector = Inspector()
+        self.highlight = Highlight()
         self.index = 0
 
     def complete(self, source):
@@ -161,7 +163,7 @@ class PythonInterpreter(object):
                 self.locals['__'] = self.locals.get('_')
                 self.locals['_'] = result
 
-            return {
+            result = {
                 'source': source,
                 'index': self.index,
                 'time': end - start,
@@ -171,23 +173,28 @@ class PythonInterpreter(object):
                 'traceback': traceback,
                 'interrupted': interrupted,
             }
+
+            if traceback:
+                result['traceback_html'] = self.highlight.traceback(traceback)
+
+            return result
         finally:
             self.trap.reset()
 
     def inspect(self, source):
         """Collect information about a Python object. """
         text = source
-        extended = False
+        more = False
 
         if text.startswith('??'):
             text = text[2:]
-            extended = True
+            more = True
 
         if text.endswith('??'):
             text = text[:-2]
-            extended = True
+            more = True
 
-        if not extended:
+        if not more:
             if text.startswith('?'):
                 text = text[1:]
 
@@ -215,7 +222,7 @@ class PythonInterpreter(object):
                         break
 
         if obj is not None:
-            info = self.inspector.get_all_info(obj)
+            info = self.inspector.get_pretty(obj, self.highlight)
         else:
             info = None
 
@@ -225,7 +232,7 @@ class PythonInterpreter(object):
             'source': source,
             'text': text,
             'info': info,
-            'extended': extended,
+            'more': more,
             'index': self.index,
             'interrupted': False,
         }

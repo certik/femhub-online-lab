@@ -3,6 +3,8 @@
 import os
 import inspect
 
+from highlight import Highlight
+
 class Inspector(object):
     """Wrapper over Python's inspect module. """
 
@@ -25,6 +27,30 @@ class Inspector(object):
         'traceback',
     ]
 
+    def get_pretty(self, obj, highlight=None):
+        """Get all information about ``obj`` in pretty form. """
+        if highlight is None:
+            highlight = Highlight()
+
+        info = self.get_info(obj)
+
+        docstring = info['docstring']
+
+        if docstring is not None:
+            info['docstring_html'] = highlight.docstring(docstring)
+
+        source = info['source']
+
+        if source is not None:
+            info['source_html'] = highlight.python(source)
+
+        args = info['args']
+
+        if args is not None:
+            info['args_html'] = highlight.python(args)
+
+        return info
+
     def get_basic_info(self, obj):
         """Get basic information about ``obj``. """
         return {
@@ -37,8 +63,8 @@ class Inspector(object):
             'args': self.get_args(obj),
         }
 
-    def get_ext_info(self, obj):
-        """Get extended information about ``obj``. """
+    def get_more_info(self, obj):
+        """Get more information about ``obj``. """
         return {
             'docstring': self.get_docstring(obj),
             'comments': self.get_comments(obj),
@@ -46,10 +72,13 @@ class Inspector(object):
             'source': self.get_source(obj),
         }
 
-    def get_all_info(self, obj):
+    def get_info(self, obj, more=True):
         """Get all information about ``obj``. """
         info = self.get_basic_info(obj)
-        info.update(self.get_ext_info(obj))
+
+        if more:
+            info.update(self.get_more_info(obj))
+
         return info
 
     def get_name(self, obj):

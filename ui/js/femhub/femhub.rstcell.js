@@ -1,5 +1,5 @@
 
-FEMhub.RSTCell = Ext.extend(FEMhub.ContentCell, {
+FEMhub.RSTCell = Ext.extend(FEMhub.TextCell, {
     ctype: 'rst',
 
     initComponent: function() {

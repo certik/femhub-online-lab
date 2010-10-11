@@ -243,12 +243,12 @@
  * CONTENT CELL
  */
 
-.femhub-cell-content {
+.femhub-cell-text {
     height: auto;
     display: block;
 }
 
-.femhub-cell-content-area {
+.femhub-cell-text-area {
     position: relative;
     overflow: hidden;
     display: block;
@@ -257,14 +257,14 @@
     font-family: sans-serif;
 }
 
-.femhub-cell-content-area ul {
+.femhub-cell-text-area ul {
     list-style: disc outside;
     margin-top: 1em;
     margin-bottom: 1em;
     padding-left: 40px;
 }
 
-.femhub-cell-content-area ol {
+.femhub-cell-text-area ol {
     list-style: decimal outside;
     margin-top: 1em;
     margin-bottom: 1em;
