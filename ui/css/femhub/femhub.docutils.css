@@ -1,101 +1,101 @@
 
 /* used to remove borders from tables and images */
-.femhub-cell-rst .borderless, .femhub-cell-rst table.borderless td, .femhub-cell-rst table.borderless th {
+.femhub-cell .borderless, .femhub-cell table.borderless td, .femhub-cell table.borderless th {
   border: 0 }
 
-.femhub-cell-rst table.borderless td, .femhub-cell-rst table.borderless th {
+.femhub-cell table.borderless td, .femhub-cell table.borderless th {
   /* Override padding for "table.docutils td" with "! important".
      The right padding separates the table cells. */
   padding: 0 0.5em 0 0 ! important }
 
-.femhub-cell-rst .first {
+.femhub-cell .first {
   /* Override more specific margin styles with "! important". */
   margin-top: 0 ! important }
 
-.femhub-cell-rst .last, .femhub-cell-rst .with-subtitle {
+.femhub-cell .last, .femhub-cell .with-subtitle {
   margin-bottom: 0 ! important }
 
-.femhub-cell-rst .hidden {
+.femhub-cell .hidden {
   display: none }
 
-.femhub-cell-rst a.toc-backref {
+.femhub-cell a.toc-backref {
   text-decoration: none ;
   color: black }
 
-.femhub-cell-rst blockquote.epigraph {
+.femhub-cell blockquote.epigraph {
   margin: 2em 5em ; }
 
-.femhub-cell-rst dl.docutils dd {
+.femhub-cell dl.docutils dd {
   margin-bottom: 0.5em }
 
 /* Uncomment (and remove this text!) to get bold-faced definition list terms
-.femhub-cell-rst dl.docutils dt {
+.femhub-cell dl.docutils dt {
   font-weight: bold }
 */
 
-.femhub-cell-rst div.abstract {
+.femhub-cell div.abstract {
   margin: 2em 5em }
 
-.femhub-cell-rst div.abstract p.topic-title {
+.femhub-cell div.abstract p.topic-title {
   font-weight: bold ;
   text-align: center }
 
-.femhub-cell-rst div.admonition, .femhub-cell-rst div.attention, .femhub-cell-rst div.caution, .femhub-cell-rst div.danger, .femhub-cell-rst div.error,
-.femhub-cell-rst div.hint, .femhub-cell-rst div.important, .femhub-cell-rst div.note, .femhub-cell-rst div.tip, .femhub-cell-rst div.warning {
+.femhub-cell div.admonition, .femhub-cell div.attention, .femhub-cell div.caution, .femhub-cell div.danger, .femhub-cell div.error,
+.femhub-cell div.hint, .femhub-cell div.important, .femhub-cell div.note, .femhub-cell div.tip, .femhub-cell div.warning {
   margin: 2em ;
   border: medium outset ;
   padding: 1em }
 
-.femhub-cell-rst div.admonition p.admonition-title, .femhub-cell-rst div.hint p.admonition-title,
-.femhub-cell-rst div.important p.admonition-title, .femhub-cell-rst div.note p.admonition-title,
-.femhub-cell-rst div.tip p.admonition-title {
+.femhub-cell div.admonition p.admonition-title, .femhub-cell div.hint p.admonition-title,
+.femhub-cell div.important p.admonition-title, .femhub-cell div.note p.admonition-title,
+.femhub-cell div.tip p.admonition-title {
   font-weight: bold ;
   font-family: sans-serif }
 
-.femhub-cell-rst div.attention p.admonition-title, .femhub-cell-rst div.caution p.admonition-title,
-.femhub-cell-rst div.danger p.admonition-title, .femhub-cell-rst div.error p.admonition-title,
-.femhub-cell-rst div.warning p.admonition-title {
+.femhub-cell div.attention p.admonition-title, .femhub-cell div.caution p.admonition-title,
+.femhub-cell div.danger p.admonition-title, .femhub-cell div.error p.admonition-title,
+.femhub-cell div.warning p.admonition-title {
   color: red ;
   font-weight: bold ;
   font-family: sans-serif }
 
 /* Uncomment (and remove this text!) to get reduced vertical space in
    compound paragraphs.
-.femhub-cell-rst div.compound .compound-first, .femhub-cell-rst div.compound .compound-middle {
+.femhub-cell div.compound .compound-first, .femhub-cell div.compound .compound-middle {
   margin-bottom: 0.5em }
 
-.femhub-cell-rst div.compound .compound-last, .femhub-cell-rst div.compound .compound-middle {
+.femhub-cell div.compound .compound-last, .femhub-cell div.compound .compound-middle {
   margin-top: 0.5em }
 */
 
-.femhub-cell-rst div.dedication {
+.femhub-cell div.dedication {
   margin: 2em 5em ;
   text-align: center ;
   font-style: italic }
 
-.femhub-cell-rst div.dedication p.topic-title {
+.femhub-cell div.dedication p.topic-title {
   font-weight: bold ;
   font-style: normal }
 
-.femhub-cell-rst div.figure {
+.femhub-cell div.figure {
   margin-left: 2em ;
   margin-right: 2em }
 
-.femhub-cell-rst div.footer, .femhub-cell-rst div.header {
+.femhub-cell div.footer, .femhub-cell div.header {
   clear: both;
   font-size: smaller }
 
-.femhub-cell-rst div.line-block {
+.femhub-cell div.line-block {
   display: block ;
   margin-top: 1em ;
   margin-bottom: 1em }
 
-.femhub-cell-rst div.line-block div.line-block {
+.femhub-cell div.line-block div.line-block {
   margin-top: 0 ;
   margin-bottom: 0 ;
   margin-left: 1.5em }
 
-.femhub-cell-rst div.sidebar {
+.femhub-cell div.sidebar {
   margin: 0 0 0.5em 1em ;
   border: medium outset ;
   padding: 1em ;
@@ -104,171 +104,171 @@
   float: right ;
   clear: right }
 
-.femhub-cell-rst div.sidebar p.rubric {
+.femhub-cell div.sidebar p.rubric {
   font-family: sans-serif ;
   font-size: medium }
 
-.femhub-cell-rst div.system-messages {
+.femhub-cell div.system-messages {
   margin: 5em }
 
-.femhub-cell-rst div.system-messages h1 {
+.femhub-cell div.system-messages h1 {
   color: red }
 
-.femhub-cell-rst div.system-message {
+.femhub-cell div.system-message {
   border: medium outset ;
   padding: 1em }
 
-.femhub-cell-rst div.system-message p.system-message-title {
+.femhub-cell div.system-message p.system-message-title {
   color: red ;
   font-weight: bold }
 
-.femhub-cell-rst div.topic {
+.femhub-cell div.topic {
   margin: 2em }
 
-.femhub-cell-rst h1.section-subtitle, .femhub-cell-rst h2.section-subtitle, .femhub-cell-rst h3.section-subtitle,
-.femhub-cell-rst h4.section-subtitle, .femhub-cell-rst h5.section-subtitle, .femhub-cell-rst h6.section-subtitle {
+.femhub-cell h1.section-subtitle, .femhub-cell h2.section-subtitle, .femhub-cell h3.section-subtitle,
+.femhub-cell h4.section-subtitle, .femhub-cell h5.section-subtitle, .femhub-cell h6.section-subtitle {
   margin-top: 0.4em }
 
-.femhub-cell-rst h1.title {
+.femhub-cell h1.title {
   text-align: center }
 
-.femhub-cell-rst h2.subtitle {
+.femhub-cell h2.subtitle {
   text-align: center }
 
-.femhub-cell-rst hr.docutils {
+.femhub-cell hr.docutils {
   width: 75% }
 
-.femhub-cell-rst img.align-left {
+.femhub-cell img.align-left {
   clear: left }
 
-.femhub-cell-rst img.align-right {
+.femhub-cell img.align-right {
   clear: right }
 
-.femhub-cell-rst ol.simple, .femhub-cell-rst ul.simple {
+.femhub-cell ol.simple, .femhub-cell ul.simple {
   margin-bottom: 1em }
 
-.femhub-cell-rst ol.arabic {
+.femhub-cell ol.arabic {
   list-style: decimal }
 
-.femhub-cell-rst ol.loweralpha {
+.femhub-cell ol.loweralpha {
   list-style: lower-alpha }
 
-.femhub-cell-rst ol.upperalpha {
+.femhub-cell ol.upperalpha {
   list-style: upper-alpha }
 
-.femhub-cell-rst ol.lowerroman {
+.femhub-cell ol.lowerroman {
   list-style: lower-roman }
 
-.femhub-cell-rst ol.upperroman {
+.femhub-cell ol.upperroman {
   list-style: upper-roman }
 
-.femhub-cell-rst p.attribution {
+.femhub-cell p.attribution {
   text-align: right ;
   margin-left: 50% }
 
-.femhub-cell-rst p.caption {
+.femhub-cell p.caption {
   font-style: italic }
 
-.femhub-cell-rst p.credits {
+.femhub-cell p.credits {
   font-style: italic ;
   font-size: smaller }
 
-.femhub-cell-rst p.label {
+.femhub-cell p.label {
   white-space: nowrap }
 
-.femhub-cell-rst p.rubric {
+.femhub-cell p.rubric {
   font-weight: bold ;
   font-size: larger ;
   color: maroon ;
   text-align: center }
 
-.femhub-cell-rst p.sidebar-title {
+.femhub-cell p.sidebar-title {
   font-family: sans-serif ;
   font-weight: bold ;
   font-size: larger }
 
-.femhub-cell-rst p.sidebar-subtitle {
+.femhub-cell p.sidebar-subtitle {
   font-family: sans-serif ;
   font-weight: bold }
 
-.femhub-cell-rst p.topic-title {
+.femhub-cell p.topic-title {
   font-weight: bold }
 
-.femhub-cell-rst pre.address {
+.femhub-cell pre.address {
   margin-bottom: 0 ;
   margin-top: 0 ;
   font-family: serif ;
   font-size: 100% }
 
-.femhub-cell-rst pre.literal-block, .femhub-cell-rst pre.doctest-block {
+.femhub-cell pre.literal-block, .femhub-cell pre.doctest-block {
   margin-left: 2em ;
   margin-right: 2em }
 
-.femhub-cell-rst span.classifier {
+.femhub-cell span.classifier {
   font-family: sans-serif ;
   font-style: oblique }
 
-.femhub-cell-rst span.classifier-delimiter {
+.femhub-cell span.classifier-delimiter {
   font-family: sans-serif ;
   font-weight: bold }
 
-.femhub-cell-rst span.interpreted {
+.femhub-cell span.interpreted {
   font-family: sans-serif }
 
-.femhub-cell-rst span.option {
+.femhub-cell span.option {
   white-space: nowrap }
 
-.femhub-cell-rst span.pre {
+.femhub-cell span.pre {
   white-space: pre }
 
-.femhub-cell-rst span.problematic {
+.femhub-cell span.problematic {
   color: red }
 
-.femhub-cell-rst span.section-subtitle {
+.femhub-cell span.section-subtitle {
   /* font-size relative to parent (h1..h6 element) */
   font-size: 80% }
 
-.femhub-cell-rst table.citation {
+.femhub-cell table.citation {
   border-left: solid 1px gray;
   margin-left: 1px }
 
-.femhub-cell-rst table.docinfo {
+.femhub-cell table.docinfo {
   margin: 2em 4em }
 
-.femhub-cell-rst table.docutils {
+.femhub-cell table.docutils {
   margin-top: 0.5em ;
   margin-bottom: 0.5em }
 
-.femhub-cell-rst table.footnote {
+.femhub-cell table.footnote {
   border-left: solid 1px black;
   margin-left: 1px }
 
-.femhub-cell-rst table.docutils td, .femhub-cell-rst table.docutils th,
-.femhub-cell-rst table.docinfo td, .femhub-cell-rst table.docinfo th {
+.femhub-cell table.docutils td, .femhub-cell table.docutils th,
+.femhub-cell table.docinfo td, .femhub-cell table.docinfo th {
   padding-left: 0.5em ;
   padding-right: 0.5em ;
   vertical-align: top }
 
-.femhub-cell-rst table.docutils th.field-name, .femhub-cell-rst table.docinfo th.docinfo-name {
+.femhub-cell table.docutils th.field-name, .femhub-cell table.docinfo th.docinfo-name {
   font-weight: bold ;
   text-align: left ;
   white-space: nowrap ;
   padding-left: 0 }
 
-.femhub-cell-rst h1 tt.docutils, .femhub-cell-rst h2 tt.docutils, .femhub-cell-rst h3 tt.docutils,
-.femhub-cell-rst h4 tt.docutils, .femhub-cell-rst h5 tt.docutils, .femhub-cell-rst h6 tt.docutils {
+.femhub-cell h1 tt.docutils, .femhub-cell h2 tt.docutils, .femhub-cell h3 tt.docutils,
+.femhub-cell h4 tt.docutils, .femhub-cell h5 tt.docutils, .femhub-cell h6 tt.docutils {
   font-size: 100% }
 
-.femhub-cell-rst ul.auto-toc {
+.femhub-cell ul.auto-toc {
   list-style-type: none }
 
 /* Revert ExtJS changes to global CSS definitions. */
 
-.femhub-cell-rst b, .femhub-cell-rst strong {
+.femhub-cell b, .femhub-cell strong {
     font-weight: bolder;
 }
 
-.femhub-cell-rst i, .femhub-cell-rst cite, .femhub-cell-rst em, .femhub-cell-rst var, .femhub-cell-rst dfn {
+.femhub-cell i, .femhub-cell cite, .femhub-cell em, .femhub-cell var, .femhub-cell dfn {
     font-style: italic;
 }
 
