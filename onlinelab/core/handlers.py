@@ -27,7 +27,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         settings = Settings.instance()
 
-        html = pygments.formatters.HtmlFormatter()
+        html = pygments.formatters.HtmlFormatter(nobackground=True)
         css = html.get_style_defs(arg='.highlight')
 
         try:
