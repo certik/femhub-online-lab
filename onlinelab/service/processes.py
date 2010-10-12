@@ -6,6 +6,7 @@ import time
 import signal
 import shutil
 import logging
+import xmlrpclib
 import functools
 import subprocess
 import collections
@@ -462,7 +463,12 @@ class EngineProcess(object):
         self._evaluate()
 
         if response.code == 200:
-            self._process_response(utilities.xml_decode(response.body), okay)
+            try:
+                result = utilities.xml_decode(response.body)
+            except xmlrpclib.Fault, exc:
+                fail('fault: %s' % exc)
+            else:
+                self._process_response(result, okay)
         else:
             fail('response-code: %s' % response.code)
 
