@@ -97,6 +97,32 @@ class ProcessManager(object):
             cls._instance = cls()
         return cls._instance
 
+    def build_env(self):
+        """Build hardened environment for engine process. """
+        env = {}
+
+        for key, value in self.settings.environ.iteritems():
+            if value is None:
+                try:
+                    value = os.environ[key]
+                except KeyError:
+                    continue
+
+            env[key] = value
+
+        PYTHONPATH = self.settings.get_PYTHONPATH()
+
+        try:
+            ENV_PYTHONPATH = env['PYTHONPATH']
+        except KeyError:
+            pass
+        else:
+            PYTHONPATH += os.pathsep + ENV_PYTHONPATH
+
+        env['PYTHONPATH'] = PYTHONPATH
+
+        return env
+
     def _run(self, uuid, args, okay, fail):
         """Take engine's configuration and start process for it. """
         self.processes[uuid] = None
@@ -109,16 +135,7 @@ class ProcessManager(object):
             from engine.python import boot
             command = ["python", "-c", "%s" % boot]
 
-        PYTHONPATH = self.settings.get_PYTHONPATH()
-
-        try:
-            ENV_PYTHONPATH = os.environ['PYTHONPATH']
-        except KeyError:
-            pass
-        else:
-            PYTHONPATH += os.pathsep + ENV_PYTHONPATH
-
-        env = {'PYTHONPATH': PYTHONPATH}
+        env = self.build_env()
 
         # Create a directory for a process that we will spawn in a moment. If
         # it already exists, make sure it is empty (just remove it and create

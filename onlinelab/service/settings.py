@@ -15,6 +15,7 @@ options = [
     ('service_url', 'str'),
     ('provider', 'str'),
     ('description', 'str'),
+    ('environ', 'dict'),
 ]
 
 defaults = {
@@ -32,5 +33,6 @@ defaults = {
     'service_url': 'http://localhost:%(port)s',
     'provider': 'Unknown service provider',
     'description': '',
+    'environ': {},
 }
 
