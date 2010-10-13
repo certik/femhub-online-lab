@@ -113,11 +113,15 @@ class ProcessManager(object):
         PYTHONPATH = self.settings.get_PYTHONPATH()
 
         try:
-            ENV_PYTHONPATH = env['PYTHONPATH']
+            path = env['PYTHONPATH']
         except KeyError:
-            pass
-        else:
-            PYTHONPATH += os.pathsep + ENV_PYTHONPATH
+            try:
+                path = os.environ['PYTHONPATH']
+            except KeyError:
+                path = None
+
+        if path:
+            PYTHONPATH += os.pathsep + path
 
         env['PYTHONPATH'] = PYTHONPATH
 
