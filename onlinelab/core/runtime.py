@@ -97,7 +97,7 @@ def init(args):
     )
 
     settings = configure(args, installed_apps=INSTALLED_APPS)
-    call_command('syncdb')
+    call_command('syncdb', interactive=False)
 
     from models import Engine
 
