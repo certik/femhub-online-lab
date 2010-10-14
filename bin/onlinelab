@@ -288,6 +288,11 @@ class OnlineLab(object):
         'description': (
             ('--description',), {},
         ),
+        'setuid': (
+            ('--setuid',), {
+                'action': ConfigureAction,
+            },
+        ),
     }
 
     modules = {
@@ -303,7 +308,7 @@ class OnlineLab(object):
             'init': [],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
                 'log-num-backups', 'logs-path', 'data-path', 'core-url', 'service-url',
-                'provider', 'description'],
+                'provider', 'description', 'setuid'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],

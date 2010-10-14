@@ -21,6 +21,9 @@ import utilities
 
 from ..utils import settings
 
+class UIDSpaceExhausted(Exception):
+    """Raised when no more spare UIDs were left. """
+
 class ProcessManager(object):
     """Start and manage system processes for engines. """
 
@@ -48,6 +51,8 @@ class ProcessManager(object):
 
         self.watches.add_watch(self.settings.data_path, mask,
             self._process_events, rec=True, auto_add=True)
+
+        self.uid_map = [False]*self.settings.uid_max
 
     def _on_inotify(self, fd, events):
         """Get executed when new inotify's events arrive. """
@@ -127,6 +132,25 @@ class ProcessManager(object):
 
         return env
 
+    def alloc_uid_gid(self):
+        """Find a spare UID and GID for a new process. """
+        uid_min = self.settings.uid_min
+        uid_max = self.settings.uid_max
+
+        for uid in xrange(uid_min, uid_max+1):
+            if not self.uid_map[uid]:
+                self.uid_map[uid] = True
+                break
+        else:
+            raise UIDSpaceExhausted
+
+        return uid, uid
+
+    def purge_uid_gid(self, uid, gid):
+        """Return UID and GID to the pool for reuse. """
+        if uid is not None:
+            self.uid_map[uid] = False
+
     def _run(self, uuid, args, okay, fail):
         """Take engine's configuration and start process for it. """
         self.processes[uuid] = None
@@ -152,28 +176,70 @@ class ProcessManager(object):
 
         os.mkdir(cwd)
 
+        # As we know the home directory for our engine, lets now hack Python's
+        # site.py and tell it where is should look for extra modules (.local)
+        # and make some other modules happy (e.g. matplotlib).
+
+        env['HOME'] = env['PYTHONUSERBASE'] = cwd
+
+        # In production environments we have to run every Online Lab user as
+        # a different system user on a particular machine where a service is
+        # running. For simplicity we run every process as a different user.
+
+        # This gives us about 60 thousandth unique resources to be bind with
+        # system processes. This should be way more than enough on any kind
+        # of hardware we will use, however, on a modern Linux systems, this
+        # limit can be pushed to several million, at least, so if we imagine
+        # running a million of processes, it should be possible.
+
+        preexec_fn = None
+
+        if not self.settings.setuid:
+            uid, gid = None, None
+        else:
+            uid, gid = self.alloc_uid_gid()
+
+            try:
+                os.chown(cwd, uid, gid)
+            except OSError:
+                logging.warning("Not enough privileges to set permissions (am I root?)")
+
+                self.purge_uid_gid(uid, gid)
+                uid, gid = None, None
+            else:
+                def preexec_fn():
+                    os.setgid(gid)
+                    os.setuid(uid)
+
         # Lets start the engine's process. We must close all non-standard file
         # descriptors (via 'close_fds'), because otherwise IOLoop will hang.
         # When the process will be ready to handle requests from the core, it
         # will tell us this by sending a single line of well formatted output
         # (containing port numer and PID) via a pipe.
 
-        proc = subprocess.Popen(command, cwd=cwd, env=env,
-            close_fds=True, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(command, preexec_fn=preexec_fn,
+            cwd=cwd, env=env, close_fds=True, stdout=subprocess.PIPE)
 
         # File descriptor of the pipe (fd) is our connector the process, so
         # we will monitor this descriptor to see the change in status of the
         # process (ready for processing requests, unexpected death).
 
         fd = proc.stdout.fileno()
+        params = uuid, proc, uid, gid, cwd, okay, fail
 
-        timeout = functools.partial(self._on_run_timeout, uuid, proc, cwd, fail, fd)
+        timeout = functools.partial(self._on_run_timeout, uuid, params, fd)
         tm = self.ioloop.add_timeout(time.time() + self._timeout, timeout)
 
-        handler = functools.partial(self._on_run_handler, uuid, proc, cwd, okay, fail, tm)
+        handler = functools.partial(self._on_run_handler, params, tm)
         self.ioloop.add_handler(fd, handler, self.ioloop.READ | self.ioloop.ERROR)
 
-    def _on_run_timeout(self, uuid, proc, cwd, fail, fd):
+    def cleanup(self, uuid, cwd, uid, gid):
+        """Removed all data allocated for a process. """
+        self.purge_uid_gid(uid, gid)
+        del self.processes[uuid]
+        shutil.rmtree(cwd)
+
+    def _on_run_timeout(self, (uuid, proc, uid, gid, cwd, okay, fail), fd):
         """Hard deadline on engine's process startup (start or die). """
         self.ioloop.remove_handler(fd)
 
@@ -184,20 +250,20 @@ class ProcessManager(object):
         # this handler shouldn't be executed at all, unless e.g. we
         # are running out of memory.
 
-        del self.processes[uuid]
-        shutil.rmtree(cwd)
+        self.cleanup(uuid, cwd, uid, gid)
 
         proc.kill()
         proc.poll()
 
         fail('timeout')
 
-    def _on_run_handler(self, uuid, proc, cwd, okay, fail, tm, fd, events):
+    def _on_run_handler(self, (uuid, proc, uid, gid, cwd, okay, fail), tm, fd, events):
         """Startup handler that gets executed on pipe write or error. """
         self.ioloop.remove_timeout(tm)
         self.ioloop.remove_handler(fd)
 
         if events & self.ioloop.ERROR:
+            self.cleanup(uuid, cwd, uid, gid)
             fail('died')
         else:
             # Connection was established, so lets get first output line
@@ -213,7 +279,7 @@ class ProcessManager(object):
 
                 self.processes[uuid] = process
 
-                handler = functools.partial(self._on_disconnect, uuid)
+                handler = functools.partial(self._on_disconnect, uuid, cwd, uid, gid)
                 self.ioloop.add_handler(fd, handler, self.ioloop.ERROR)
 
                 logging.info("Started new child process (pid=%s)" % process.pid)
@@ -224,15 +290,14 @@ class ProcessManager(object):
                 # clean up (remove process entry marker and kill the
                 # process) and gracefully fail.
 
-                del self.processes[uuid]
-                shutil.rmtree(cwd)
+                self.cleanup(uuid, cwd, uid, gid)
 
                 proc.kill()
                 proc.poll()
 
                 fail('invalid-output')
 
-    def _on_disconnect(self, uuid, fd, events):
+    def _on_disconnect(self, uuid, cwd, uid, gid, fd, events):
         """Handler that gets executed when a process dies. """
         self.ioloop.remove_handler(fd)
 
@@ -259,6 +324,7 @@ class ProcessManager(object):
         # of this and tell the caller that the process died (we can't do it
         # here because we can't initiate communication with the core).
 
+        self.cleanup(uuid, cwd, uid, gid)
         self.processes[uuid] = False
 
     def init(self, uuid, args, okay, fail):
@@ -291,6 +357,7 @@ class ProcessManager(object):
 
         if process is not None:
             process.kill(args, okay, fail)
+            # XXX: call cleanup() here
             del self.processes[uuid]
 
     def stat(self, uuid, args, okay, fail):

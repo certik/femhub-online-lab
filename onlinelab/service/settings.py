@@ -16,6 +16,9 @@ options = [
     ('provider', 'str'),
     ('description', 'str'),
     ('environ', 'dict'),
+    ('setuid', 'bool'),
+    ('uid_min', 'int'),
+    ('uid_max', 'int'),
 ]
 
 defaults = {
@@ -34,5 +37,8 @@ defaults = {
     'provider': 'Unknown service provider',
     'description': '',
     'environ': {},
+    'setuid': True,
+    'uid_min': 10000,
+    'uid_max': 50000,
 }
 
