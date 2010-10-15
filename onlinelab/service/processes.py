@@ -107,7 +107,7 @@ class ProcessManager(object):
         env = {}
 
         for key, value in self.settings.environ.iteritems():
-            if value is None:
+            if value is True:
                 try:
                     value = os.environ[key]
                 except KeyError:
