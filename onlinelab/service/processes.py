@@ -104,16 +104,19 @@ class ProcessManager(object):
 
     def build_env(self):
         """Build hardened environment for engine process. """
-        env = {}
+        if self.settings.environ is True:
+            env = dict(os.environ)
+        else:
+            env = {}
 
-        for key, value in self.settings.environ.iteritems():
-            if value is True:
-                try:
-                    value = os.environ[key]
-                except KeyError:
-                    continue
+            for key, value in self.settings.environ.iteritems():
+                if value is True:
+                    try:
+                        value = os.environ[key]
+                    except KeyError:
+                        continue
 
-            env[key] = value
+                env[key] = value
 
         PYTHONPATH = self.settings.get_PYTHONPATH()
 
