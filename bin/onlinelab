@@ -293,13 +293,18 @@ class OnlineLab(object):
                 'action': ConfigureAction,
             },
         ),
+        'auth': (
+            ('--auth',), {
+                'action': ConfigureAction,
+            },
+        ),
     }
 
     modules = {
         'core': {
             'init': ['ui-path'],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
-                'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path'],
+                'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path', 'auth'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],

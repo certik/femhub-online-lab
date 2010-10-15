@@ -109,6 +109,9 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         """Log in a user to the system using a username and password. """
         user = auth.authenticate(username=username, password=password)
 
+        if Settings.instance().auth and username == 'lab':
+            user = None
+
         if user is None:
             self.return_api_error('credentials')
             return
@@ -131,7 +134,8 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
     def RPC__User__createAccount(self, username, email, password):
         """Create new user account given credentials and E-mail. """
         try:
-            User.objects.get(username=username)
+            if username != 'lab':
+                User.objects.get(username=username)
             self.return_api_error('exists')
         except User.DoesNotExist:
             User.objects.create_user(username, email, password)

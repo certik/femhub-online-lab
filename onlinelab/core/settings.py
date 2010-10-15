@@ -13,6 +13,7 @@ options = [
     ('log_level', 'str'),
     ('log_max_size', 'int'),
     ('log_num_backups', 'int'),
+    ('auth', 'bool'),
 ]
 
 defaults = {
@@ -28,5 +29,6 @@ defaults = {
     'log_level': 'info',
     'log_max_size': 10*1000*1000,      # store 10 MB in a log file
     'log_num_backups': 10,             # keep 10 log files at most
+    'auth': True,
 }
 

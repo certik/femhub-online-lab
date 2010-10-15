@@ -3,6 +3,8 @@
 from datetime import datetime, timedelta
 from django.contrib import auth
 
+from ..utils.settings import Settings
+
 SESSION_COOKIE = 'sessionid'
 
 authenticate = auth.authenticate
@@ -36,7 +38,16 @@ class DjangoMixin(object):
 
         if user is None:
             from django.contrib.auth import models
-            user = models.AnonymousUser()
+
+            if Settings.instance().auth:
+                user = models.AnonymousUser()
+            else:
+                try:
+                    user = models.User.objects.get(username='lab')
+                except models.User.DoesNotExist:
+                    user = models.User(username='lab')
+                    user.set_password('')
+                    user.save()
 
         return user
 
