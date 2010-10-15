@@ -27,7 +27,7 @@ class UIDSpaceExhausted(Exception):
 class ProcessManager(object):
     """Start and manage system processes for engines. """
 
-    _re = re.compile("^port=(?P<port>\d+), pid=(?P<pid>\d+)")
+    _re = re.compile("^.*?port=(?P<port>\d+), pid=(?P<pid>\d+)")
 
     _timeout = 20 # XXX: put this into config file
 
@@ -263,6 +263,7 @@ class ProcessManager(object):
         self.ioloop.remove_handler(fd)
 
         if events & self.ioloop.ERROR:
+            logging.error("Newly created process died expectingly")
             self.cleanup(uuid, cwd, uid, gid)
             fail('died')
         else:
@@ -290,6 +291,7 @@ class ProcessManager(object):
                 # clean up (remove process entry marker and kill the
                 # process) and gracefully fail.
 
+                logging.error("Newly created process didn't respond properly")
                 self.cleanup(uuid, cwd, uid, gid)
 
                 proc.kill()
