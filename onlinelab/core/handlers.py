@@ -1,6 +1,7 @@
 """HTTP request handlers for Online Lab core. """
 
 import logging
+import smtplib
 import httplib
 import functools
 
@@ -74,9 +75,9 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
         self.return_result(result)
 
-    def return_api_error(self, error=None):
+    def return_api_error(self, reason=None):
         """Return higher-level JSON-RPC error response. """
-        self.return_result({'ok': False, 'error': error})
+        self.return_result({'ok': False, 'reason': error})
 
     def RPC__hello(self):
         """Politely reply to a greeting from a client. """
@@ -158,8 +159,12 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             template = self.settings['template_loader'].load('femhub/password.txt')
             rendered = template.generate(username=username, password=password)
 
-            user.email_user(head, rendered)
-            self.return_api_result()
+            try:
+                user.email_user(head, rendered)
+            except smtplib.SMTPRecipientsRefused:
+                self.return_api_error('invalid-email')
+            else:
+                self.return_api_result()
 
     @jsonrpc.authenticated
     def RPC__Core__getEngines(self):

@@ -177,7 +177,7 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 this.fireEvent('loginsuccess');
                 this.close();
             } else {
-                switch (result.error) {
+                switch (result.reason) {
                 case 'credentials':
                     Ext.MessageBox.show({
                         title: 'Login failed',
@@ -517,15 +517,23 @@ FEMhub.RemindPassword = Ext.extend(Ext.Window, {
                     scope: this,
                 });
             } else {
-                if (result.reason === 'does-not-exist') {
+                switch (result.reason) {
+                case 'does-not-exist':
                     Ext.MessageBox.show({
                         title: 'Remind password',
                         msg: "'" + params.username + "' account does not exists. Choose a correct one.",
                         buttons: Ext.MessageBox.OK,
                         icon: Ext.MessageBox.ERROR,
                     });
-                } else {
-                    /* should not happen */
+                    break;
+                case 'invalid-email':
+                    Ext.MessageBox.show({
+                        title: 'Remind password',
+                        msg: "Invalid E-mail. No message was sent.",
+                        buttons: Ext.MessageBox.OK,
+                        icon: Ext.MessageBox.ERROR,
+                    });
+                    break;
                 }
 
                 this.clearFields();
