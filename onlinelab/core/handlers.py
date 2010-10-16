@@ -77,7 +77,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
     def return_api_error(self, reason=None):
         """Return higher-level JSON-RPC error response. """
-        self.return_result({'ok': False, 'reason': error})
+        self.return_result({'ok': False, 'reason': reason})
 
     def RPC__hello(self):
         """Politely reply to a greeting from a client. """
