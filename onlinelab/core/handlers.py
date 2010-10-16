@@ -50,6 +50,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.User.createAccount',
         'RPC.User.remindPassword',
         'RPC.Core.getEngines',
+        'RPC.Core.getUsers',
         'RPC.Folder.getRoot',
         'RPC.Folder.create',
         'RPC.Folder.remove',
@@ -185,6 +186,42 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         self.return_api_result({'engines': engines})
 
     @jsonrpc.authenticated
+    def RPC__Core__getUsers(self, notebooks=False):
+        """Return a list of all registered users. """
+        users = []
+
+        for user in User.objects.all():
+            data = {
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+            }
+
+            if notebooks:
+                user_notebooks = []
+
+                for notebook in Notebook.objects.filter(user=user, published__isnull=False):
+                    user_notebooks.append({
+                        'uuid': notebook.uuid,
+                        'name': notebook.name,
+                        'description': notebook.description,
+                        'created': jsonrpc.datetime(notebook.created),
+                        'modified': jsonrpc.datetime(notebook.modified),
+                        'published': jsonrpc.datetime(notebook.published),
+                        'engine': {
+                            'uuid': notebook.engine.uuid,
+                            'name': notebook.engine.name,
+                        },
+                    })
+
+                data['notebooks'] = user_notebooks
+
+            users.append(data)
+
+        self.return_api_result({'users': users})
+
+    @jsonrpc.authenticated
     def RPC__Folder__getRoot(self):
         """Return the main folder for the current user ("My folders"). """
         try:
@@ -308,6 +345,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 notebooks.append({
                     'uuid': notebook.uuid,
                     'name': notebook.name,
+                    'description': notebook.description,
                     'created': jsonrpc.datetime(notebook.created),
                     'modified': jsonrpc.datetime(notebook.modified),
                     'published': jsonrpc.datetime(notebook.published),
@@ -416,6 +454,10 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             self.return_api_error('origin-does-not-exist')
             return
 
+        if origin.published is None:
+            self.return_api_error('origin-is-not-published')
+            return
+
         try:
             folder = Folder.objects.get(uuid=folder_uuid)
         except Folder.DoesNotExist:
@@ -429,6 +471,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             engine=origin.engine,
             origin=origin,
             folder=folder)
+        notebook.save()
 
         order = []
 
@@ -440,6 +483,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             else:
                 cell = Cell(user=self.user,
                             type=base.type,
+                            parent=base.parent,
                             content=base.content,
                             notebook=notebook)
                 order.append(cell.uuid)
@@ -448,7 +492,10 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         notebook.set_order(order)
         notebook.save()
 
-        self.return_api_result({'uuid': notebook.uuid})
+        self.return_api_result({
+            'uuid': notebook.uuid,
+            'name': notebook.name,
+        })
 
     @jsonrpc.authenticated
     def RPC__Notebook__load(self, uuid, type=None):

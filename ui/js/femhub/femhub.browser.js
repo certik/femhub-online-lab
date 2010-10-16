@@ -70,6 +70,15 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                     this.importFromRST();
                 },
                 scope: this,
+            }, {
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
+                text: 'Fork Notebook',
+                iconCls: 'femhub-fork-icon',
+                handler: function() {
+                    this.forkNotebook();
+                },
+                scope: this,
             }, '-', {
                 xtype: 'button',
                 cls: 'x-btn-text-icon',
@@ -669,6 +678,33 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                 viewer.show();
             }
         }, this);
+    },
+
+    forkNotebook: function() {
+        var published = new FEMhub.PublishedNotebooks({
+            listeners: {
+                notebookforked: {
+                    fn: function(uuid) {
+                        var node = this.getCurrentNode();
+
+                        var params = {
+                            origin_uuid: uuid,
+                            folder_uuid: node.id,
+                        };
+
+                        FEMhub.RPC.Notebook.fork(params, function(result) {
+                            if (result.ok === true) {
+                                FEMhub.msg.info("Browser", "'" + result.name + "' was forked sucessfully.");
+                                this.getNotebooks();
+                            }
+                        }, this);
+                    },
+                    scope: this,
+                },
+            },
+        });
+
+        published.show();
     },
 });
 
