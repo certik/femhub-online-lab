@@ -55,8 +55,17 @@ class Notebook(models.Model):
     origin = models.ForeignKey('self', null=True, default=None)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    order = models.TextField(default='')
+    published = models.DateTimeField(null=True, default=None)
     engine = models.ForeignKey(Engine)
+    order = models.TextField(default='')
+
+    def get_order(self):
+        """Return ``order`` as a list. """
+        return self.order.split(',')
+
+    def set_order(self, order):
+        """Set ``order`` from a list. """
+        self.order = ','.join(order)
 
 class Cell(models.Model):
     uuid = UUIDField()

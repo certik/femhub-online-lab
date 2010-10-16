@@ -47,6 +47,10 @@
     background-image: url(/static/img/femhub/icons/page.png) !important;
 }
 
+.femhub-published-icon {
+    background-image: url(/static/img/femhub/icons/page_green.png) !important;
+}
+
 .femhub-celleditor-icon {
     background-image: url(/static/img/femhub/icons/page_white_edit.png) !important;
 }
@@ -121,5 +125,17 @@
 
 .femhub-decrease-font-size-icon {
     background-image: url(/static/img/femhub/icons/16x16/font-decrease.png) !important;
+}
+
+.femhub-record-published-icon {
+    background-image: url(/static/img/femhub/icons/page_green.png) !important;
+    background-repeat: no-repeat !important;
+    background-position: left center !important;
+}
+
+.femhub-record-unpublished-icon {
+    background-image: url(/static/img/femhub/icons/page.png) !important;
+    background-repeat: no-repeat !important;
+    background-position: left center !important;
 }
 

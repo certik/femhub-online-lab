@@ -264,14 +264,24 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'title' },
                     { name: 'engine' },
-                    { name: 'datetime', type: 'date' },
+                    { name: 'created' },
+                    { name: 'published' },
                 ]),
             }),
             cm: new Ext.grid.ColumnModel([
                 new Ext.grid.RowNumberer(),
-                { header: "Title", width: 200, sortable: true, dataIndex: 'title'},
+                { header: "Title", width: 200, sortable: true, dataIndex: 'title',
+                    renderer: function(value, metadata, record, rowIndex, colIndex, store) {
+                        if (record.data.published) {
+                            metadata.css = 'femhub-record-published-icon';
+                        } else {
+                            metadata.css = 'femhub-record-unpublished-icon';
+                        }
+                        return '<div style="margin-left: 12px">' + value + '</div>';
+                    },
+                },
                 { header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
-                { header: "Date", width: 100, sortable: true, dataIndex: 'datetime'},
+                { header: "Created", width: 100, sortable: true, dataIndex: 'created'},
             ]),
             sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
             viewConfig: {
@@ -544,14 +554,15 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                 store.removeAll();
 
                 var record = Ext.data.Record.create([
-                    'title', 'engine', 'created'
+                    'title', 'engine', 'created', 'published'
                 ]);
 
                 Ext.each(result.notebooks, function(notebook) {
                     store.add(new record({
                         title: notebook.name,
                         engine: notebook.engine.name,
-                        datetime: notebook.created,
+                        created: notebook.created,
+                        published: notebook.published,
                     }, notebook.uuid));
                 }, this);
             } else {

@@ -5,6 +5,8 @@ import smtplib
 import httplib
 import functools
 
+from datetime import datetime
+
 import docutils.core
 import pygments.formatters
 
@@ -59,6 +61,8 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.Notebook.remove',
         'RPC.Notebook.rename',
         'RPC.Notebook.move',
+        'RPC.Notebook.publish',
+        'RPC.Notebook.fork',
         'RPC.Notebook.load',
         'RPC.Notebook.save',
         'RPC.Docutils.import',
@@ -306,6 +310,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                     'name': notebook.name,
                     'created': jsonrpc.datetime(notebook.created),
                     'modified': jsonrpc.datetime(notebook.modified),
+                    'published': jsonrpc.datetime(notebook.published),
                     'engine': {
                         'uuid': notebook.engine.uuid,
                         'name': notebook.engine.name,
@@ -385,6 +390,65 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             self.return_api_result()
 
     @jsonrpc.authenticated
+    def RPC__Notebook__publish(self, uuid):
+        """Make notebook pointed by ``uuid`` visible to others. """
+        try:
+            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
+        except Notebook.DoesNotExist:
+            self.return_api_error('notebook-does-not-exist')
+        else:
+            if notebook.published is not None:
+                self.return_api_error('already-published')
+            else:
+                notebook.published = datetime.now()
+                notebook.save()
+
+                self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Notebook__fork(self, origin_uuid, folder_uuid):
+        """Create an exact copy of a notebook from an origin. """
+        try:
+            origin = Notebook.objects.get(uuid=origin_uuid)
+        except Notebook.DoesNotExist:
+            self.return_api_error('origin-does-not-exist')
+            return
+
+        try:
+            folder = Folder.objects.get(uuid=folder_uuid)
+        except Folder.DoesNotExist:
+            self.return_api_error('folder-does-not-exist')
+            return
+
+        notebook = Notebook(
+            user=self.user,
+            name=origin.name,
+            description=origin.description,
+            engine=origin.engine,
+            origin=origin,
+            folder=folder)
+
+        order = []
+
+        for uuid in origin.get_order():
+            try:
+                base = Cell.objects.get(uuid=uuid)
+            except Cell.DoesNotExist:
+                pass
+            else:
+                cell = Cell(user=self.user,
+                            type=base.type,
+                            content=base.content,
+                            notebook=notebook)
+                order.append(cell.uuid)
+                cell.save()
+
+        notebook.set_order(order)
+        notebook.save()
+
+        self.return_api_result({'uuid': notebook.uuid})
+
+    @jsonrpc.authenticated
     def RPC__Notebook__load(self, uuid, type=None):
         """Load cells (in order) associated with a notebook. """
         try:
@@ -398,11 +462,11 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 if type is None or cell.type == type:
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
-                        'content': cell.content,
                         'type': cell.type,
+                        'content': cell.content,
                     }
 
-            for uuid in notebook.order.split(','):
+            for uuid in notebook.get_order():
                 if uuid in data:
                     cells.append(data[uuid])
 
@@ -420,8 +484,8 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
             for data in cells:
                 uuid = data['uuid']
-                content = data['content']
                 type = data['type']
+                content = data['content']
 
                 try:
                     cell = Cell.objects.get(user=self.user, uuid=uuid)
@@ -438,7 +502,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 order.append(uuid)
                 cell.save()
 
-            notebook.order = ','.join(order)
+            notebook.set_order(order)
             notebook.save()
 
             uuids = set(order)
@@ -562,7 +626,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         else:
             rst = []
 
-            for uuid in notebook.order.split(','):
+            for uuid in notebook.get_order():
                 try:
                     cell = Cell.objects.get(user=self.user, uuid=uuid)
                 except Cell.DoesNotExist:

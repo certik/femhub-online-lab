@@ -13,7 +13,10 @@ import extensions
 
 def datetime(obj):
     """Encode ``datetime`` object as a string. """
-    return obj.strftime("%Y-%m-%d %H:%M:%S")
+    if obj is not None:
+        return obj.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        return None
 
 def unicode_encode_dict(d):
     p = {}

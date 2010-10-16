@@ -35,12 +35,24 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
             enableOverflow: true,
             items: [{
                 cls: 'x-btn-text-icon',
-                text: 'Share',
+                text: 'Publish',
                 iconCls: 'femhub-share-notebook-icon',
                 tooltip: 'Share this notebook with other users.',
                 tabIndex: -1,
                 handler: function() {
-                    FEMhub.msg.NotImplementedError();
+                    FEMhub.RPC.Notebook.publish({uuid: this.getUUID()}, function(result) {
+                        if (result.ok === true) {
+                            FEMhub.msg.info("Notebook", "Notebook was published successfully.");
+                        } else {
+                            switch(result.reason) {
+                            case 'already-published':
+                                FEMhub.msg.warning("Notebook", "Notebook was already published.");
+                                break;
+                            default:
+                                FEMhub.msg.error("Notebook", "Error when publishing notebook.");
+                            }
+                        }
+                    });
                 },
                 scope: this,
             }, '-', {
