@@ -399,6 +399,8 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         else:
             if notebook.published is not None:
                 self.return_api_error('already-published')
+            elif notebook.name == 'untitled':
+                self.return_api_error('choose-better-name')
             else:
                 notebook.published = datetime.now()
                 notebook.save()

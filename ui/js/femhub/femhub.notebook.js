@@ -45,6 +45,9 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                             FEMhub.msg.info("Notebook", "Notebook was published successfully.");
                         } else {
                             switch(result.reason) {
+                            case 'choose-better-name':
+                                FEMhub.msg.warning("Notebook", "Choose a more distinguished name first.");
+                                break;
                             case 'already-published':
                                 FEMhub.msg.warning("Notebook", "Notebook was already published.");
                                 break;
