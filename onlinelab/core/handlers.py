@@ -441,7 +441,11 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             notebook.order = ','.join(order)
             notebook.save()
 
-            # XXX: implement garbage collection
+            uuids = set(order)
+
+            for cell in Cell.objects.filter(user=self.user, notebook=notebook):
+                if cell.uuid not in uuids:
+                    cell.delete()
 
             self.return_api_result()
 
