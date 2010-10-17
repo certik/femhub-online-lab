@@ -694,7 +694,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
 
                         FEMhub.RPC.Notebook.fork(params, function(result) {
                             if (result.ok === true) {
-                                FEMhub.msg.info("Browser", "'" + result.name + "' was forked sucessfully.");
+                                FEMhub.msg.info(this, "'" + result.name + "' was forked sucessfully.");
                                 this.getNotebooks();
                             }
                         }, this);

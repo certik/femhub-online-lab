@@ -42,20 +42,20 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 handler: function() {
                     FEMhub.RPC.Notebook.publish({uuid: this.getUUID()}, function(result) {
                         if (result.ok === true) {
-                            FEMhub.msg.info("Notebook", "Notebook was published successfully.");
+                            FEMhub.msg.info(this, "Notebook was published successfully.");
                         } else {
                             switch(result.reason) {
                             case 'choose-better-name':
-                                FEMhub.msg.warning("Notebook", "Choose a more distinguished name first.");
+                                FEMhub.msg.warning(this, "Choose a more distinguished name first.");
                                 break;
                             case 'already-published':
-                                FEMhub.msg.warning("Notebook", "Notebook was already published.");
+                                FEMhub.msg.warning(this, "Notebook was already published.");
                                 break;
                             default:
-                                FEMhub.msg.error("Notebook", "Error when publishing notebook.");
+                                FEMhub.msg.error(this, "Error when publishing notebook.");
                             }
                         }
-                    });
+                    }, this);
                 },
                 scope: this,
             }, '-', {

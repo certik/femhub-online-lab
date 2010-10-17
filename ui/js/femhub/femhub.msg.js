@@ -10,12 +10,20 @@ FEMhub.msg.NotImplementedError = function() {
     });
 }
 
-FEMhub.msg.show = function(title, msg, icon) {
+FEMhub.msg.show = function(obj, msg, icon, buttons) {
+    if (Ext.isObject(obj)) {
+        var title = obj.title;
+    } else {
+        var title = obj;
+    }
+
+    buttons = buttons || Ext.MessageBox.OK;
+
     Ext.MessageBox.show({
         title: title,
         msg: msg,
-        buttons: Ext.MessageBox.OK,
         icon: icon,
+        buttons: buttons,
     });
 }
 

@@ -27,7 +27,7 @@ FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
                     var model = this.grid.getSelectionModel();
 
                     if (!model.hasSelection()) {
-                        FEMhub.msg.warning("Published notebooks", "Select a notebook first and then click 'Fork'.");
+                        FEMhub.msg.warning(this, "Select a notebook first and then click 'Fork'.");
                     } else {
                         var record = model.getSelected();
                         this.fireEvent('notebookforked', record.data.uuid);
