@@ -282,5 +282,7 @@ class PythonInterpreter(object):
                 value = SyntaxError(msg, (self.filename, lineno, offset, line))
                 sys.last_value = value
 
-        return ''.join(traceback.format_exception_only(type, value))
+        header = "Traceback (most recent call last):\n"
+
+        return ''.join([header] + traceback.format_exception_only(type, value))
 
