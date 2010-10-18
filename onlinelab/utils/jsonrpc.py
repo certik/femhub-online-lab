@@ -87,6 +87,7 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
         body = tornado.escape.json_encode(response)
 
         try:
+            self.set_status(400)
             self.write(body)
             self.finish()
         except IOError:
