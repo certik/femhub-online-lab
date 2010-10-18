@@ -64,20 +64,29 @@ FEMhub.RPC.call = function(method, params, handler, scope, url) {
             }
         },
         failure: function(result, request) {
-            if (Ext.isDefined(result.responseText)) {
-                var msg = Ext.decode(result.responseText).error.message;
+            if (!Ext.isDefined(result.responseText) || result.status >= 500) {
+                if (result.status > 0) {
+                    var msg = String.format("{0}: {1}", result.status, result.statusText);
+                } else {
+                    var msg = result.statusText;
+                }
+
+                if (FEMhub.verbose) {
+                    FEMhub.msg.error("Critical Error", msg);
+                } else {
+                    FEMhub.log(msg);
+                }
             } else {
-                var msg = "Internal Server Error (500)";
+                var response = Ext.decode(result.responseText);
+
+                if (response.error) {
+                    var msg = String.format("{0}: {1}", response.error.code, response.error.message);
+                } else {
+                    var msg = result.statusText;
+                }
+
+                FEMhub.msg.error("System Error", msg);
             }
-
-            FEMhub.log(msg);
-
-            Ext.MessageBox.show({
-                title: 'Critical Error',
-                msg: msg,
-                buttons: Ext.MessageBox.OK,
-                icon: Ext.MessageBox.ERROR,
-            });
         },
     });
 }
