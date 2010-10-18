@@ -1,5 +1,5 @@
 
-FEMhub.Notebook = Ext.extend(Ext.Window, {
+FEMhub.Worksheet = Ext.extend(Ext.Window, {
     imports: [],
 
     constructor: function(config) {
@@ -13,13 +13,13 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
 
         Ext.applyIf(config, {
             title: config.conf.name,
-            iconCls: 'femhub-notebook-icon',
+            iconCls: 'femhub-worksheet-icon',
             layout: 'fit',
             tbar: this.initToolbar(),
             items: this.cells,
         });
 
-        FEMhub.Notebook.superclass.constructor.call(this, config);
+        FEMhub.Worksheet.superclass.constructor.call(this, config);
     },
 
     getCellsManager: function() {
@@ -36,23 +36,23 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
             items: [{
                 cls: 'x-btn-text-icon',
                 text: 'Publish',
-                iconCls: 'femhub-share-notebook-icon',
-                tooltip: 'Share this notebook with other users.',
+                iconCls: 'femhub-share-worksheet-icon',
+                tooltip: 'Share this worksheet with other users.',
                 tabIndex: -1,
                 handler: function() {
-                    FEMhub.RPC.Notebook.publish({uuid: this.getUUID()}, function(result) {
+                    FEMhub.RPC.Worksheet.publish({uuid: this.getUUID()}, function(result) {
                         if (result.ok === true) {
-                            FEMhub.msg.info(this, "Notebook was published successfully.");
+                            FEMhub.msg.info(this, "Worksheet was published successfully.");
                         } else {
                             switch(result.reason) {
                             case 'choose-better-name':
                                 FEMhub.msg.warning(this, "Choose a more distinguished name first.");
                                 break;
                             case 'already-published':
-                                FEMhub.msg.warning(this, "Notebook was already published.");
+                                FEMhub.msg.warning(this, "Worksheet was already published.");
                                 break;
                             default:
-                                FEMhub.msg.error(this, "Error when publishing notebook.");
+                                FEMhub.msg.error(this, "Error when publishing worksheet.");
                             }
                         }
                     }, this);
@@ -61,8 +61,8 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
             }, '-', {
                 cls: 'x-btn-text-icon',
                 text: 'Evaluate All',
-                iconCls: 'femhub-eval-all-notebook-icon',
-                tooltip: 'Evaluate all cells in this notebook.',
+                iconCls: 'femhub-eval-all-worksheet-icon',
+                tooltip: 'Evaluate all cells in this worksheet.',
                 tabIndex: -1,
                 handler: function() {
                     this.evaluateCells();
@@ -73,7 +73,7 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Imports',
                 iconCls: 'femhub-plugin-icon',
-                tooltip: 'Import external cells to this notebook.',
+                tooltip: 'Import external cells to this worksheet.',
                 tabIndex: -1,
                 menu: [{
                     text: 'Select',
@@ -126,17 +126,17 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
                 cls: 'x-btn-text-icon',
                 text: 'Rename',
                 iconCls: 'femhub-rename-icon',
-                tooltip: 'Choose new title for this notebook.',
+                tooltip: 'Choose new title for this worksheet.',
                 tabIndex: -1,
                 handler: function() {
-                    this.renameNotebook();
+                    this.renameWorksheet();
                 },
                 scope: this,
             }, {
                 cls: 'x-btn-text-icon',
                 text: 'Save',
-                iconCls: 'femhub-save-notebook-icon',
-                tooltip: 'Save changes to this notebook.',
+                iconCls: 'femhub-save-worksheet-icon',
+                tooltip: 'Save changes to this worksheet.',
                 tabIndex: -1,
                 handler: function() {
                     this.getCellsManager().saveCells();
@@ -169,30 +169,30 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         this.name = title;
 
         if (title) {
-            title = 'Notebook - ' + title;
+            title = 'Worksheet - ' + title;
         } else {
-            title = 'Notebook';
+            title = 'Worksheet';
         }
 
-        FEMhub.Notebook.superclass.setTitle.call(this, title, iconCls);
+        FEMhub.Worksheet.superclass.setTitle.call(this, title, iconCls);
     },
 
     close: function() {
         var manager = this.getCellsManager();
 
         if (manager.isSaved()) {
-            FEMhub.Notebook.superclass.close.call(this);
+            FEMhub.Worksheet.superclass.close.call(this);
         } else {
             Ext.MessageBox.show({
                 title: 'Save changes?',
-                msg: 'There are unsaved cells in your notebook. Would you like to save your changes?',
+                msg: 'There are unsaved cells in your worksheet. Would you like to save your changes?',
                 buttons: Ext.Msg.YESNOCANCEL,
                 fn: function(button) {
                     switch (button) {
                         case 'yes':
                             manager.saveCells();
                         case 'no':
-                            FEMhub.Notebook.superclass.close.call(this);
+                            FEMhub.Worksheet.superclass.close.call(this);
                             break;
                         case 'cancel':
                             break;
@@ -272,30 +272,30 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
         }
     },
 
-    renameNotebook: function() {
-        Ext.MessageBox.prompt('Rename notebook', 'Enter new notebook name:', function(button, title) {
+    renameWorksheet: function() {
+        Ext.MessageBox.prompt('Rename worksheet', 'Enter new worksheet name:', function(button, title) {
             if (button === 'ok') {
                 if (FEMhub.util.isValidName(title) === false) {
                     Ext.MessageBox.show({
-                        title: 'Rename notebook',
-                        msg: "'" + title + "' is not a valid notebook name.",
+                        title: 'Rename worksheet',
+                        msg: "'" + title + "' is not a valid worksheet name.",
                         buttons: Ext.MessageBox.OK,
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
                     var uuid = this.getUUID();
 
-                    FEMhub.RPC.Notebook.rename({uuid: uuid, name: title}, function(result) {
+                    FEMhub.RPC.Worksheet.rename({uuid: uuid, name: title}, function(result) {
                         if (result.ok === true) {
                             this.setTitle(title);
 
                             FEMhub.getDesktop().getManager().each(function(wnd) {
                                 if (wnd.getXType() === 'x-femhub-browser') {
-                                    wnd.getNotebooks();
+                                    wnd.getWorksheets();
                                 }
                             });
                         } else {
-                            FEMhub.log("Can't rename notebook");
+                            FEMhub.log("Can't rename worksheet");
                         }
                     }, this);
                 }
@@ -306,18 +306,18 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     selectImports: function() {
         var checked = [];
 
-        Ext.each(this.imports, function(notebook) {
-            checked.push(notebook.uuid);
+        Ext.each(this.imports, function(worksheet) {
+            checked.push(worksheet.uuid);
         });
 
-        var chooser = new FEMhub.NotebookChooser({
+        var chooser = new FEMhub.WorksheetChooser({
             uuid: this.getUUID(),
             exclude: true,
             checked: checked,
             listeners: {
-                notebookschosen: {
-                    fn: function(notebooks) {
-                        this.imports = notebooks;
+                worksheetschosen: {
+                    fn: function(worksheets) {
+                        this.imports = worksheets;
                     },
                     scope: this,
                 },
@@ -333,9 +333,9 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     evaluateImports: function(evalCells) {
         var index = 0;
 
-        Ext.each(this.imports, function(notebook) {
-            FEMhub.RPC.Notebook.load({
-                uuid: notebook.uuid,
+        Ext.each(this.imports, function(worksheet) {
+            FEMhub.RPC.Worksheet.load({
+                uuid: worksheet.uuid,
                 type: 'input',
             }, function(result) {
                 if (result.ok === true) {
@@ -365,5 +365,5 @@ FEMhub.Notebook = Ext.extend(Ext.Window, {
     },
 });
 
-Ext.reg('x-femhub-notebook', FEMhub.Notebook);
+Ext.reg('x-femhub-worksheet', FEMhub.Worksheet);
 

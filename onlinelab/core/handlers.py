@@ -19,7 +19,7 @@ import services
 from ..utils import jsonrpc
 from ..utils import Settings
 
-from models import User, Engine, Folder, Notebook, Cell
+from models import User, Engine, Folder, Worksheet, Cell
 
 class ParseError(Exception):
     """Raised when '{{{' or '}}}' is misplaced. """
@@ -57,15 +57,15 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.Folder.rename',
         'RPC.Folder.move',
         'RPC.Folder.getFolders',
-        'RPC.Folder.getNotebooks',
-        'RPC.Notebook.create',
-        'RPC.Notebook.remove',
-        'RPC.Notebook.rename',
-        'RPC.Notebook.move',
-        'RPC.Notebook.publish',
-        'RPC.Notebook.fork',
-        'RPC.Notebook.load',
-        'RPC.Notebook.save',
+        'RPC.Folder.getWorksheets',
+        'RPC.Worksheet.create',
+        'RPC.Worksheet.remove',
+        'RPC.Worksheet.rename',
+        'RPC.Worksheet.move',
+        'RPC.Worksheet.publish',
+        'RPC.Worksheet.fork',
+        'RPC.Worksheet.load',
+        'RPC.Worksheet.save',
         'RPC.Docutils.import',
         'RPC.Docutils.export',
         'RPC.Docutils.render',
@@ -186,7 +186,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         self.return_api_result({'engines': engines})
 
     @jsonrpc.authenticated
-    def RPC__Core__getUsers(self, notebooks=False):
+    def RPC__Core__getUsers(self, worksheets=False):
         """Return a list of all registered users. """
         users = []
 
@@ -198,24 +198,24 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 'email': user.email,
             }
 
-            if notebooks:
-                user_notebooks = []
+            if worksheets:
+                user_worksheets = []
 
-                for notebook in Notebook.objects.filter(user=user, published__isnull=False):
-                    user_notebooks.append({
-                        'uuid': notebook.uuid,
-                        'name': notebook.name,
-                        'description': notebook.description,
-                        'created': jsonrpc.datetime(notebook.created),
-                        'modified': jsonrpc.datetime(notebook.modified),
-                        'published': jsonrpc.datetime(notebook.published),
+                for worksheet in Worksheet.objects.filter(user=user, published__isnull=False):
+                    user_worksheets.append({
+                        'uuid': worksheet.uuid,
+                        'name': worksheet.name,
+                        'description': worksheet.description,
+                        'created': jsonrpc.datetime(worksheet.created),
+                        'modified': jsonrpc.datetime(worksheet.modified),
+                        'published': jsonrpc.datetime(worksheet.published),
                         'engine': {
-                            'uuid': notebook.engine.uuid,
-                            'name': notebook.engine.name,
+                            'uuid': worksheet.engine.uuid,
+                            'name': worksheet.engine.name,
                         },
                     })
 
-                data['notebooks'] = user_notebooks
+                data['worksheets'] = user_worksheets
 
             users.append(data)
 
@@ -287,7 +287,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             self.return_api_result()
 
     @jsonrpc.authenticated
-    def RPC__Folder__getFolders(self, uuid=None, recursive=True, notebooks=False):
+    def RPC__Folder__getFolders(self, uuid=None, recursive=True, worksheets=False):
         """Get a list of sub-folders for the given parent ``uuid``. """
         try:
             if uuid is not None:
@@ -297,14 +297,14 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         except Folder.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
-            def _get_notebooks(folder):
-                """Collect all notebooks in ``folder``. """
-                notebooks = []
+            def _get_worksheets(folder):
+                """Collect all worksheets in ``folder``. """
+                worksheets = []
 
-                for notebook in Notebook.objects.filter(user=self.user, folder=folder):
-                    notebooks.append({'uuid': notebook.uuid, 'name': notebook.name})
+                for worksheet in Worksheet.objects.filter(user=self.user, folder=folder):
+                    worksheets.append({'uuid': worksheet.uuid, 'name': worksheet.name})
 
-                return notebooks
+                return worksheets
 
             def _get_folders(parent):
                 """Collect all sub-folders of ``parent``. """
@@ -322,8 +322,8 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                     if recursive:
                         data['folders'] = _get_folders(folder)
 
-                    if notebooks:
-                        data['notebooks'] = _get_notebooks(folder)
+                    if worksheets:
+                        data['worksheets'] = _get_worksheets(folder)
 
                     folders.append(data)
 
@@ -332,34 +332,34 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             self.return_api_result({'folders': _get_folders(parent)})
 
     @jsonrpc.authenticated
-    def RPC__Folder__getNotebooks(self, uuid):
-        """Get all notebooks from the given folder. """
+    def RPC__Folder__getWorksheets(self, uuid):
+        """Get all worksheets from the given folder. """
         try:
             folder = Folder.objects.get(user=self.user, uuid=uuid)
         except Folder.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
-            notebooks = []
+            worksheets = []
 
-            for notebook in Notebook.objects.filter(user=self.user, folder=folder):
-                notebooks.append({
-                    'uuid': notebook.uuid,
-                    'name': notebook.name,
-                    'description': notebook.description,
-                    'created': jsonrpc.datetime(notebook.created),
-                    'modified': jsonrpc.datetime(notebook.modified),
-                    'published': jsonrpc.datetime(notebook.published),
+            for worksheet in Worksheet.objects.filter(user=self.user, folder=folder):
+                worksheets.append({
+                    'uuid': worksheet.uuid,
+                    'name': worksheet.name,
+                    'description': worksheet.description,
+                    'created': jsonrpc.datetime(worksheet.created),
+                    'modified': jsonrpc.datetime(worksheet.modified),
+                    'published': jsonrpc.datetime(worksheet.published),
                     'engine': {
-                        'uuid': notebook.engine.uuid,
-                        'name': notebook.engine.name,
+                        'uuid': worksheet.engine.uuid,
+                        'name': worksheet.engine.name,
                     },
                 })
 
-            self.return_api_result({'notebooks': notebooks})
+            self.return_api_result({'worksheets': worksheets})
 
     @jsonrpc.authenticated
-    def RPC__Notebook__create(self, name, engine_uuid, folder_uuid):
-        """Create new notebook and add it to the given folder. """
+    def RPC__Worksheet__create(self, name, engine_uuid, folder_uuid):
+        """Create new worksheet and add it to the given folder. """
         try:
             if folder_uuid is not None:
                 folder = Folder.objects.get(user=self.user, uuid=folder_uuid)
@@ -373,39 +373,39 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             except Engine.DoesNotExist:
                 self.return_api_error('does-not-exist')
             else:
-                notebook = Notebook(user=self.user,
+                worksheet = Worksheet(user=self.user,
                     name=name, engine=engine, folder=folder)
-                notebook.save()
+                worksheet.save()
 
-                self.return_api_result({'uuid': notebook.uuid})
+                self.return_api_result({'uuid': worksheet.uuid})
 
     @jsonrpc.authenticated
-    def RPC__Notebook__remove(self, uuid):
-        """Remove a notebook pointed by the given ``uuid``. """
+    def RPC__Worksheet__remove(self, uuid):
+        """Remove a worksheet pointed by the given ``uuid``. """
         try:
-            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
-        except Notebook.DoesNotExist:
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
-            notebook.delete()
+            worksheet.delete()
             self.return_api_result()
 
     @jsonrpc.authenticated
-    def RPC__Notebook__rename(self, uuid, name):
-        """Assign a new name to a notebook pointed by the given ``uuid``.  """
+    def RPC__Worksheet__rename(self, uuid, name):
+        """Assign a new name to a worksheet pointed by the given ``uuid``.  """
         try:
-            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
-        except Notebook.DoesNotExist:
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
-            notebook.name = name
-            notebook.save()
+            worksheet.name = name
+            worksheet.save()
 
             self.return_api_result()
 
     @jsonrpc.authenticated
-    def RPC__Notebook__move(self, uuid, target_uuid):
-        """Move a notebook (or notebooks) to another folder. """
+    def RPC__Worksheet__move(self, uuid, target_uuid):
+        """Move a worksheet (or worksheets) to another folder. """
         try:
             target = Folder.objects.get(user=self.user, uuid=target_uuid)
         except Folder.DoesNotExist:
@@ -418,39 +418,39 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
             for uuid in uuids:
                 try:
-                    notebook = Notebook.objects.get(user=self.user, uuid=uuid)
-                except Notebook.DoesNotExist:
+                    worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+                except Worksheet.DoesNotExist:
                     self.return_api_error('does-not-exist')
                 else:
-                    notebook.folder = target
-                    notebook.save()
+                    worksheet.folder = target
+                    worksheet.save()
 
             self.return_api_result()
 
     @jsonrpc.authenticated
-    def RPC__Notebook__publish(self, uuid):
-        """Make notebook pointed by ``uuid`` visible to others. """
+    def RPC__Worksheet__publish(self, uuid):
+        """Make worksheet pointed by ``uuid`` visible to others. """
         try:
-            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
-        except Notebook.DoesNotExist:
-            self.return_api_error('notebook-does-not-exist')
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
+            self.return_api_error('worksheet-does-not-exist')
         else:
-            if notebook.published is not None:
+            if worksheet.published is not None:
                 self.return_api_error('already-published')
-            elif notebook.name == 'untitled':
+            elif worksheet.name == 'untitled':
                 self.return_api_error('choose-better-name')
             else:
-                notebook.published = datetime.now()
-                notebook.save()
+                worksheet.published = datetime.now()
+                worksheet.save()
 
                 self.return_api_result()
 
     @jsonrpc.authenticated
-    def RPC__Notebook__fork(self, origin_uuid, folder_uuid):
-        """Create an exact copy of a notebook from an origin. """
+    def RPC__Worksheet__fork(self, origin_uuid, folder_uuid):
+        """Create an exact copy of a worksheet from an origin. """
         try:
-            origin = Notebook.objects.get(uuid=origin_uuid)
-        except Notebook.DoesNotExist:
+            origin = Worksheet.objects.get(uuid=origin_uuid)
+        except Worksheet.DoesNotExist:
             self.return_api_error('origin-does-not-exist')
             return
 
@@ -464,14 +464,14 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
             self.return_api_error('folder-does-not-exist')
             return
 
-        notebook = Notebook(
+        worksheet = Worksheet(
             user=self.user,
             name=origin.name,
             description=origin.description,
             engine=origin.engine,
             origin=origin,
             folder=folder)
-        notebook.save()
+        worksheet.save()
 
         order = []
 
@@ -485,29 +485,29 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                             type=base.type,
                             parent=base.parent,
                             content=base.content,
-                            notebook=notebook)
+                            worksheet=worksheet)
                 order.append(cell.uuid)
                 cell.save()
 
-        notebook.set_order(order)
-        notebook.save()
+        worksheet.set_order(order)
+        worksheet.save()
 
         self.return_api_result({
-            'uuid': notebook.uuid,
-            'name': notebook.name,
+            'uuid': worksheet.uuid,
+            'name': worksheet.name,
         })
 
     @jsonrpc.authenticated
-    def RPC__Notebook__load(self, uuid, type=None):
-        """Load cells (in order) associated with a notebook. """
+    def RPC__Worksheet__load(self, uuid, type=None):
+        """Load cells (in order) associated with a worksheet. """
         try:
-            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
-        except Notebook.DoesNotExist:
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
             data, cells = {}, []
 
-            for cell in Cell.objects.filter(user=self.user, notebook=notebook):
+            for cell in Cell.objects.filter(user=self.user, worksheet=worksheet):
                 if type is None or cell.type == type:
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
@@ -515,18 +515,18 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                         'content': cell.content,
                     }
 
-            for uuid in notebook.get_order():
+            for uuid in worksheet.get_order():
                 if uuid in data:
                     cells.append(data[uuid])
 
             self.return_api_result({'cells': cells})
 
     @jsonrpc.authenticated
-    def RPC__Notebook__save(self, uuid, cells):
-        """Store cells (and their order) associated with a notebook. """
+    def RPC__Worksheet__save(self, uuid, cells):
+        """Store cells (and their order) associated with a worksheet. """
         try:
-            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
-        except Notebook.DoesNotExist:
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
             order = []
@@ -541,7 +541,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 except Cell.DoesNotExist:
                     cell = Cell(uuid=uuid,
                                 user=self.user,
-                                notebook=notebook,
+                                worksheet=worksheet,
                                 content=content,
                                 type=type)
                 else:
@@ -551,12 +551,12 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 order.append(uuid)
                 cell.save()
 
-            notebook.set_order(order)
-            notebook.save()
+            worksheet.set_order(order)
+            worksheet.save()
 
             uuids = set(order)
 
-            for cell in Cell.objects.filter(user=self.user, notebook=notebook):
+            for cell in Cell.objects.filter(user=self.user, worksheet=worksheet):
                 if cell.uuid not in uuids:
                     cell.delete()
 
@@ -631,7 +631,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
     @jsonrpc.authenticated
     def RPC__Docutils__import(self, name, rst, engine_uuid, folder_uuid):
-        """Import notebook contents from a document with Cell-RST syntax. """
+        """Import worksheet contents from a document with Cell-RST syntax. """
         try:
             if folder_uuid is not None:
                 folder = Folder.objects.get(user=self.user, uuid=folder_uuid)
@@ -650,32 +650,32 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 except ParseError, exc:
                     self.return_api_error(exc.args[0])
                 else:
-                    notebook = Notebook.objects.create(user=self.user,
+                    worksheet = Worksheet.objects.create(user=self.user,
                         name=name, engine=engine, folder=folder)
 
                     order = []
 
                     for type, content in cells:
                         cell = Cell.objects.create(user=self.user,
-                            notebook=notebook, content=content, type=type)
+                            worksheet=worksheet, content=content, type=type)
                         order.append(cell.uuid)
 
-                    notebook.order = ','.join(order)
-                    notebook.save()
+                    worksheet.order = ','.join(order)
+                    worksheet.save()
 
-                    self.return_api_result({'uuid': notebook.uuid, 'count': len(cells)})
+                    self.return_api_result({'uuid': worksheet.uuid, 'count': len(cells)})
 
     @jsonrpc.authenticated
     def RPC__Docutils__export(self, uuid):
-        """Export notebook contents to a document with Cell-RST syntax. """
+        """Export worksheet contents to a document with Cell-RST syntax. """
         try:
-            notebook = Notebook.objects.get(user=self.user, uuid=uuid)
-        except Notebook.DoesNotExist:
-            self.return_api_error('notebook-does-not-exist')
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
+            self.return_api_error('worksheet-does-not-exist')
         else:
             rst = []
 
-            for uuid in notebook.get_order():
+            for uuid in worksheet.get_order():
                 try:
                     cell = Cell.objects.get(user=self.user, uuid=uuid)
                 except Cell.DoesNotExist:

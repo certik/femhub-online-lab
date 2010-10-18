@@ -46,7 +46,7 @@ class Folder(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-class Notebook(models.Model):
+class Worksheet(models.Model):
     uuid = UUIDField()
     user = models.ForeignKey(User)
     name = models.CharField(max_length=MAX_NAME)
@@ -72,7 +72,7 @@ class Cell(models.Model):
     user = models.ForeignKey(User)
     type = models.CharField(max_length=16)
     content = models.TextField(default='')
-    notebook = models.ForeignKey(Notebook, null=True, default=None)
+    worksheet = models.ForeignKey(Worksheet, null=True, default=None)
     parent = models.ForeignKey('self', null=True, default=None)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

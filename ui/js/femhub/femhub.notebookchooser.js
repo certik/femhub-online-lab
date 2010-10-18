@@ -1,10 +1,10 @@
 
-FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
+FEMhub.WorksheetChooser = Ext.extend(Ext.Window, {
 
     constructor: function(config) {
         config = config || {};
 
-        this.addEvents(['notebookschosen']);
+        this.addEvents(['worksheetschosen']);
 
         if (Ext.isDefined(config.exclude)) {
             this.exclude = config.exclude;
@@ -21,7 +21,7 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
         this.initTree();
 
         Ext.applyIf(config, {
-            title: 'Choose notebooks',
+            title: 'Choose worksheets',
             width: 300,
             height: 400,
             layout: 'fit',
@@ -33,7 +33,7 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
             buttons: [{
                 text: config.chooseText || 'Choose',
                 handler: function() {
-                    this.chooseNotebooks();
+                    this.chooseWorksheets();
                 },
                 scope: this,
             }, {
@@ -45,7 +45,7 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
             }],
         });
 
-        FEMhub.NotebookChooser.superclass.constructor.call(this, config);
+        FEMhub.WorksheetChooser.superclass.constructor.call(this, config);
     },
 
     initTree: function() {
@@ -72,7 +72,7 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
     },
 
     fillTree: function() {
-        function recFillTree(folders, notebooks, node) {
+        function recFillTree(folders, worksheets, node) {
             Ext.each(folders, function(folder) {
                 var subNode = node.appendChild(
                     new Ext.tree.TreeNode({
@@ -82,24 +82,24 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
                     })
                 );
 
-                recFillTree.call(this, folder.folders, folder.notebooks, subNode);
+                recFillTree.call(this, folder.folders, folder.worksheets, subNode);
             }, this);
 
-            Ext.each(notebooks, function(notebook) {
-                if (!this.exclude || notebook.uuid != this.uuid) {
-                    var checked = this.checked.indexOf(notebook.uuid) != -1;
+            Ext.each(worksheets, function(worksheet) {
+                if (!this.exclude || worksheet.uuid != this.uuid) {
+                    var checked = this.checked.indexOf(worksheet.uuid) != -1;
 
                     if (checked) {
-                        var cls = 'femhub-notebook femhub-chosen';
+                        var cls = 'femhub-worksheet femhub-chosen';
                     } else {
-                        var cls = 'femhub-notebook';
+                        var cls = 'femhub-worksheet';
                     }
 
                     var nbNode = new Ext.tree.TreeNode({
                         leaf: true,
                         checked: checked,
-                        id: notebook.uuid,
-                        text: notebook.name,
+                        id: worksheet.uuid,
+                        text: worksheet.name,
                         cls: cls,
                     });
 
@@ -110,26 +110,26 @@ FEMhub.NotebookChooser = Ext.extend(Ext.Window, {
 
         var root = this.tree.getRootNode();
 
-        FEMhub.RPC.Folder.getFolders({notebooks: true}, function(result) {
+        FEMhub.RPC.Folder.getFolders({worksheets: true}, function(result) {
             if (result.ok === true) {
-                recFillTree.call(this, result.folders, result.notebooks, root);
+                recFillTree.call(this, result.folders, result.worksheets, root);
                 root.expand(true);
             }
         }, this);
     },
 
-    chooseNotebooks: function() {
+    chooseWorksheets: function() {
         var nodes = this.tree.getChecked();
-        var notebooks = [];
+        var worksheets = [];
 
         for (var i = 0; i < nodes.length; i++) {
-            notebooks.push({
+            worksheets.push({
                 uuid: nodes[i].id,
                 text: nodes[i].text,
             });
         }
 
-        if (this.fireEvent('notebookschosen', notebooks) !== false) {
+        if (this.fireEvent('worksheetschosen', worksheets) !== false) {
             this.close();
         }
     },

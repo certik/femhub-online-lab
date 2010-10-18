@@ -11,7 +11,7 @@ class AlreadyExists(Exception):
     """Raised when trying to add an existing service. """
 
 class NotAssignedYet(Exception):
-    """Raised when a notebook wasn't assigned to a service yet. """
+    """Raised when a worksheet wasn't assigned to a service yet. """
 
 class NoServicesAvailable(Exception):
     """There are currently no services to which we could bind a resource. """

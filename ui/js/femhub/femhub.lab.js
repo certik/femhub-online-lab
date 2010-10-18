@@ -74,7 +74,7 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
         var group = this.desktop.getGroup();
 
         group.each(function(wnd) {
-            if (wnd.getXType() === 'x-femhub-notebook') {
+            if (wnd.getXType() === 'x-femhub-worksheet') {
                 wnd.getCellsManager().killEngine();
             }
         }, this);

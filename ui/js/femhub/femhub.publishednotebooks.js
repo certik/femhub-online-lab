@@ -1,17 +1,17 @@
 
-FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
+FEMhub.PublishedWorksheets = Ext.extend(Ext.Window, {
     grid: null,
 
     constructor: function(config) {
         config = config || {};
 
-        this.addEvents(['notebookforked']);
+        this.addEvents(['worksheetforked']);
 
         this.initGrid();
         this.fillGrid();
 
         Ext.apply(config, {
-            title: "Published notebooks",
+            title: "Published worksheets",
             iconCls: 'femhub-published-icon',
             minimizalble: false,
             maximizable: false,
@@ -27,10 +27,10 @@ FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
                     var model = this.grid.getSelectionModel();
 
                     if (!model.hasSelection()) {
-                        FEMhub.msg.warning(this, "Select a notebook first and then click 'Fork'.");
+                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'Fork'.");
                     } else {
                         var record = model.getSelected();
-                        this.fireEvent('notebookforked', record.data.uuid);
+                        this.fireEvent('worksheetforked', record.data.uuid);
                         this.close();
                     }
                 },
@@ -44,7 +44,7 @@ FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
             }],
         });
 
-        FEMhub.PublishedNotebooks.superclass.constructor.call(this, config);
+        FEMhub.PublishedWorksheets.superclass.constructor.call(this, config);
     },
 
     initGrid: function() {
@@ -77,7 +77,7 @@ FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
             }),
             sm: new Ext.grid.RowSelectionModel({singleSelect: true}),
             view: new Ext.grid.GroupingView({
-                groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "notebooks" : "notebook"]})',
+                groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "worksheets" : "worksheet"]})',
                 forceFit:true,
             }),
             border: false,
@@ -85,7 +85,7 @@ FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
     },
 
     fillGrid: function() {
-        FEMhub.RPC.Core.getUsers({notebooks: true}, function(result) {
+        FEMhub.RPC.Core.getUsers({worksheets: true}, function(result) {
             if (result.ok === true) {
                 var store = this.grid.getStore();
                 store.removeAll();
@@ -95,15 +95,15 @@ FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
                 ]);
 
                 Ext.each(result.users, function(user) {
-                    Ext.each(user.notebooks, function(notebook) {
+                    Ext.each(user.worksheets, function(worksheet) {
                         store.add(new record({
                             user: user.username,
-                            uuid: notebook.uuid,
-                            title: notebook.name,
-                            engine: notebook.engine.name,
-                            created: notebook.created,
-                            published: notebook.published,
-                        }, notebook.uuid));
+                            uuid: worksheet.uuid,
+                            title: worksheet.name,
+                            engine: worksheet.engine.name,
+                            created: worksheet.created,
+                            published: worksheet.published,
+                        }, worksheet.uuid));
                     }, this);
                 }, this);
             }
@@ -111,5 +111,5 @@ FEMhub.PublishedNotebooks = Ext.extend(Ext.Window, {
     },
 });
 
-Ext.reg('x-femhub-publishednotebooks', FEMhub.PublishedNotebooks);
+Ext.reg('x-femhub-publishedworksheets', FEMhub.PublishedWorksheets);
 

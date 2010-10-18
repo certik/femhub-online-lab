@@ -227,7 +227,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     loadCells: function() {
-        FEMhub.RPC.Notebook.load({uuid: this.uuid}, function(result) {
+        FEMhub.RPC.Worksheet.load({uuid: this.uuid}, function(result) {
             if (result.ok === true) {
                 if (result.cells.length == 0) {
                     if (this.startEmpty !== false) {
@@ -272,7 +272,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
 
         var params = {uuid: this.uuid, cells: data};
 
-        FEMhub.RPC.Notebook.save(params, function(result) {
+        FEMhub.RPC.Worksheet.save(params, function(result) {
             if (result.ok === true) {
                 Ext.each(cells, function(cell) {
                     cell.saved = true;

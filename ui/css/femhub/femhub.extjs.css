@@ -7,11 +7,11 @@
     background-image: url(/static/external/ext/images/default/tree/folder.gif) !important;
 }
 
-.femhub-notebook.x-tree-node-leaf .x-tree-node-icon {
+.femhub-worksheet.x-tree-node-leaf .x-tree-node-icon {
     background-image: url(/static/img/femhub/icons/page.png) !important;
 }
 
-.femhub-notebook.femhub-chosen.x-tree-node-leaf .x-tree-node-icon {
+.femhub-worksheet.femhub-chosen.x-tree-node-leaf .x-tree-node-icon {
     background-image: url(/static/img/femhub/icons/page_green.png) !important;
 }
 

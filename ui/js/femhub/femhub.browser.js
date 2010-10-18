@@ -2,7 +2,7 @@
 FEMhub.Browser = Ext.extend(Ext.Window, {
     toolbar: null,
     foldersTree: null,
-    notebooksGrid: null,
+    worksheetsGrid: null,
 
     engines: null,
 
@@ -11,7 +11,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
 
         this.initToolbar();
         this.initFoldersTree();
-        this.initNotebooksGrid();
+        this.initWorksheetsGrid();
 
         config = config || {};
 
@@ -20,7 +20,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             iconCls: 'femhub-browser-icon',
             layout: 'border',
             tbar: this.toolbar,
-            items: [this.foldersTree, this.notebooksGrid],
+            items: [this.foldersTree, this.worksheetsGrid],
         });
 
         FEMhub.Browser.superclass.constructor.call(this, config);
@@ -32,10 +32,10 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             items: [{
                 xtype: 'button',
                 cls: 'x-btn-text-icon',
-                text: 'New Notebook',
-                iconCls: 'femhub-add-notebook-icon',
+                text: 'New Worksheet',
+                iconCls: 'femhub-add-worksheet-icon',
                 handler: function() {
-                    this.newNotebook();
+                    this.newWorksheet();
                 },
                 scope: this,
             }, {
@@ -50,8 +50,8 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             }, '-', {
                 xtype: 'tbsplit',
                 cls: 'x-btn-text-icon',
-                text: 'Import Notebook',
-                iconCls: 'femhub-import-notebook-icon',
+                text: 'Import Worksheet',
+                iconCls: 'femhub-import-worksheet-icon',
                 menu: [{
                     text: 'Import RST',
                     handler: function() {
@@ -62,7 +62,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                     text: 'Import SAGE',
                     handler: function() {
                         // XXX: this is old interface, fix this
-                        this.importNotebook();
+                        this.importWorksheet();
                     },
                     scope: this,
                 }],
@@ -73,10 +73,10 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             }, {
                 xtype: 'button',
                 cls: 'x-btn-text-icon',
-                text: 'Fork Notebook',
+                text: 'Fork Worksheet',
                 iconCls: 'femhub-fork-icon',
                 handler: function() {
-                    this.forkNotebook();
+                    this.forkWorksheet();
                 },
                 scope: this,
             }, '-', {
@@ -85,7 +85,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                 text: 'Refresh',
                 iconCls: 'femhub-refresh-icon',
                 handler: function() {
-                    this.getNotebooks();
+                    this.getWorksheets();
                 },
                 scope: this,
             }, {
@@ -94,11 +94,11 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                 text: 'Rename',
                 iconCls: 'femhub-rename-icon',
                 handler: function() {
-                    var model = this.notebooksGrid.getSelectionModel();
+                    var model = this.worksheetsGrid.getSelectionModel();
 
                     if (model.getCount()) {
                         var record = model.getSelected();
-                        this.renameNotebook(record);
+                        this.renameWorksheet(record);
                     } else {
                         this.renameFolder();
                     }
@@ -110,11 +110,11 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                 text: 'Delete',
                 iconCls: 'femhub-remove-icon',
                 handler: function() {
-                    var model = this.notebooksGrid.getSelectionModel();
+                    var model = this.worksheetsGrid.getSelectionModel();
 
                     if (model.getCount()) {
                         var record = model.getSelected();
-                        this.deleteNotebook(record);
+                        this.deleteWorksheet(record);
                     } else {
                         this.deleteFolder();
                     }
@@ -180,18 +180,18 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                                     uuids.push(selections[i].id);
                                 }
 
-                                FEMhub.RPC.Notebook.move({
+                                FEMhub.RPC.Worksheet.move({
                                     uuid: uuids,
                                     target_uuid: evt.target.id,
                                 }, function(result) {
                                     if (result.ok === true) {
-                                        var store = this.notebooksGrid.getStore();
+                                        var store = this.worksheetsGrid.getStore();
 
                                         for (var i = 0; i < uuids.length; i++) {
                                             store.remove(store.getById(uuids[i]));
                                         }
                                     } else {
-                                        FEMhub.log("Couldn't move notebooks");
+                                        FEMhub.log("Couldn't move worksheets");
                                     }
                                 }, this);
                             }
@@ -216,7 +216,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                     uuid: engine.uuid,
                     text: text,
                     handler: function(item) {
-                        this.addNotebookAt(node, item.uuid);
+                        this.addWorksheetAt(node, item.uuid);
                     },
                     scope: this,
                 });
@@ -224,10 +224,10 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
 
             var context = new Ext.menu.Menu({
                 items: [{
-                    text: 'New notebook',
-                    iconCls: 'femhub-add-notebook-icon',
+                    text: 'New worksheet',
+                    iconCls: 'femhub-add-worksheet-icon',
                     handler: function() {
-                        this.addNotebookAt(node);
+                        this.addWorksheetAt(node);
                     },
                     menu: engines,
                     scope: this,
@@ -261,14 +261,14 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
         }, this);
 
         this.foldersTree.on('click', function(node) {
-            this.getNotebooks(node);
+            this.getWorksheets(node);
         }, this);
 
         this.fillFoldersTree();
     },
 
-    initNotebooksGrid: function() {
-        this.notebooksGrid = new Ext.grid.GridPanel({
+    initWorksheetsGrid: function() {
+        this.worksheetsGrid = new Ext.grid.GridPanel({
             ds: new Ext.data.Store({
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'title' },
@@ -301,26 +301,26 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             ddGroup: 'folders',
         });
 
-        this.notebooksGrid.on('rowdblclick', function(grid, row, evt) {
+        this.worksheetsGrid.on('rowdblclick', function(grid, row, evt) {
             var record = grid.getStore().getAt(row);
 
-            this.openNotebook({
+            this.openWorksheet({
                 uuid: record.id,
                 name: record.data.title,
             });
         }, this);
 
-        this.notebooksGrid.on('rowcontextmenu', function(grid, row, evt) {
+        this.worksheetsGrid.on('rowcontextmenu', function(grid, row, evt) {
             var record = grid.getStore().getAt(row);
 
             var context = new Ext.menu.Menu({
                 items: [{
                     text: 'Open',
-                    iconCls: 'femhub-edit-notebook-icon',
+                    iconCls: 'femhub-edit-worksheet-icon',
                     menu: [{
                         text: 'Open without output cells',
                         handler: function() {
-                            this.openNotebook({
+                            this.openWorksheet({
                                 uuid: record.id,
                                 name: record.data.title,
                                 loadOutputCells: false,
@@ -329,7 +329,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                         scope: this,
                     }],
                     handler: function() {
-                        this.openNotebook({
+                        this.openWorksheet({
                             uuid: record.id,
                             name: record.data.title,
                         });
@@ -337,7 +337,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                     scope: this,
                 }, {
                     text: 'Export',
-                    iconCls: 'femhub-export-notebook-icon',
+                    iconCls: 'femhub-export-worksheet-icon',
                     // TODO: add sub-menu and other targets
                     handler: function() {
                         this.exportAsRST(record.id);
@@ -347,14 +347,14 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                     text: 'Rename',
                     iconCls: 'femhub-rename-icon',
                     handler: function() {
-                        this.renameNotebook(record);
+                        this.renameWorksheet(record);
                     },
                     scope: this,
                 }, {
                     text: 'Delete',
                     iconCls: 'femhub-remove-icon',
                     handler: function() {
-                        this.deleteNotebook(record);
+                        this.deleteWorksheet(record);
                     },
                     scope: this,
                 }],
@@ -395,7 +395,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                     if (result.ok === true) {
                         recFillTree.call(this, result.folders, root);
                         this.getMyFolders().select();
-                        this.getNotebooks();
+                        this.getWorksheets();
                         root.expand(true);
                     }
                 }, this);
@@ -500,23 +500,23 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
         }
     },
 
-    renameNotebook: function(record) {
-        Ext.MessageBox.prompt('Rename notebook', 'Enter new notebook name:', function(button, title) {
+    renameWorksheet: function(record) {
+        Ext.MessageBox.prompt('Rename worksheet', 'Enter new worksheet name:', function(button, title) {
             if (button === 'ok') {
                 if (FEMhub.util.isValidName(title) === false) {
                     Ext.MessageBox.show({
-                        title: 'Rename notebook',
-                        msg: "'" + title + "' is not a valid notebook name.",
+                        title: 'Rename worksheet',
+                        msg: "'" + title + "' is not a valid worksheet name.",
                         buttons: Ext.MessageBox.OK,
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
-                    FEMhub.RPC.Notebook.rename({uuid: record.id, name: title}, function(result) {
+                    FEMhub.RPC.Worksheet.rename({uuid: record.id, name: title}, function(result) {
                         if (result.ok === true) {
                             record.set('title', title);
                             record.commit();
                         } else {
-                            FEMhub.log("Can't rename notebook");
+                            FEMhub.log("Can't rename worksheet");
                         }
                     });
                 }
@@ -524,19 +524,19 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
         }, this, false, record.get('title'));
     },
 
-    deleteNotebook: function(record) {
+    deleteWorksheet: function(record) {
         Ext.MessageBox.show({
-            title: 'Delete notebook',
-            msg: 'Do you really want to delete selected notebook and all its contents?',
+            title: 'Delete worksheet',
+            msg: 'Do you really want to delete selected worksheet and all its contents?',
             buttons: Ext.MessageBox.YESNO,
             icon: Ext.MessageBox.QUESTION,
             fn: function(button) {
                 if (button === 'yes') {
-                    FEMhub.RPC.Notebook.remove({uuid: record.id}, function(result) {
+                    FEMhub.RPC.Worksheet.remove({uuid: record.id}, function(result) {
                         if (result.ok === true) {
-                            this.notebooksGrid.getStore().remove(record);
+                            this.worksheetsGrid.getStore().remove(record);
                         } else {
-                            FEMhub.log("Can't delete notebook");
+                            FEMhub.log("Can't delete worksheet");
                         }
                     }, this);
                 }
@@ -554,91 +554,91 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
         }
     },
 
-    getNotebooks: function(node) {
+    getWorksheets: function(node) {
         var node = this.getCurrentNode(node);
 
-        FEMhub.RPC.Folder.getNotebooks({uuid: node.id}, function(result) {
+        FEMhub.RPC.Folder.getWorksheets({uuid: node.id}, function(result) {
             if (result.ok === true) {
-                var store = this.notebooksGrid.getStore();
+                var store = this.worksheetsGrid.getStore();
                 store.removeAll();
 
                 var record = Ext.data.Record.create([
                     'title', 'engine', 'created', 'published'
                 ]);
 
-                Ext.each(result.notebooks, function(notebook) {
+                Ext.each(result.worksheets, function(worksheet) {
                     store.add(new record({
-                        title: notebook.name,
-                        engine: notebook.engine.name,
-                        created: notebook.created,
-                        published: notebook.published,
-                    }, notebook.uuid));
+                        title: worksheet.name,
+                        engine: worksheet.engine.name,
+                        created: worksheet.created,
+                        published: worksheet.published,
+                    }, worksheet.uuid));
                 }, this);
             } else {
-                FEMhub.log("Failed to get notebooks");
+                FEMhub.log("Failed to get worksheets");
             }
         }, this);
     },
 
-    addNotebookAt: function(node, engine, handler, scope) {
-        return this.newNotebook(engine, handler, scope, node);
+    addWorksheetAt: function(node, engine, handler, scope) {
+        return this.newWorksheet(engine, handler, scope, node);
     },
 
-    newNotebook: function(engine, handler, scope, node) {
+    newWorksheet: function(engine, handler, scope, node) {
         var node = this.getCurrentNode(node);
         engine = engine || this.engines[0].uuid;
 
         var params = { name: 'untitled', engine_uuid: engine, folder_uuid: node.id };
 
-        FEMhub.RPC.Notebook.create(params, function(result) {
+        FEMhub.RPC.Worksheet.create(params, function(result) {
             if (result.ok === true) {
-                var notebook = this.openNotebook({
+                var worksheet = this.openWorksheet({
                     uuid: result.uuid,
                 });
 
                 if (Ext.isDefined(handler)) {
-                    handler.call(scope || this, notebook);
+                    handler.call(scope || this, worksheet);
                 }
 
-                this.getNotebooks();
+                this.getWorksheets();
             } else {
-                FEMhub.log("Failed to add new notebook");
+                FEMhub.log("Failed to add new worksheet");
             }
         }, this);
     },
 
-    openNotebook: function(conf) {
+    openWorksheet: function(conf) {
         var desktop = FEMhub.lab.getDesktop();
 
-        var notebooks = desktop.getGroup().getBy(function(wnd) {
+        var worksheets = desktop.getGroup().getBy(function(wnd) {
             return Ext.isDefined(wnd.getUUID) && wnd.getUUID() == conf.uuid;
         }, this);
 
-        if (notebooks.length) {
-            var notebook = notebooks[0];
+        if (worksheets.length) {
+            var worksheet = worksheets[0];
         } else {
-            var notebook = desktop.createWindow(FEMhub.Notebook, { conf: conf });
+            var worksheet = desktop.createWindow(FEMhub.Worksheet, { conf: conf });
         }
 
-        notebook.show();
+        worksheet.show();
 
-        if (notebooks.length) {
-            notebook.header.highlight("ee7700", {
+        if (worksheets.length) {
+            worksheet.header.highlight("ee7700", {
                 attr: 'color', duration: 2,
             });
         }
 
-        return notebook;
+        return worksheet;
     },
 
-    importNotebook: function() {
+    importWorksheet: function() {
         Ext.MessageBox.prompt(
-            'Import Notebook',
+            'Import Worksheet',
             'Please enter plain text:',
             function(button, text) {
                 if (button === 'ok') {
-                    this.newNotebook(this.engines[0].uuid, function(notebook) {
-                        notebook.importCells(text);
+                    this.newWorksheet(this.engines[0].uuid, function(worksheet) {
+                        worksheet.importCells(text);
                     });
                 }
             }, this, true);
@@ -646,7 +646,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
 
     importFromRST: function() {
         Ext.MessageBox.prompt(
-            'Import Notebook from RST',
+            'Import Worksheet from RST',
             'Please enter source code:',
             function(button, text) {
                 if (button === 'ok') {
@@ -680,10 +680,10 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
         }, this);
     },
 
-    forkNotebook: function() {
-        var published = new FEMhub.PublishedNotebooks({
+    forkWorksheet: function() {
+        var published = new FEMhub.PublishedWorksheets({
             listeners: {
-                notebookforked: {
+                worksheetforked: {
                     fn: function(uuid) {
                         var node = this.getCurrentNode();
 
@@ -692,10 +692,10 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                             folder_uuid: node.id,
                         };
 
-                        FEMhub.RPC.Notebook.fork(params, function(result) {
+                        FEMhub.RPC.Worksheet.fork(params, function(result) {
                             if (result.ok === true) {
                                 FEMhub.msg.info(this, "'" + result.name + "' was forked sucessfully.");
-                                this.getNotebooks();
+                                this.getWorksheets();
                             }
                         }, this);
                     },

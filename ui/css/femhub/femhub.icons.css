@@ -43,7 +43,7 @@
     background-image: url(/static/img/femhub/icons/64x64/logout.png) !important;
 }
 
-.femhub-notebook-icon {
+.femhub-worksheet-icon {
     background-image: url(/static/img/femhub/icons/page.png) !important;
 }
 
@@ -99,27 +99,27 @@
     background-image: url(/static/img/femhub/icons/folder_add.png) !important;
 }
 
-.femhub-add-notebook-icon {
+.femhub-add-worksheet-icon {
     background-image: url(/static/img/femhub/icons/page_add.png) !important;
 }
 
-.femhub-share-notebook-icon {
+.femhub-share-worksheet-icon {
     background-image: url(/static/img/femhub/icons/page_go.png) !important;
 }
 
-.femhub-import-notebook-icon {
+.femhub-import-worksheet-icon {
     background-image: url(/static/img/femhub/icons/page_attach.png) !important;
 }
 
-.femhub-edit-notebook-icon {
+.femhub-edit-worksheet-icon {
     background-image: url(/static/img/femhub/icons/page_edit.png) !important;
 }
 
-.femhub-save-notebook-icon {
+.femhub-save-worksheet-icon {
     background-image: url(/static/img/femhub/icons/page_save.png) !important;
 }
 
-.femhub-eval-all-notebook-icon {
+.femhub-eval-all-worksheet-icon {
     background-image: url(/static/img/femhub/icons/lightning.png) !important;
 }
 

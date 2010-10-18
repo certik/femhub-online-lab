@@ -153,11 +153,11 @@ into ``static/external`` in core server's home directory, e.g.::
 and reload Online Lab user interface in your web browser. Next time you
 double-click Mesh Editor icon on the desktop, the plug-in will be loaded.
 
-Importing Sage notebooks
+Importing Sage worksheets
 ========================
 
 Go to http://localhost:8000, open Browser and click 'Import'. Copy
-plain text from Sage notebook, e.g.::
+plain text from Sage worksheet, e.g.::
 
     {{{id=0|
     some code
