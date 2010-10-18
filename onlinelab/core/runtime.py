@@ -65,6 +65,11 @@ def init(args):
 
     import os as _os
 
+    try:
+        HOME
+    except NameError:
+        HOME, _ = _os.path.split(__file__)
+
     DATABASE_ENGINE    = 'sqlite3'
     DATABASE_NAME      = _os.path.join(HOME, 'onlinelab.db')
     DATABASE_USER      = ''
