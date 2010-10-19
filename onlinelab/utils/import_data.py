@@ -4,7 +4,49 @@ This module is able to import data to database.
 So far only from the old codenode lab.
 """
 
-def load():
+from os.path import expandvars
+import os
+import sys
+import pickle
+import simplejson
+
+def femhub_set_paths():
+    """
+    Sets the paths automatically for femhub.
+
+    This only works for femhub.
+    """
+    CORE_HOME_PATH = expandvars("$SPKG_LOCAL/share/onlinelab/core-home/")
+    sys.path.append(CORE_HOME_PATH)
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+
+def load(data_path="", set_paths=True):
+    """
+    Imports data into the database.
+
+    Currently it expects the old codenode based data.
+
+    data_path ... path to the old database dump directory. This directory must
+                  contain the following files:
+                  "cells.pickle.txt, notebooks.pickle.txt, users.pickle.txt,
+                  folders.pickle.txt"
+    set_paths ... If True, it runs within femhub, and it will set up the paths
+                  automatically, otherwise you need to set them up manually
+
+    Example:
+
+    >>> from onlinelab.utils.import_data import load
+    >>> load("/home/ondrej/repos/femhub-online-lab/archive")
+    Loading 'User' objects ...
+    Loading 'Folder' objects ...
+    Loading 'Worksheet' objects ...
+    Loading 'Cell' objects ...
+    Garbage collected 509 cells
+
+    """
+    if set_paths:
+        femhub_set_paths()
+
     from onlinelab.core.models import Folder
     from onlinelab.core.models import Worksheet
     from onlinelab.core.models import Cell
@@ -12,9 +54,9 @@ def load():
 
     # User
 
-    print ">>> Loading 'User' objects ..."
+    print "Loading 'User' objects ..."
 
-    with open('users.pickle.txt', 'r') as f:
+    with open(os.path.join(data_path, 'users.pickle.txt'), 'r') as f:
         users = pickle.load(f)
 
     for user in users:
@@ -33,9 +75,9 @@ def load():
     modified = models.DateTimeField(auto_now=True)
     '''
 
-    print ">>> Loading 'Folder' objects ..."
+    print "Loading 'Folder' objects ..."
 
-    with open('folders.pickle.txt', 'r') as f:
+    with open(os.path.join(data_path, 'folders.pickle.txt'), 'r') as f:
         folders = pickle.load(f)
 
     for folder in folders:
@@ -82,11 +124,11 @@ def load():
     order = models.TextField(default='')
     '''
 
-    print ">>> Loading 'Worksheet' objects ..."
+    print "Loading 'Worksheet' objects ..."
 
     uuids = set([])
 
-    with open('notebooks.pickle.txt', 'r') as f:
+    with open(os.path.join(data_path, 'notebooks.pickle.txt'), 'r') as f:
         worksheets = pickle.load(f)
 
     for worksheet in worksheets:
@@ -151,7 +193,7 @@ def load():
     modified = models.DateTimeField(auto_now=True)
     '''
 
-    print ">>> Loading 'Cell' objects ..."
+    print "Loading 'Cell' objects ..."
 
     style_map = {
         'text': 'text',
@@ -160,7 +202,7 @@ def load():
         'outputimage': 'image',
     }
 
-    with open('cells.pickle.txt', 'r') as f:
+    with open(os.path.join(data_path, 'cells.pickle.txt'), 'r') as f:
         cells = pickle.load(f)
 
     count = 0
