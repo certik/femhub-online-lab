@@ -143,6 +143,7 @@ class PythonInterpreter(object):
             except SystemExit:
                 raise
             except KeyboardInterrupt:
+                traceback = self.traceback()
                 interrupted = True
             except:
                 traceback = self.traceback()

@@ -589,10 +589,10 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 } else {
                     cells.push({output: result.traceback, type: 'error'});
                 }
-            }
-
-            if (result.interrupted) {
-                cells.push({output: '$Interrupted', type: 'error'});
+            } else {
+                if (result.interrupted) {
+                    cells.push({output: '$Interrupted', type: 'error'});
+                }
             }
 
             evalSuccess.call(this, result.index, cells);
