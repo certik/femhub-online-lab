@@ -2,7 +2,7 @@
 FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
     ctype: 'text',
     content: null,
-    contentEmpty: "Click here to edit contents",
+    contentEmpty: "Click here (with right mouse button) to edit contents",
 
     initComponent: function() {
         FEMhub.TextCell.superclass.initComponent.call(this);
