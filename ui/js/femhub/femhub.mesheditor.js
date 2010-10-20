@@ -3,7 +3,7 @@ FEMhub.MeshEditor = Ext.extend(Ext.Window, {
         config = config || {};
 
         Ext.apply(config, {
-            title: "MeshEditor",
+            title: "Mesh Editor",
             layout: 'fit',
             width: 856,
             height: 668,
@@ -39,7 +39,7 @@ FEMhub.MeshEditor = Ext.extend(Ext.Window, {
 
 FEMhub.Modules.MeshEditor = Ext.extend(FEMhub.Module, {
     launcher: {
-        text: 'MeshEditor',
+        text: 'Mesh Editor',
         icon: 'femhub-mesheditor-launcher-icon',
     },
     winCls: FEMhub.MeshEditor,
