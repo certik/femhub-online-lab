@@ -26,6 +26,10 @@ cd $SPKG_LOCAL #to make sure the right lab gets imported
 onlinelab core init --home=$CONFIG_DIR/core-home --ui-path=$CONFIG_DIR/ui
 onlinelab service init --home=$CONFIG_DIR/service-home
 
+# allow to pass the os.environ into the engine Python process (so that
+# LD_LIBRARY_PATH and other things are properly set):
+echo "ENVIRON = True" >> $CONFIG_DIR/service-home/settings.py
+
 if [ $? -ne 0 ]; then
    echo "Error installing $PACKAGE_NAME."
    exit 1
