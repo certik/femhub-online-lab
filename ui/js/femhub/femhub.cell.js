@@ -220,11 +220,11 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     insertTextCellBefore: function() {
-        return this.owner.newCell({ type: 'content', before: this });
+        return this.owner.newCell({ type: 'text', before: this });
     },
 
     insertTextCellAfter: function() {
-        return this.owner.newCell({ type: 'content', after: this });
+        return this.owner.newCell({ type: 'text', after: this });
     },
 
     removeCell: function() {
