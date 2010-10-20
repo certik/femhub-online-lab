@@ -10,7 +10,9 @@ PACKAGE_NAME=onlinelab
 CONFIG_DIR="$SPKG_LOCAL/share/onlinelab/"
 # remove old install:
 rm -rf $SPKG_LOCAL/lib/python/site-packages/onlinelab
-rm -rf $CONFIG_DIR
+CONFIG_DIR_BACKUP=`mktemp -d --tmpdir=$SPKG_LOCAL/share/`
+mkdir -p $CONFIG_DIR
+mv $CONFIG_DIR $CONFIG_DIR_BACKUP/
 
 # install online lab
 cp -pr onlinelab $SPKG_LOCAL/lib/python/site-packages/
