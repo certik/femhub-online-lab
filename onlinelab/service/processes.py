@@ -230,7 +230,7 @@ class ProcessManager(object):
         fd = proc.stdout.fileno()
         params = uuid, proc, uid, gid, cwd, okay, fail
 
-        timeout = functools.partial(self._on_run_timeout, uuid, params, fd)
+        timeout = functools.partial(self._on_run_timeout, proc)
         tm = self.ioloop.add_timeout(time.time() + self._timeout, timeout)
 
         handler = functools.partial(self._on_run_handler, params, tm)
@@ -242,10 +242,8 @@ class ProcessManager(object):
         del self.processes[uuid]
         shutil.rmtree(cwd)
 
-    def _on_run_timeout(self, (uuid, proc, uid, gid, cwd, okay, fail), fd):
+    def _on_run_timeout(self, proc):
         """Hard deadline on engine's process startup (start or die). """
-        self.ioloop.remove_handler(fd)
-
         # The process is running but takes too much time to start, e.g.
         # a deadlock occurred or whatever else. We don't know, so what
         # we can do is to remove process entry, kill the process and
@@ -253,22 +251,28 @@ class ProcessManager(object):
         # this handler shouldn't be executed at all, unless e.g. we
         # are running out of memory.
 
-        self.cleanup(uuid, cwd, uid, gid)
-
-        proc.kill()
-        proc.poll()
-
-        fail('timeout')
+        proc.kill() # only kill, rest will be done in _on_run_handler
 
     def _on_run_handler(self, (uuid, proc, uid, gid, cwd, okay, fail), tm, fd, events):
         """Startup handler that gets executed on pipe write or error. """
-        self.ioloop.remove_timeout(tm)
+        timeout = False
+
+        try:
+            self.ioloop.remove_timeout(tm)
+        except ValueError:
+            timeout = True
+
         self.ioloop.remove_handler(fd)
 
-        if events & self.ioloop.ERROR:
-            logging.error("Newly created process died expectingly")
+        if timeout or events & self.ioloop.ERROR:
             self.cleanup(uuid, cwd, uid, gid)
-            fail('died')
+
+            if timeout:
+                logging.error("Newly created process was starting too long")
+                fail('timeout')
+            else:
+                logging.error("Newly created process died expectingly")
+                fail('died')
         else:
             # Connection was established, so lets get first output line
             # and check if it contains valid data (socket port numer and
