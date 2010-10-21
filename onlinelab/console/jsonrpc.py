@@ -62,8 +62,8 @@ class JSONRPCService(object):
 
     To use it, first connect to the service, for example:
 
-    >>> import jsonrpc
-    >>> s = jsonrpc.JSONRPCService("http://lab.femhub.org/async")
+    >>> from onlinelab.console.jsonrpc import JSONRPCService
+    >>> s = JSONRPCService("http://lab.femhub.org/async")
 
     Then you investigate what methods are available, for example in ipython,
     type:
