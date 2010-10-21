@@ -65,8 +65,15 @@ class JSONRPCService(object):
     >>> from onlinelab.console.jsonrpc import JSONRPCService
     >>> s = JSONRPCService("http://lab.femhub.org/async")
 
-    Then you investigate what methods are available, for example in ipython,
-    type:
+    If there is no JSON RPC service running at the url, you get an exception:
+
+    >>> s = JSONRPCService("http://lab.femhub.org/some_random_url")
+    Traceback (most recent call last):
+    ...
+    ValueError: No JSON object could be decoded
+
+    After you are connected, then you investigate what methods are available,
+    for example in ipython, type:
 
     >>> s.<TAB>
     s.auth
