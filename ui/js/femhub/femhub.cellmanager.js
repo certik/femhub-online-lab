@@ -218,25 +218,52 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     initEngine: function() {
-        if (!this.isInitialized) {
-            FEMhub.RPC.Engine.init({ uuid: this.uuid }, function() {
+        FEMhub.RPC.Engine.init({uuid: this.uuid}, function(result) {
+            if (result.ok === true) {
                 this.isInitialized = true;
-            }, this);
-        }
+            } else {
+                this.showEngineError(result.reason);
+            }
+        }, this);
     },
 
     killEngine: function() {
-        if (this.isInitialized) {
-            FEMhub.RPC.Engine.kill({ uuid: this.uuid }, function() {
+        FEMhub.RPC.Engine.kill({uuid: this.uuid}, function(result) {
+            if (result.ok === true) {
                 this.isInitialized = false;
-            }, this);
-        };
+            } else {
+                this.showEngineError(result.reason);
+            }
+        }, this);
     },
 
     interruptEngine: function() {
-        if (this.isInitialized) {
-            FEMhub.RPC.Engine.interrupt({ uuid: this.uuid });
+        FEMhub.RPC.Engine.interrupt({uuid: this.uuid}, function(result) {
+            if (result.ok !== true) {
+                this.showEngineError(result.reason);
+            }
+        });
+    },
+
+    showEngineError: function(error) {
+        switch (error) {
+        case 'no-services-available':
+            var msg = "No suitable services are currently available.";
+            break;
+        case 'service-disconnected':
+            var msg = "Service disconnected or not assigned yet.";
+            break;
+        case 'engine-starting':
+            var msg = "Engine wasn't initialized yet.";
+            break;
+        case 'engine-running':
+            var msg = "Engine is already running.";
+            break;
+        default:
+            var msg = error;
         }
+
+        FEMhub.msg.error("Engine error", msg);
     },
 
     loadCells: function() {

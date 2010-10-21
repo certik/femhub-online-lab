@@ -68,7 +68,7 @@ FEMhub.RPC.call = function(method, params, handler, scope, url) {
                 if (result.status > 0) {
                     var msg = String.format("{0}: {1}", result.status, result.statusText);
                 } else {
-                    var msg = result.statusText;
+                    var msg = result.statusText; // e.g. "communication failed"
                 }
 
                 if (FEMhub.verbose) {

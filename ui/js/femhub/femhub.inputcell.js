@@ -416,7 +416,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 uuid: this.owner.uuid,
                 source: source,
             }, function(result) {
-                if (!result.error) {
+                if (result.ok === true) {
                     var completions = result.completions;
 
                     if (!completions || !completions.length) {
@@ -452,6 +452,8 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                     });
 
                     menu.showAt([0, 0]);
+                } else {
+                    this.owner.showEngineError(result.reason);
                 }
             }, this);
         }
@@ -533,69 +535,84 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.fireEvent('postevaluate', this, input, cells);
         }
 
+        function evalFailed() {
+            this.evaluating = false;
+
+            this.el_evaluate.addClass('femhub-enabled');
+            this.el_clear.addClass('femhub-enabled');
+            this.el_interrupt.removeClass('femhub-enabled');
+
+            this.focusCell();
+        }
+
         FEMhub.RPC.Engine.evaluate({
             uuid: this.owner.uuid,
             source: input,
             cellid: this.id,
         }, function(result) {
-            var cells = [];
+            if (result.ok === true) {
+                var cells = [];
 
-            if (Ext.isDefined(result.info)) {
-                var type = 'output';
+                if (Ext.isDefined(result.info)) {
+                    var type = 'output';
 
-                if (!result.info) {
-                    var output = "Object `" + result.text + "` not found.";
-                } else {
-                    if (result.more && result.info.source) {
-                        if (result.info.source_html) {
-                            var output = result.info.source_html, type = 'raw';
-                        } else {
-                            var output = result.info.source;
-                        }
+                    if (!result.info) {
+                        var output = "Object `" + result.text + "` not found.";
                     } else {
-                        if (result.info.docstring) {
-                            if (result.info.docstring_html) {
-                                var output = result.info.docstring_html, type = 'raw';
+                        if (result.more && result.info.source) {
+                            if (result.info.source_html) {
+                                var output = result.info.source_html, type = 'raw';
                             } else {
-                                var output = result.info.docstring;
+                                var output = result.info.source;
                             }
                         } else {
-                            var output = '<no docstring>';
+                            if (result.info.docstring) {
+                                if (result.info.docstring_html) {
+                                    var output = result.info.docstring_html, type = 'raw';
+                                } else {
+                                    var output = result.info.docstring;
+                                }
+                            } else {
+                                var output = '<no docstring>';
+                            }
                         }
+                    }
+
+                    cells.push({output: output, type: type});
+                }
+
+                if (result.out) {
+                    cells.push({output: result.out, type: 'output'});
+                }
+
+                if (result.err) {
+                    cells.push({output: result.err, type: 'error'});
+                }
+
+                if (Ext.isArray(result.plots)) {
+                    Ext.each(result.plots, function(plot) {
+                        var contents = 'data:' + plot.type + ';' + plot.encoding + ',' + plot.data;
+                        cells.push({output: contents, type: 'image'});
+                    }, this);
+                }
+
+                if (result.traceback) {
+                    if (result.traceback_html) {
+                        cells.push({output: result.traceback_html, type: 'raw'});
+                    } else {
+                        cells.push({output: result.traceback, type: 'error'});
+                    }
+                } else {
+                    if (result.interrupted) {
+                        cells.push({output: '$Interrupted', type: 'error'});
                     }
                 }
 
-                cells.push({output: output, type: type});
-            }
-
-            if (result.out) {
-                cells.push({output: result.out, type: 'output'});
-            }
-
-            if (result.err) {
-                cells.push({output: result.err, type: 'error'});
-            }
-
-            if (Ext.isArray(result.plots)) {
-                Ext.each(result.plots, function(plot) {
-                    var contents = 'data:' + plot.type + ';' + plot.encoding + ',' + plot.data;
-                    cells.push({output: contents, type: 'image'});
-                }, this);
-            }
-
-            if (result.traceback) {
-                if (result.traceback_html) {
-                    cells.push({output: result.traceback_html, type: 'raw'});
-                } else {
-                    cells.push({output: result.traceback, type: 'error'});
-                }
+                evalSuccess.call(this, result.index, cells);
             } else {
-                if (result.interrupted) {
-                    cells.push({output: '$Interrupted', type: 'error'});
-                }
+                this.owner.showEngineError(result.reason);
+                evalFailed.call(this);
             }
-
-            evalSuccess.call(this, result.index, cells);
         }, this);
     },
 
@@ -614,22 +631,16 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     interruptCell: function() {
-        if (!this.evaluating) {
-            return;
+        if (this.evaluating) {
+            FEMhub.RPC.Engine.interrupt({
+                uuid: this.owner.uuid,
+                cellid: this.id,
+            }, function(result) {
+                if (result.ok !== true) {
+                    this.owner.showEngineError(result.reason);
+                }
+            }, this);
         }
-
-        FEMhub.RPC.Engine.interrupt({
-            uuid: this.owner.uuid,
-            cellid: this.id,
-        }, function(result) {
-            this.evaluating = false;
-
-            this.el_evaluate.addClass('femhub-enabled');
-            this.el_clear.addClass('femhub-enabled');
-            this.el_interrupt.removeClass('femhub-enabled');
-
-            this.focusCell();
-        }, this);
     },
 
     insertInputCellAfter: function() {

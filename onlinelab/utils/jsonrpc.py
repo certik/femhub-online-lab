@@ -70,7 +70,7 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
         except IOError:
             logging.warning("JSON-RPC: warning: connection was closed")
         else:
-            logging.info("JSON-RPC: method call ended successfully")
+            logging.info("JSON-RPC: '%s' method call ended successfully" % self.method)
 
     def return_error(self, code, message, data=None):
         """Return properly formatted JSON-RPC error response. """
@@ -224,7 +224,10 @@ class JSONRPCProxy(object):
 
         try:
             if response.code != 200:
-                raise JSONRPCError("got %s HTTP response code" % response.code)
+                logging.error("JSON-RPC: got %s HTTP response code" % response.code)
+
+            if response.body is None:
+                raise JSONRPCError("communication failed")
 
             try:
                 data = tornado.escape.json_decode(response.body)
@@ -243,4 +246,21 @@ class JSONRPCProxy(object):
 
             if fail is not None:
                 fail(error, http_code=response.code)
+
+class APIRequestHandler(AsyncJSONRPCRequestHandler):
+    """JSON-RPC handler extended with API helper functions. """
+
+    def return_api_result(self, result=None):
+        """Return higher-level JSON-RPC result response. """
+        if result is None:
+            result = {}
+
+        result['ok'] = True
+
+        self.return_result(result)
+
+    def return_api_error(self, reason=None):
+        """Return higher-level JSON-RPC error response. """
+        logging.warning("JSON-RPC: API error: %s" % (reason or "<undefined>"))
+        self.return_result({'ok': False, 'reason': reason})
 

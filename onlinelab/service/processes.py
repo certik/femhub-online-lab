@@ -269,10 +269,10 @@ class ProcessManager(object):
 
             if timeout:
                 logging.error("Newly created process was starting too long")
-                fail('timeout')
+                fail('engine-timeout')
             else:
                 logging.error("Newly created process died expectingly")
-                fail('died')
+                fail('engine-died')
         else:
             # Connection was established, so lets get first output line
             # and check if it contains valid data (socket port numer and
@@ -304,7 +304,7 @@ class ProcessManager(object):
                 proc.kill()
                 proc.poll()
 
-                fail('invalid-output')
+                fail('engine-error')
 
     def _on_disconnect(self, uuid, cwd, uid, gid, fd, events):
         """Handler that gets executed when a process dies. """
@@ -340,23 +340,23 @@ class ProcessManager(object):
         """Initialize new engine (start a process). """
         if uuid in self.processes:
             if self.processes[uuid] is None:
-                fail('starting')
+                fail('engine-starting')
             else:
-                fail('running')
+                fail('engine-running')
         else:
             self._run(uuid, args, okay, fail)
 
     def _get_process(self, uuid, fail):
         if uuid not in self.processes:
-            fail('no-such-process')
+            fail('engine-not-running')
         else:
             process = self.processes[uuid]
 
             if process is None:
-                fail('starting')
+                fail('engine-starting')
             elif process is False:
                 del self.processes[uuid]
-                fail('died')
+                fail('engine-died')
             else:
                 return process
 
@@ -488,36 +488,33 @@ class EngineProcess(object):
             okay('not-evaluating')
             return
 
-        if args.get('all', False):
-            self.queue.clear()
+        try:
+            cellid = args['cellid']
+        except KeyError:
+            pass
         else:
-            try:
-                cellid = args['cellid']
-            except KeyError:
-                pass
-            else:
-                _args, _, _ = self.evaluating
+            _args, _, _ = self.evaluating
 
-                if cellid != _args.cellid:
-                    for i, (_args, _okay, _) in enumerate(self.queue):
-                        if cellid == _args.cellid:
-                            del self.queue[i]
-                            okay('interrupted')
+            if cellid != _args.cellid:
+                for i, (_args, _okay, _) in enumerate(self.queue):
+                    if cellid == _args.cellid:
+                        del self.queue[i]
+                        okay('interrupted')
 
-                            result = {
-                                'source': _args.source,
-                                'index': None,
-                                'time': 0,
-                                'out': u'',
-                                'err': u'',
-                                'files': [],
-                                'plots': [],
-                                'traceback': False,
-                                'interrupted': True,
-                            }
+                        result = {
+                            'source': _args.source,
+                            'index': None,
+                            'time': 0,
+                            'out': u'',
+                            'err': u'',
+                            'files': [],
+                            'plots': [],
+                            'traceback': False,
+                            'interrupted': True,
+                        }
 
-                            _okay(result)
-                            return
+                        _okay(result)
+                        return
 
         # Now the most interesting part. To physically interrupt
         # the interpreter associated with this engine, we send

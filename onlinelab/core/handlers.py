@@ -38,7 +38,7 @@ class MainHandler(tornado.web.RequestHandler):
         except:
             raise tornado.web.HTTPError(500)
 
-class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
+class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
     """Handle JSON-RPC method calls from the user interface. """
 
     __methods__ = [
@@ -70,19 +70,6 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.Docutils.export',
         'RPC.Docutils.render',
     ]
-
-    def return_api_result(self, result=None):
-        """Return higher-level JSON-RPC result response. """
-        if result is None:
-            result = {}
-
-        result['ok'] = True
-
-        self.return_result(result)
-
-    def return_api_error(self, reason=None):
-        """Return higher-level JSON-RPC error response. """
-        self.return_result({'ok': False, 'reason': reason})
 
     def RPC__hello(self):
         """Politely reply to a greeting from a client. """
@@ -700,7 +687,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         parts = docutils.core.publish_parts(rst, writer_name='html')
         self.return_api_result({'html': parts['fragment']})
 
-class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
+class AsyncHandler(jsonrpc.APIRequestHandler):
     """Handle message routing between clients and services. """
 
     __methods__ = ['init', 'kill', 'stat', 'complete', 'evaluate', 'interrupt']
@@ -717,10 +704,10 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
                 try:
                     service = self.manager.bind(uuid)
                 except services.NoServicesAvailable:
-                    self.return_error(1, "No services are currently available")
+                    self.return_api_error('no-services-available')
                     return
             else:
-                self.return_error(2, "Service disconnected or not assigned yet")
+                self.return_api_error('service-disconnected')
                 return
 
         okay = functools.partial(self.on_forward_okay, uuid)
@@ -731,15 +718,16 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
 
     def on_forward_okay(self, uuid, result):
         """Gets executed when remote call succeeded. """
-        if self.method == 'kill':
-            self.manager.unbind(uuid)
-
         self.return_result(result)
 
     def on_forward_fail(self, uuid, error, http_code):
         """Gets executed when remote call failed. """
         self.manager.unbind(uuid)
-        self.return_result(error)
+
+        if http_code == 599:
+            self.return_api_error('service-disconnected')
+        else:
+            self.return_error(error)
 
     def init(self, uuid):
         """Forward 'init' method call to the assigned service. """
@@ -748,6 +736,7 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
     def kill(self, uuid):
         """Forward 'kill' method call to the assigned service. """
         self.forward(uuid, 'kill', {'uuid': uuid})
+        self.manager.unbind(uuid)
 
     def stat(self, uuid):
         """Forward 'stat' method call to the assigned service. """
@@ -765,7 +754,7 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
         """Forward 'interrupt' method call to the assigned service. """
         self.forward(uuid, 'interrupt', {'uuid': uuid, 'cellid': cellid})
 
-class ServiceHandler(jsonrpc.AsyncJSONRPCRequestHandler):
+class ServiceHandler(jsonrpc.APIRequestHandler):
     """Handle communication from Online Lab services. """
 
     __methods__ = ['register']
