@@ -147,13 +147,27 @@ FEMhub.Login = Ext.extend(Ext.Window, {
         this.focusUsername();
     },
 
-    clearFields: function() {
-        Ext.getCmp('femhub-login-username').setValue('');
-        Ext.getCmp('femhub-login-password').setValue('');
-    },
-
     focusUsername: function() {
         Ext.getCmp('femhub-login-username').focus();
+    },
+
+    focusPassword: function() {
+        Ext.getCmp('femhub-login-password').focus();
+    },
+
+    clearUsername: function() {
+        Ext.getCmp('femhub-login-username').setValue('');
+        this.focusUsername();
+    },
+
+    clearPassword: function() {
+        Ext.getCmp('femhub-login-password').setValue('');
+        this.focusPassword();
+    },
+
+    clearFields: function() {
+        clearPassword();
+        clearUsername();
     },
 
     setUsername: function(username) {
@@ -178,28 +192,16 @@ FEMhub.Login = Ext.extend(Ext.Window, {
                 this.close();
             } else {
                 switch (result.reason) {
-                case 'credentials':
-                    Ext.MessageBox.show({
-                        title: 'Login failed',
-                        msg: 'Incorrect username or password. Either ' +
-                        'create a new account or use the "Forgot ' +
-                        'password" button',
-                        buttons: Ext.MessageBox.OK,
-                        icon: Ext.MessageBox.ERROR,
-                        fn: function() {
-                            this.clearFields();
-                            this.focusUsername();
-                        },
-                        scope: this,
-                    });
+                case 'username':
+                    FEMhub.msg.error('Login failed', 'Account doesn\'t exist. Use "Create account" button to create new one.');
+                    this.clearFields();
+                    break;
+                case 'password':
+                    FEMhub.msg.error('Login failed', 'Wrong password. Use "Forgot password?" button to create new one.');
+                    this.clearPassword();
                     break;
                 case 'disabled':
-                    Ext.MessageBox.show({
-                        title: 'Login failed',
-                        msg: 'Your account has been disabled.',
-                        buttons: Ext.MessageBox.OK,
-                        icon: Ext.MessageBox.WARNING,
-                    });
+                    FEMhub.msg.error('Login failed', 'Your account has been disabled.');
                     break;
                 }
             }

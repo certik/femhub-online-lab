@@ -100,13 +100,19 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
 
     def RPC__User__login(self, username, password, remember=True):
         """Log in a user to the system using a username and password. """
+        try:
+            User.objects.get(username=username)
+        except User.DoesNotExist:
+            self.return_api_error('username')
+            return
+
         user = auth.authenticate(username=username, password=password)
 
         if Settings.instance().auth and username == 'lab':
             user = None
 
         if user is None:
-            self.return_api_error('credentials')
+            self.return_api_error('password')
             return
 
         if not user.is_active:
