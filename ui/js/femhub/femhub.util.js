@@ -39,3 +39,7 @@ FEMhub.util.UUID = function() {
     return FEMhub.util.rfc.UUID().replace(/-/g, '');
 }
 
+FEMhub.util.capitalizeFirst = function(str) {
+    return !str ? str : str.charAt(0).toUpperCase() + str.slice(1);
+}
+

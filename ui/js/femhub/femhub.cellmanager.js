@@ -29,6 +29,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     isInitialized: false,
     statusSaved: true,
     evalIndex: 1,
+    activeCell: null,
 
     types: {
         'text': 'TextCell',
@@ -122,7 +123,13 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         return Ext.getCmp(Ext.DomQuery.selectNode(this.typeToCls(type) + ":last", this.root.dom).id);
     },
 
-    getNextCell: function(id, type) {
+    getNextCell: function(cell, type) {
+        if (Ext.isObject(cell)) {
+            var id = cell.id;
+        } else {
+            var id = cell;
+        }
+
         var query = "div[id=" + id + "] ~ " + this.typeToCls(type) + ":first";
         var elt = Ext.DomQuery.selectNode(query, this.root.dom);
 
@@ -133,7 +140,13 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         }
     },
 
-    getPrevCell: function(id, type) {
+    getPrevCell: function(cell, type) {
+        if (Ext.isObject(cell)) {
+            var id = cell.id;
+        } else {
+            var id = cell;
+        }
+
         var cls = this.typeToCls(type, false);
 
         while (1) {
@@ -340,6 +353,54 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         }, this);
 
         this.justifyCells();
+    },
+
+    getFocusedCell: function() {
+        var cell = this.activeCell;
+
+        if (cell !== null && cell.hasFocus()) {
+            return this.activeCell;
+        } else {
+            return null;
+        }
+    },
+
+    getActiveCell: function() {
+        return this.activeCell;
+    },
+
+    activateNextCell: function(cell, ctype) {
+        var next = this.getNextCell(cell, ctype);
+
+        if (next === null) {
+            if (this.cycleCells) {
+                next = this.getFirstCell(ctype);
+            } else {
+                return null;
+            }
+        }
+
+        cell.blurCell();
+        next.focusCell();
+
+        return next;
+    },
+
+    activatePrevCell: function(cell, ctype) {
+        var prev = this.getPrevCell(cell, ctype);
+
+        if (prev === null) {
+            if (this.cycleCells) {
+                var prev = this.getLastCell(ctype);
+            } else {
+                return null;
+            }
+        }
+
+        cell.blurCell();
+        prev.focusCell();
+
+        return prev;
     },
 });
 

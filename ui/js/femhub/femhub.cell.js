@@ -3,7 +3,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     ctype: 'base',
 
     saved: false,
-
+    focused: false,
     collapsed: false,
     hiddenEl: null,
     bindings: {},
@@ -92,6 +92,9 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     focusCell: function() {
+        this.owner.activeCell = this;
+        this.focused = true;
+
         if (this.collapsed) {
             this.el.addClass('femhub-focus');
             this.el_expander.focus();
@@ -101,6 +104,8 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     blurCell: function() {
+        this.focused = false;
+
         if (this.collapsed) {
             this.el.removeClass('femhub-focus');
             this.el_expander.blur();
@@ -281,6 +286,10 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
     setFontSize: function(size) {
         this.el.setStyle('font-size', size + '%');
+    },
+
+    hasFocus: function() {
+        return this.focused;
     },
 });
 

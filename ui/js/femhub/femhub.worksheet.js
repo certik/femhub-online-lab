@@ -363,7 +363,208 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
             this.getCellsManager().evaluateCells();
         }
     },
+
+    execAction: function(action, key, evt) {
+        var method = 'action' + FEMhub.util.capitalizeFirst(action);
+        this[method].call(this, this.getCellsManager());
+    },
+
+    actionActivateCell: function(manager) {
+        var cell = manager.getActiveCell();
+
+        if (cell === null) {
+            cell = manager.getFirstCell();
+
+            if (cell === null) {
+                return;
+            }
+        }
+
+        cell.focusCell();
+    },
+
+    actionActivateNextCell: function(manager) {
+        var cell = manager.getActiveCell();
+
+        if (cell !== null) {
+            manager.activateNextCell(cell);
+        }
+    },
+
+    actionActivatePrevCell: function(manager) {
+        var cell = manager.getActiveCell();
+
+        if (cell !== null) {
+            manager.activatePrevCell(cell);
+        }
+    },
+
+    actionNextBracket: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.nextBracket();
+        }
+    },
+
+    actionPrevBracket: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.prevBracket();
+        }
+    },
+
+    actionWipeCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.wipeCell();
+        }
+    },
+
+    actionClearCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.clearCell();
+        }
+    },
+
+    actionRemoveCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.removeCell();
+        }
+    },
+
+    actionQuitCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.blurCell();
+            window.focus();
+        }
+    },
+
+    actionCollapseCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.collapseCell();
+        }
+    },
+
+    actionExpandCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.expandCell();
+        }
+    },
+
+    actionSplitCellUpper: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.splitCellUpper();
+        }
+    },
+
+    actionSplitCellLower: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.splitCellLower();
+        }
+    },
+
+    actionMergeCellBefore: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.mergeCellBefore();
+        }
+    },
+
+    actionMergeCellAfter: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.mergeCellAfter();
+        }
+    },
+
+    actionForwardEvaluateCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.evaluateCell({keepfocus: false});
+        }
+    },
+
+    actionInplaceEvaluateCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.evaluateCell({keepfocus: true});
+        }
+    },
+
+    actionInterruptCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.interruptCell();
+        }
+    },
+
+    actionIntrospectCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            // XXX: cell.introspectCell();
+            cell.autocomplete();
+        }
+    },
 });
 
 Ext.reg('x-femhub-worksheet', FEMhub.Worksheet);
+
+FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
+    xtype: 'x-femhub-worksheet',
+    bindings: {
+        'TAB       -shift -ctrl -alt': 'introspectCell',
+        'T         -shift -ctrl +alt': 'introspectCell',
+        'SPACE     -shift +ctrl -alt': 'introspectCell',
+        'DOWN      -shift -ctrl -alt': 'activateNextCell',
+        'J         -shift -ctrl +alt': 'activateNextCell',
+        'UP        -shift -ctrl -alt': 'activatePrevCell',
+        'K         -shift -ctrl +alt': 'activatePrevCell',
+        'LEFT      -shift -ctrl +alt': 'collapseCell',
+        'H         -shift -ctrl +alt': 'collapseCell',
+        'RIGHT     -shift -ctrl +alt': 'expandCell',
+        'L         -shift -ctrl +alt': 'expandCell',
+        'ENTER     +shift -ctrl -alt': 'forwardEvaluateCell',
+        'E         -shift -ctrl +alt': 'forwardEvaluateCell',
+        'ENTER     -shift +ctrl -alt': 'inplaceEvaluateCell',
+        'E         +shift -ctrl +alt': 'inplaceEvaluateCell',
+        'I         -shift -ctrl +alt': 'interruptCell',
+        '.         -shift -ctrl +alt': 'copyCell',
+        'W         -shift -ctrl +alt': 'wipeCell',
+        'C         -shift -ctrl +alt': 'clearCell',
+        'R         -shift -ctrl +alt': 'removeCell',
+        // XXX: 'S         +shift -ctrl +alt': 'splitCellUpper',
+        // XXX: 'S         -shift -ctrl +alt': 'splitCellLower',
+        'DOWN      +shift -ctrl +alt': 'mergeCellAfter',
+        'J         +shift -ctrl +alt': 'mergeCellAfter',
+        'UP        +shift -ctrl +alt': 'mergeCellBefore',
+        'K         +shift -ctrl +alt': 'mergeCellBefore',
+        'A         -shift -ctrl +alt': 'activateCell',
+        'Q         -shift -ctrl +alt': 'quitCell',
+        ']         -shift -ctrl +alt': 'nextBracket',
+        '[         -shift -ctrl +alt': 'prevBracket',
+    },
+});
 

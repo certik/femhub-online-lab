@@ -599,6 +599,12 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }, this);
     },
 
+    wipeCell: function() {
+        this.setInput('');
+        this.autosize();
+        this.focusCell();
+    },
+
     clearCell: function() {
         this.destroyOutputCells();
         this.setInput('');
@@ -636,6 +642,8 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
 
         var cell = this.owner.newCell({ type: 'input', after: after });
+
+        // XXX: this.transitionToCell(cell)
 
         this.blurCell();
         cell.focusCell();

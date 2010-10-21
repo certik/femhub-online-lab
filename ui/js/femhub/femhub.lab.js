@@ -24,6 +24,8 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
         this.fireEvent('ready', this);
         this.isReady = true;
 
+        this.bindings = new FEMhub.Bindings();
+
         FEMhub.RPC.User.isAuthenticated({}, function(result) {
             if (result.authenticated !== true) {
                 this.startLogin();
