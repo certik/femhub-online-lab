@@ -10,7 +10,7 @@ FEMhub.msg.NotImplementedError = function() {
     });
 }
 
-FEMhub.msg.show = function(obj, msg, icon, buttons) {
+FEMhub.msg.show = function(obj, msg, handler, scope, buttons, icon) {
     if (Ext.isObject(obj)) {
         var title = obj.title;
     } else {
@@ -24,18 +24,20 @@ FEMhub.msg.show = function(obj, msg, icon, buttons) {
         msg: msg,
         icon: icon,
         buttons: buttons,
+        fn: handler,
+        scope: scope,
     });
 }
 
-FEMhub.msg.info = function(title, msg) {
-    FEMhub.msg.show(title, msg, Ext.MessageBox.INFO);
+FEMhub.msg.info = function(title, msg, handler, scope, buttons) {
+    FEMhub.msg.show(title, msg, handler, scope, buttons, Ext.MessageBox.INFO);
 }
 
-FEMhub.msg.warning = function(title, msg) {
-    FEMhub.msg.show(title, msg, Ext.MessageBox.WARNING);
+FEMhub.msg.warning = function(title, msg, handler, scope, buttons) {
+    FEMhub.msg.show(title, msg, handler, scope, buttons, Ext.MessageBox.WARNING);
 }
 
-FEMhub.msg.error = function(title, msg) {
-    FEMhub.msg.show(title, msg, Ext.MessageBox.ERROR);
+FEMhub.msg.error = function(title, msg, handler, scope, buttons) {
+    FEMhub.msg.show(title, msg, handler, scope, buttons, Ext.MessageBox.ERROR);
 }
 
