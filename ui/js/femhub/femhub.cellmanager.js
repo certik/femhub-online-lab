@@ -212,9 +212,24 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     evaluateCells: function() {
-        this.iterCells('input', function(cell) {
-            cell.evaluateCell({ keepfocus: true });
-        }, this);
+        function evaluateCell(cell) {
+            cell.evaluateCell({
+                keepfocus: true,
+                handler: function(ok) {
+                    if (ok === true) {
+                        var next = this.getNextCell(cell, 'input');
+
+                        if (next !== null) {
+                            evaluateCell.call(this, next);
+                        }
+                    }
+                },
+                scope: this,
+            });
+        }
+
+        var cell = this.getFirstCell();
+        evaluateCell.call(this, cell);
     },
 
     initEngine: function() {

@@ -11,8 +11,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     initComponent: function() {
         FEMhub.InputCell.superclass.initComponent.call(this);
 
-        this.addEvents('preevaluate', 'postevaluate');
-
         Ext.apply(this.bindings, {
             x_tab: {
                 key: Ext.EventObject.TAB,
@@ -464,8 +462,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         var input = this.getInput();
 
-        this.fireEvent('preevaluate', this, input);
-
         this.el_evaluate.removeClass('femhub-enabled');
         this.el_clear.removeClass('femhub-enabled');
         this.el_interrupt.addClass('femhub-enabled');
@@ -532,7 +528,9 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
             }
 
-            this.fireEvent('postevaluate', this, input, cells);
+            if (Ext.isDefined(config.handler)) {
+                config.handler.call(config.scope || this, true);
+            }
         }
 
         function evalFailed() {
@@ -543,6 +541,10 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             this.el_interrupt.removeClass('femhub-enabled');
 
             this.focusCell();
+
+            if (Ext.isDefined(config.handler)) {
+                config.evaluated.call(config.scope || this, true);
+            }
         }
 
         FEMhub.RPC.Engine.evaluate({
