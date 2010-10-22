@@ -50,21 +50,21 @@ class Console(code.InteractiveConsole):
             traceback.print_exc()
 
     def runcode(self, src):
-        omsg = self.json.evaluate(self.uuid, src)
+        result = self.json.evaluate(self.uuid, src)
         if self.debug:
-            print omsg
+            print result
 
-        traceback = omsg.get("traceback", False)
+        traceback = result.get("traceback", False)
         if traceback:
             print traceback,
-        output = omsg.get("out", "")
+        output = result.get("out", "")
         if output != "":
             print sys.ps3 + output,
 
-        if "info" in omsg:
-            info = omsg["info"]
+        if "info" in result:
+            info = result["info"]
             if info:
-                if omsg["more"]:
+                if result["more"]:
                     # show sourcecode
                     source = info["source"]
                     if source:
@@ -79,7 +79,7 @@ class Console(code.InteractiveConsole):
                     else:
                         print "<no docstring>"
             else:
-                print "Object `%s` not found." % omsg["text"]
+                print "Object `%s` not found." % result["text"]
 
     def runsource(self, source, filename="<input>", symbol="single"):
 
