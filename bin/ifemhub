@@ -1,0 +1,146 @@
+#!/usr/bin/env python
+
+"""
+A simple interactive frontend that talks to the engine behind the online lab.
+"""
+
+import code
+import readline
+import sys
+import uuid
+from optparse import OptionParser
+import traceback
+
+from onlinelab.console.jsonrpc import JSONRPCService
+
+class Console(code.InteractiveConsole):
+
+    def __init__(self, json, locals=None, filename="<console>",
+            debug=False):
+        code.InteractiveConsole.__init__(self, locals, filename)
+        self.json = json
+        self.debug = debug
+        self.uuid = uuid.uuid4().hex
+        self.killed = False
+
+        readline.parse_and_bind('tab: complete')
+        readline.parse_and_bind('set show-all-if-ambiguous on')
+        readline.set_completer(self.completer)
+
+        # Set system prompts
+        sys.ps1 = '>>> ' # input
+        sys.ps2 = '... ' # continuation
+        sys.ps3 = ''     # output
+
+        print "Initializing the engine..."
+        self.json.init(self.uuid)
+
+    def completer(self, text, state):
+        try:
+            if state == 0:
+                data = self.json.complete(self.uuid, text)
+                completions = data["completions"]
+                self.matches = [c["match"] for c in completions]
+            if state < len(self.matches):
+                return self.matches[state]
+            else:
+                return None
+        except:
+            # Just print the exception
+            traceback.print_exc()
+
+    def runcode(self, src):
+        omsg = self.json.evaluate(self.uuid, src)
+        if self.debug:
+            print omsg
+
+        traceback = omsg.get("traceback", False)
+        if traceback:
+            print traceback,
+        output = omsg.get("out", "")
+        if output != "":
+            print sys.ps3 + output,
+
+        if src.endswith("??"):
+            info = omsg.get("info", None)
+            if info:
+                sourcefile = info["sourcefile"]
+                docstring = info["docstring"]
+                if sourcefile:
+                    print sourcefile
+                elif docstring:
+                    print docstring
+        elif src.endswith("?"):
+            info = omsg.get("info", None)
+            if info:
+                docstring = info["docstring"]
+                if docstring:
+                    print docstring
+
+    def runsource(self, source, filename="<input>", symbol="single"):
+
+        def is_incomplete(source, filename, symbol):
+            """
+            Returns True if "source" is an incomplete code.
+
+            Otherwise False.
+            """
+            try:
+                code = self.compile(source, filename, symbol)
+            except (OverflowError, SyntaxError, ValueError):
+                return False
+            if code is None:
+                return True
+            return False
+
+        if is_incomplete(source, filename, symbol):
+            return True
+
+        src = "\n".join(self.buffer)
+        self.runcode(src)
+        return False
+
+    def kill(self):
+        if not self.killed:
+            print "Killing the engine..."
+            self.json.kill(self.uuid)
+            self.killed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.kill()
+
+    def __del__(self):
+        self.kill()
+
+def main():
+    message = """\
+FEMhub interactive remote console"""
+    parser = OptionParser()
+    parser.add_option(
+            "-d", "--debug",
+            dest="debug",
+            action="store_true",
+            default=False,
+            help="print the full JSON RPC output")
+    parser.add_option(
+            "--server",
+            dest="server",
+            action="store",
+            default="http://lab.femhub.org/",
+            help="FEMhub server to use (default: %default)")
+    options, args = parser.parse_args()
+
+    url_base = options.server
+    if not url_base.endswith("/"):
+        url_base += "/"
+    print "Connecting to the online lab at %s ..." % url_base
+    s = JSONRPCService(url_base + "async")
+    with Console(s, debug=options.debug) as client:
+        client.interact(message)
+
+
+if __name__ == '__main__':
+    main()
