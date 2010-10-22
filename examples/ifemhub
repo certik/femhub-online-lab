@@ -120,7 +120,6 @@ class Console(code.InteractiveConsole):
 def main():
     message = """\
 FEMhub interactive remote console"""
-    url_base = "http://lab.femhub.org/"
     parser = OptionParser()
     parser.add_option(
             "-d", "--debug",
@@ -128,8 +127,17 @@ FEMhub interactive remote console"""
             action="store_true",
             default=False,
             help="print the full JSON RPC output")
+    parser.add_option(
+            "--server",
+            dest="server",
+            action="store",
+            default="http://lab.femhub.org/",
+            help="FEMhub server to use (default: %default)")
     options, args = parser.parse_args()
 
+    url_base = options.server
+    if not url_base.endswith("/"):
+        url_base += "/"
     print "Connecting to the online lab at %s ..." % url_base
     s = JSONRPCService(url_base + "async")
     with Console(s, debug=options.debug) as client:
