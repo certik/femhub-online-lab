@@ -271,6 +271,12 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         case 'engine-starting':
             var msg = "Engine wasn't initialized yet.";
             break;
+        case 'engine-timeout':
+            var msg = "Engine was starting too long.";
+            break;
+        case 'engine-not-running':
+            var msg = "Engine failed to initilize.";
+            break;
         case 'engine-running':
             var msg = "Engine is already running.";
             break;
