@@ -50,19 +50,56 @@ class Console(code.InteractiveConsole):
             # Just print the exception
             traceback.print_exc()
 
-    def runcode(self, code):
-        # We can't pickle code objects, so fetch the actual source
-        src = '\n'.join(self.buffer)
-
-        # Send code execution message to kernel
+    def runcode(self, src):
         omsg = self.json.evaluate(self.uuid, src)
         if self.debug:
             print omsg
 
-        output = omsg["out"]
+        traceback = omsg.get("traceback", False)
+        if traceback:
+            print traceback,
+        output = omsg.get("out", "")
         if output != "":
-            # the output already contains "\n", so we don't print it:
             print sys.ps3 + output,
+
+        if src.endswith("??"):
+            info = omsg.get("info", None)
+            if info:
+                sourcefile = info["sourcefile"]
+                docstring = info["docstring"]
+                if sourcefile:
+                    print sourcefile
+                elif docstring:
+                    print docstring
+        elif src.endswith("?"):
+            info = omsg.get("info", None)
+            if info:
+                docstring = info["docstring"]
+                if docstring:
+                    print docstring
+
+    def runsource(self, source, filename="<input>", symbol="single"):
+
+        def is_incomplete(source, filename, symbol):
+            """
+            Returns True if "source" is an incomplete code.
+
+            Otherwise False.
+            """
+            try:
+                code = self.compile(source, filename, symbol)
+            except (OverflowError, SyntaxError, ValueError):
+                return False
+            if code is None:
+                return True
+            return False
+
+        if is_incomplete(source, filename, symbol):
+            return True
+
+        src = "\n".join(self.buffer)
+        self.runcode(src)
+        return False
 
     def __del__(self):
         print "Killing the engine..."
