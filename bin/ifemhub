@@ -61,21 +61,25 @@ class Console(code.InteractiveConsole):
         if output != "":
             print sys.ps3 + output,
 
-        if src.endswith("??"):
-            info = omsg.get("info", None)
+        if "info" in omsg:
+            info = omsg["info"]
             if info:
-                sourcefile = info["sourcefile"]
-                docstring = info["docstring"]
-                if sourcefile:
-                    print sourcefile
-                elif docstring:
-                    print docstring
-        elif src.endswith("?"):
-            info = omsg.get("info", None)
-            if info:
-                docstring = info["docstring"]
-                if docstring:
-                    print docstring
+                if omsg["more"]:
+                    # show sourcecode
+                    source = info["source"]
+                    if source:
+                        print source
+                    else:
+                        print "<source file open failed>"
+                else:
+                    # show docstring
+                    docstring = info["docstring"]
+                    if docstring:
+                        print docstring
+                    else:
+                        print "<no docstring>"
+            else:
+                print "Object `%s` not found." % omsg["text"]
 
     def runsource(self, source, filename="<input>", symbol="single"):
 
