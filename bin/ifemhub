@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 """
-A simple interactive frontend that talks to a the engine behind the online lab.
+A simple interactive frontend that talks to the engine behind the online lab.
 """
 
-import cPickle as pickle
 import code
 import readline
 import sys
-import time
 import uuid
 from optparse import OptionParser
 import traceback
