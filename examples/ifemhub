@@ -23,6 +23,7 @@ class Console(code.InteractiveConsole):
         self.json = json
         self.debug = debug
         self.uuid = uuid.uuid4().hex
+        self.killed = False
 
         readline.parse_and_bind('tab: complete')
         readline.parse_and_bind('set show-all-if-ambiguous on')
@@ -101,9 +102,20 @@ class Console(code.InteractiveConsole):
         self.runcode(src)
         return False
 
+    def kill(self):
+        if not self.killed:
+            print "Killing the engine..."
+            self.json.kill(self.uuid)
+            self.killed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.kill()
+
     def __del__(self):
-        print "Killing the engine..."
-        self.json.kill(self.uuid)
+        self.kill()
 
 def main():
     message = """\
@@ -120,9 +132,8 @@ FEMhub interactive remote console"""
 
     print "Connecting to the online lab at %s ..." % url_base
     s = JSONRPCService(url_base + "async")
-    client = Console(s, debug=options.debug)
-    print
-    client.interact(message)
+    with Console(s, debug=options.debug) as client:
+        client.interact(message)
 
 
 if __name__ == '__main__':
