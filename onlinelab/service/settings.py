@@ -19,6 +19,7 @@ options = [
     ('setuid', 'bool'),
     ('uid_min', 'int'),
     ('uid_max', 'int'),
+    ('engine_timeout', 'int'),
 ]
 
 defaults = {
@@ -40,5 +41,6 @@ defaults = {
     'setuid': True,
     'uid_min': 10000,
     'uid_max': 50000,
+    'engine_timeout': 20,              # wait at most 20 seconds
 }
 

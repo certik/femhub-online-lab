@@ -29,8 +29,6 @@ class ProcessManager(object):
 
     _re = re.compile("^.*?port=(?P<port>\d+), pid=(?P<pid>\d+)")
 
-    _timeout = 20 # XXX: put this into config file
-
     _inotify_mask = pyinotify.IN_CREATE \
                   | pyinotify.IN_MODIFY \
                   | pyinotify.IN_DELETE
@@ -230,10 +228,12 @@ class ProcessManager(object):
         fd = proc.stdout.fileno()
         params = uuid, proc, uid, gid, cwd, okay, fail
 
-        timeout = functools.partial(self._on_run_timeout, proc)
-        tm = self.ioloop.add_timeout(time.time() + self._timeout, timeout)
+        deadline = time.time() + self.settings.engine_timeout
 
-        handler = functools.partial(self._on_run_handler, params, tm)
+        handler = functools.partial(self._on_run_timeout, proc)
+        timeout = self.ioloop.add_timeout(deadline, handler)
+
+        handler = functools.partial(self._on_run_handler, params, timeout)
         self.ioloop.add_handler(fd, handler, self.ioloop.READ | self.ioloop.ERROR)
 
     def cleanup(self, uuid, cwd, uid, gid):

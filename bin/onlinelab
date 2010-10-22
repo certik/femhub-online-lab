@@ -298,6 +298,11 @@ class OnlineLab(object):
                 'action': ConfigureAction,
             },
         ),
+        'engine-timeout': (
+            ('--engine-timeout',), {
+                'type': int,
+            },
+        ),
     }
 
     modules = {
@@ -313,7 +318,7 @@ class OnlineLab(object):
             'init': [],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
                 'log-num-backups', 'logs-path', 'data-path', 'core-url', 'service-url',
-                'provider', 'description', 'setuid'],
+                'provider', 'description', 'setuid', 'engine-timeout'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
