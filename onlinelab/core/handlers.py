@@ -733,7 +733,7 @@ class AsyncHandler(jsonrpc.APIRequestHandler):
         if http_code == 599:
             self.return_api_error('service-disconnected')
         else:
-            self.return_error(error)
+            self.return_internal_error()
 
     def init(self, uuid):
         """Forward 'init' method call to the assigned service. """
