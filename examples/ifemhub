@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+
+"""
+A simple interactive frontend that talks to a the engine behind the online lab.
+"""
+
+import cPickle as pickle
+import code
+import readline
+import sys
+import time
+import uuid
+from optparse import OptionParser
+import traceback
+
+from onlinelab.console.jsonrpc import JSONRPCService
+
+class Console(code.InteractiveConsole):
+
+    def __init__(self, json, locals=None, filename="<console>",
+            debug=False):
+        code.InteractiveConsole.__init__(self, locals, filename)
+        self.json = json
+        self.debug = debug
+        self.uuid = uuid.uuid4().hex
+
+        readline.parse_and_bind('tab: complete')
+        readline.parse_and_bind('set show-all-if-ambiguous on')
+        readline.set_completer(self.completer)
+
+        # Set system prompts
+        sys.ps1 = '>>> ' # input
+        sys.ps2 = '... ' # continuation
+        sys.ps3 = ''     # output
+
+        print "Initializing the engine..."
+        self.json.init(self.uuid)
+
+    def completer(self, text, state):
+        try:
+            if state == 0:
+                data = self.json.complete(self.uuid, text)
+                completions = data["completions"]
+                self.matches = [c["match"] for c in completions]
+            if state < len(self.matches):
+                return self.matches[state]
+            else:
+                return None
+        except:
+            # Just print the exception
+            traceback.print_exc()
+
+    def runcode(self, code):
+        # We can't pickle code objects, so fetch the actual source
+        src = '\n'.join(self.buffer)
+
+        # Send code execution message to kernel
+        omsg = self.json.evaluate(self.uuid, src)
+        if self.debug:
+            print omsg
+
+        output = omsg["out"]
+        if output != "":
+            # the output already contains "\n", so we don't print it:
+            print sys.ps3 + output,
+
+    def __del__(self):
+        print "Killing the engine..."
+        self.json.kill(self.uuid)
+
+def main():
+    message = """\
+FEMhub interactive remote console"""
+    url_base = "http://lab.femhub.org/"
+    parser = OptionParser()
+    parser.add_option(
+            "-d", "--debug",
+            dest="debug",
+            action="store_true",
+            default=False,
+            help="print the full JSON RPC output")
+    options, args = parser.parse_args()
+
+    print "Connecting to the online lab at %s ..." % url_base
+    s = JSONRPCService(url_base + "async")
+    client = Console(s, debug=options.debug)
+    print
+    client.interact(message)
+
+
+if __name__ == '__main__':
+    main()
