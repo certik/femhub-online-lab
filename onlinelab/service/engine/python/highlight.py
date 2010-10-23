@@ -9,11 +9,18 @@ from docutils import core, nodes
 from docutils.parsers.rst import roles
 
 def func_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    """``:func:`` role for docutils (e.g. ``:func:`sin` -> sin()``. """
+    """``:func:`` role for docutils (e.g. ``:func:`sin` -> sin()`` (bold)). """
     node = nodes.strong(rawtext, text + '()', **options)
     return [node], []
 
 roles.register_canonical_role('func', func_role)
+
+def class_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    """``:class:`` role for docutils (e.g. ``:class:`Basic` -> Basic`` (bold)). """
+    node = nodes.strong(rawtext, text, **options)
+    return [node], []
+
+roles.register_canonical_role('class', class_role)
 
 class Highlight(object):
     """Simple class for highlighting Python. """
