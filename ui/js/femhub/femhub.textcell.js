@@ -32,7 +32,7 @@ FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
         /* pass */
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.TextCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-text');

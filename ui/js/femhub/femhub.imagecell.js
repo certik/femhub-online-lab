@@ -16,7 +16,7 @@ FEMhub.ImageCell = Ext.extend(FEMhub.OutputCell, {
         this.imageData = data;
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.ImageCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-image');

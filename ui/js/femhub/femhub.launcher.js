@@ -4,16 +4,11 @@ FEMhub.Launcher = Ext.extend(Ext.Component, {
     launcherIcon: null,
 
     constructor: function(config) {
-        this.addEvents({
-            'click': true,
-            'dblclick': true,
-            'contextmenu': true,
-        });
-
+        this.addEvents(['click', 'dblclick', 'contextmenu']);
         FEMhub.Launcher.superclass.constructor.call(this, config);
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.Launcher.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-launcher-wrap');

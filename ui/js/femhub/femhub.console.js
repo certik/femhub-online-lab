@@ -28,8 +28,8 @@ FEMhub.Console = Ext.extend(Ext.Window, {
             }),
             cm: new Ext.grid.ColumnModel([
                 new Ext.grid.RowNumberer(),
-                { header: "Message", sortable: false, dataIndex: 'text'},
-                { header: "Date", width: 200, sortable: true, dataIndex: 'when'},
+                {header: "Message", sortable: false, dataIndex: 'text'},
+                {header: "Date", width: 200, sortable: true, dataIndex: 'when'},
             ]),
         });
 
@@ -62,10 +62,9 @@ FEMhub.Console = Ext.extend(Ext.Window, {
     fillConsoleGrid: function() {
         var rec = Ext.data.Record.create(['text', 'when']);
         var store = this.consoleGrid.getStore();
-        var index = 0;
 
-        FEMhub.logs.each(function(log) {
-            store.add(new rec({text: log[0], when: log[1]}, index++));
+        FEMhub.logs.each(function(log, index) {
+            store.add(new rec({text: log[0], when: log[1]}, index));
         }, this);
     },
 

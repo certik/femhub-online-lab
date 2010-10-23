@@ -11,7 +11,7 @@ FEMhub.IconComboBox = Ext.extend(Ext.form.ComboBox, {
             this.displayField + '}</div></tpl>';
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.IconComboBox.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('x-icon-combo-input');

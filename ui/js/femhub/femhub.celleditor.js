@@ -5,9 +5,7 @@ FEMhub.CellEditor = Ext.extend(Ext.Window, {
     constructor: function(config) {
         config = config || {};
 
-        this.addEvents({
-            'savecell': true,
-        });
+        this.addEvents(['savecell']);
 
         this.htmlEditor = new Ext.form.HtmlEditor({
             border: false,

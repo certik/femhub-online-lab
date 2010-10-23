@@ -18,7 +18,7 @@ FEMhub.RSTCell = Ext.extend(FEMhub.TextCell, {
         /* pass */
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.RSTCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-rst');

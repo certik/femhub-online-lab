@@ -23,7 +23,7 @@ FEMhub.CellManager = function(config) {
         tabWidth: 4,
         fontSize: 100,
     });
-}
+};
 
 Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     isInitialized: false,
@@ -32,13 +32,13 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     activeCell: null,
 
     types: {
-        'text': 'TextCell',
-        'rst': 'RSTCell',
-        'input': 'InputCell',
-        'output': 'OutputCell',
-        'image': 'ImageCell',
-        'error': 'ErrorCell',
-        'raw': 'RAWCell',
+        text: 'TextCell',
+        rst: 'RSTCell',
+        input: 'InputCell',
+        output: 'OutputCell',
+        image: 'ImageCell',
+        error: 'ErrorCell',
+        raw: 'RAWCell',
     },
 
     getUUID: function() {
@@ -48,10 +48,12 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     newCell: function(config) {
         config = config || {};
 
+        var ctype;
+
         if (!Ext.isDefined(config.type)) {
-            var ctype = this.types.input;
+            ctype = this.types.input;
         } else {
-            var ctype = this.types[config.type];
+            ctype = this.types[config.type];
         }
 
         var cell = new FEMhub[ctype](Ext.apply({
@@ -62,20 +64,22 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
         this.statusSaved = false;
 
         if (config.render !== false) {
+            var id;
+
             if (Ext.isDefined(config.position)) {
-                var id = config.position;
+                id = config.position;
             } else if (Ext.isDefined(config.before)) {
-                var id = config.before.id;
+                id = config.before.id;
             } else if (Ext.isDefined(config.after)) {
                 var next = config.after.getNextCell();
 
                 if (next === null) {
-                    var id = undefined;
+                    id = undefined;
                 } else {
-                    var id = next.id;
+                    id = next.id;
                 }
             } else {
-                var id = undefined;
+                id = undefined;
             }
 
             cell.render(this.root, id);
@@ -102,10 +106,12 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     typeToCls: function(type, dot) {
+        var cls;
+
         if (!Ext.isDefined(type)) {
-            var cls = 'femhub-cell';
+            cls = 'femhub-cell';
         } else {
-            var cls = 'femhub-cell-' + type;
+            cls = 'femhub-cell-' + type;
         }
 
         if (dot === false) {
@@ -124,10 +130,12 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     getNextCell: function(cell, type) {
+        var id;
+
         if (Ext.isObject(cell)) {
-            var id = cell.id;
+            id = cell.id;
         } else {
-            var id = cell;
+            id = cell;
         }
 
         var query = "div[id=" + id + "] ~ " + this.typeToCls(type) + ":first";
@@ -141,10 +149,12 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     getPrevCell: function(cell, type) {
+        var id;
+
         if (Ext.isObject(cell)) {
-            var id = cell.id;
+            id = cell.id;
         } else {
-            var id = cell;
+            id = cell;
         }
 
         var cls = this.typeToCls(type, false);
@@ -228,8 +238,8 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
             });
         }
 
-        var cell = this.getFirstCell();
-        evaluateCell.call(this, cell);
+        var first = this.getFirstCell();
+        evaluateCell.call(this, first);
     },
 
     initEngine: function() {
@@ -261,27 +271,29 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     },
 
     showEngineError: function(error) {
+        var msg;
+
         switch (error) {
         case 'no-services-available':
-            var msg = "No suitable services are currently available.";
+            msg = "No suitable services are currently available.";
             break;
         case 'service-disconnected':
-            var msg = "Service disconnected or not assigned yet.";
+            msg = "Service disconnected or not assigned yet.";
             break;
         case 'engine-starting':
-            var msg = "Engine wasn't initialized yet.";
+            msg = "Engine wasn't initialized yet.";
             break;
         case 'engine-timeout':
-            var msg = "Engine was starting too long.";
+            msg = "Engine was starting too long.";
             break;
         case 'engine-not-running':
-            var msg = "Engine failed to initilize.";
+            msg = "Engine failed to initilize.";
             break;
         case 'engine-running':
-            var msg = "Engine is already running.";
+            msg = "Engine is already running.";
             break;
         default:
-            var msg = error;
+            msg = error;
         }
 
         FEMhub.msg.error("Engine error", msg);
@@ -290,7 +302,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
     loadCells: function() {
         FEMhub.RPC.Worksheet.load({uuid: this.uuid}, function(result) {
             if (result.ok === true) {
-                if (result.cells.length == 0) {
+                if (result.cells.length === 0) {
                     if (this.startEmpty !== false) {
                         this.newCell({
                             type: 'input',
@@ -439,7 +451,7 @@ Ext.extend(FEMhub.CellManager, Ext.util.Observable, {
 
         if (prev === null) {
             if (this.cycleCells) {
-                var prev = this.getLastCell(ctype);
+                prev = this.getLastCell(ctype);
             } else {
                 return null;
             }

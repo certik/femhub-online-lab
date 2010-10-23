@@ -143,7 +143,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
            var cells = [];
 
            for (var i = 0;; i++) {
-                var cell = Ext.getCmp(this.id + 'o' + i);
+                cell = Ext.getCmp(this.id + 'o' + i);
 
                 if (cell) {
                     cells.push(cell);
@@ -210,7 +210,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         ]);
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.InputCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-input');
@@ -259,9 +259,9 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         this.setupInputCellEvents();
         this.setupInputCellKeyMap();
 
-        if (this.start === true) {
-            // TODO: this.el_textarea.update("Click here to start ...");
-        }
+        //if (this.start === true) {
+        // TODO: this.el_textarea.update("Click here to start ...");
+        //}
     },
 
     onFocusCell: function() {
@@ -295,7 +295,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         var pos = selection.start;
 
         if (selection.start == selection.end) {
-            if (pos == 0) {
+            if (pos === 0) {
                 input = '\n' + input;
                 pos += 1;
             } else {
@@ -315,7 +315,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
 
                 if (input[pos-1] == ':') {
-                    for (var i = 0; i < this.owner.tabWidth; i++) {
+                    for (var j = 0; j < this.owner.tabWidth; j++) {
                         insert += ' ';
                     }
                 }
@@ -340,14 +340,16 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         var pos = selection.start;
 
         if (selection.start == selection.end) {
-            if (pos == 0) {
+            if (pos === 0) {
+                var result;
+
                 if (this.owner.mergeOnBackspace) {
-                    var result = this.mergeCellBefore();
+                    result = this.mergeCellBefore();
                 } else {
-                    var result = false;
+                    result = false;
                 }
 
-                if (!result && (input.length == 0)) {
+                if (!result && (input.length === 0)) {
                     this.removeCell();
                 }
 
@@ -374,7 +376,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             if (dirty || i == pos) {
                 --pos;
             } else {
-                pos = Ext.max([i, pos - this.owner.tabWidth])
+                pos = Ext.max([i, pos - this.owner.tabWidth]);
             }
 
             input = input.slice(0, pos) + input.slice(end);
@@ -415,16 +417,15 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 source: source,
             }, function(result) {
                 if (result.ok === true) {
-                    var completions = result.completions;
+                    var items = [],
+                        completions = result.completions;
 
                     if (!completions || !completions.length) {
-                        var items = [{
+                        items.push({
                             text: '&lt;no matches&gt;',
                             disabled: true,
-                        }];
+                        });
                     } else {
-                        var items = [];
-
                         Ext.each(result.completions, function(completion) {
                             items.push({
                                 text: completion.match,
@@ -433,7 +434,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                         }, this);
                     }
 
-                    var menu = new Ext.menu.Menu({
+                    var context = new Ext.menu.Menu({
                         id: 'femhub-completion-menu',
                         items: items,
                         listeners: {
@@ -442,14 +443,14 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                                     this.setInput(input.slice(0, start) + item.text + input.slice(end));
                                     this.setSelection(start + item.text.length);
                                     this.focusCell();
-                                    menu.destroy()
+                                    menu.destroy();
                                 },
                                 scope: this,
                             },
                         },
                     });
 
-                    menu.showAt([0, 0]);
+                    context.showAt([0, 0]);
                 } else {
                     this.owner.showEngineError(result.reason);
                 }
@@ -498,7 +499,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                     }
 
                     if (output.length > 0) {
-                        var cell = this.owner.newCell({
+                        cell = this.owner.newCell({
                             type: type,
                             after: after,
                             setup: {
@@ -556,26 +557,28 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 var cells = [];
 
                 if (Ext.isDefined(result.info)) {
-                    var type = 'output';
+                    var output, type = 'output';
 
                     if (!result.info) {
-                        var output = "Object `" + result.text + "` not found.";
+                        output = "Object `" + result.text + "` not found.";
                     } else {
                         if (result.more && result.info.source) {
                             if (result.info.source_html) {
-                                var output = result.info.source_html, type = 'raw';
+                                output = result.info.source_html;
+                                type = 'raw';
                             } else {
-                                var output = result.info.source;
+                                output = result.info.source;
                             }
                         } else {
                             if (result.info.docstring) {
                                 if (result.info.docstring_html) {
-                                    var output = result.info.docstring_html, type = 'raw';
+                                    output = result.info.docstring_html;
+                                    type = 'raw';
                                 } else {
-                                    var output = result.info.docstring;
+                                    output = result.info.docstring;
                                 }
                             } else {
-                                var output = '<no docstring>';
+                                output = '<no docstring>';
                             }
                         }
                     }
@@ -673,7 +676,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         var input = cell.getInput();
 
-        if (input.length != 0) {
+        if (input.length !== 0) {
             input += '\n';
         }
 
@@ -706,7 +709,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         var input = cell.getInput();
 
-        if (input.length != 0) {
+        if (input.length !== 0) {
             input = '\n' + input;
         }
 

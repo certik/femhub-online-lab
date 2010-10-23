@@ -81,10 +81,12 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 scope: this,
                 stopEvent: false,
                 handler: function(key, ev) {
+                    var cell;
+
                     if (this.collapsed || this.ctype != 'input') {
                         ev.stopEvent();
 
-                        var cell = this.prevCell('input'); // XXX
+                        cell = this.prevCell('input'); // XXX
 
                         if (cell.ctype == 'input') {
                             cell.setSelection('end');
@@ -99,7 +101,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                             if (index == -1 || selection.start <= index) {
                                 ev.stopEvent();
 
-                                var cell = this.prevCell('input'); // XXX
+                                cell = this.prevCell('input'); // XXX
 
                                 if (cell.ctype == 'input') {
                                     cell.setSelection('end');
@@ -117,10 +119,12 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                 scope: this,
                 stopEvent: false,
                 handler: function(key, ev) {
+                    var cell;
+
                     if (this.collapsed || this.ctype != 'input') {
                         ev.stopEvent();
 
-                        var cell = this.nextCell('input'); // XXX
+                        cell = this.nextCell('input'); // XXX
 
                         if (cell.ctype == 'input') {
                             cell.setSelection('start');
@@ -135,7 +139,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
                             if (index == -1 || selection.start > index) {
                                 ev.stopEvent();
 
-                                var cell = this.nextCell('input'); // XXX
+                                cell = this.nextCell('input'); // XXX
 
                                 if (cell.ctype == 'input') {
                                     cell.setSelection('start');
@@ -194,9 +198,9 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
             return {
                 start: dom.selectionStart,
                 end: dom.selectionEnd,
-            }
+            };
         } else {
-            /* TODO */
+            return null; /* TODO: IE */
         }
     },
 
@@ -214,9 +218,9 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
             } else {
                 dom.setSelectionRange(obj.start, obj.end);
             }
-        } else {
-            /* TODO */
         }
+
+        /* TODO: IE */
     },
 
     setupIOCellObserver: function() {
@@ -261,7 +265,7 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         }, this);
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.IOCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-io');

@@ -63,16 +63,13 @@ FEMhub.Desktop = function(lab) {
         var width = Math.min(0.8*view.width, 700);
         var height = Math.min(0.8*view.height, 500);
 
-        var x = (view.width - width)/2;
-        var y = (view.height - height)/2;
-
         var _windows = [];
 
         this.getManager().each(function(wnd) {
             _windows.push(wnd);
         });
 
-        function overlaps(x, y) {
+        function overlaps(xx, yy) {
             for (var i = 0; i < _windows.length; i++) {
                 var wnd = _windows[i];
 
@@ -80,13 +77,16 @@ FEMhub.Desktop = function(lab) {
                     continue;
                 }
 
-                if (wnd.x == x && wnd.y == y) {
+                if (wnd.x == xx && wnd.y == yy) {
                     return true;
                 }
             }
 
             return false;
         }
+
+        var x = (view.width - width)/2;
+        var y = (view.height - height)/2;
 
         while (true) {
             if (overlaps(x, y)) {
@@ -122,19 +122,19 @@ FEMhub.Desktop = function(lab) {
         win.animateTarget = win.taskButton.el;
 
         win.on({
-            'activate': {
+            activate: {
                 fn: markActive
             },
-            'beforeshow': {
+            beforeshow: {
                 fn: markActive
             },
-            'deactivate': {
+            deactivate: {
                 fn: markInactive
             },
-            'minimize': {
+            minimize: {
                 fn: minimizeWin
             },
-            'close': {
+            close: {
                 fn: removeWin
             }
         });
@@ -149,25 +149,25 @@ FEMhub.Desktop = function(lab) {
 
     this.getWindow = function(id) {
         return windows.get(id);
-    }
+    };
 
     this.getWinWidth = function() {
         var width = Ext.lib.Dom.getViewWidth();
         return width < 200 ? 200 : width;
-    }
+    };
 
     this.getWinHeight = function() {
         var height = (Ext.lib.Dom.getViewHeight()-taskbarEl.getHeight());
         return height < 100 ? 100 : height;
-    }
+    };
 
     this.getWinX = function(width) {
-        return (Ext.lib.Dom.getViewWidth() - width) / 2
-    }
+        return (Ext.lib.Dom.getViewWidth() - width) / 2;
+    };
 
     this.getWinY = function(height) {
         return (Ext.lib.Dom.getViewHeight()-taskbarEl.getHeight() - height) / 2;
-    }
+    };
 
     this.setTickSize = function(xTickSize, yTickSize) {
         this.xTickSize = xTickSize;
@@ -249,8 +249,6 @@ FEMhub.Desktop = function(lab) {
         }); };
 
     this.arrangeLaunchers = function() {
-        var len = this.launchers.length;
-
         var desktop = this.getDesktopEl();
         var height = desktop.getHeight();
 
@@ -275,7 +273,7 @@ FEMhub.Desktop = function(lab) {
 
             y += h + 10;
         });
-    },
+    };
 
     this.getDesktopEl = function() {
         return Ext.get('femhub-desktop');
@@ -321,6 +319,6 @@ FEMhub.Desktop = function(lab) {
     // XXX: Desktop should be a Component
     this.getXType = function() {
         return 'x-femhub-desktop';
-    }
+    };
 };
 

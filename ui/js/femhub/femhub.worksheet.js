@@ -196,6 +196,8 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                             break;
                         case 'cancel':
                             break;
+                        default:
+                            break;
                     }
                 },
                 icon: Ext.MessageBox.QUESTION,
@@ -204,14 +206,14 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
         }
     },
 
-    importCells: function(text) {
+    importCells: function(source) {
         var cells = this.getCellsManager();
 
         var TEXT = 0;
         var INPUT = 1;
         var OUTPUT = 2;
 
-        var lines = text.split('\n');
+        var lines = source.split('\n');
         var state = TEXT;
 
         var text = [];
@@ -267,6 +269,8 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 } else {
                     output.push(line);
                 }
+                break;
+            default:
                 break;
             }
         }
@@ -345,8 +349,6 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                             manager.evaluateCode(cell.content);
                         }, this);
                     }
-                } else {
-                    /* pass */
                 }
 
                 if (++index == this.imports.length && evalCells) {

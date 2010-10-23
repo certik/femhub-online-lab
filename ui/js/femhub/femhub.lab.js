@@ -95,7 +95,7 @@ FEMhub.getDesktop = function() {
     if (Ext.isDefined(FEMhub.lab)) {
         return FEMhub.lab.getDesktop();
     } else {
-        /* XXX: show error */
+        return null; /* XXX: show error */
     }
-}
+};
 

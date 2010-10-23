@@ -129,7 +129,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             if (result.ok === true) {
                 var engines = result.engines;
 
-                if (engines.length == 0) {
+                if (engines.length === 0) {
                     Ext.MessageBox.show({
                         title: 'Internal Error',
                         msg: "No engines were specified. Consult administrator about this problem.",
@@ -187,8 +187,8 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
                                     if (result.ok === true) {
                                         var store = this.worksheetsGrid.getStore();
 
-                                        for (var i = 0; i < uuids.length; i++) {
-                                            store.remove(store.getById(uuids[i]));
+                                        for (var j = 0; j < uuids.length; j++) {
+                                            store.remove(store.getById(uuids[j]));
                                         }
                                     } else {
                                         FEMhub.log("Couldn't move worksheets");
@@ -206,10 +206,12 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             var engines = [];
 
             Ext.each(this.engines, function(engine) {
+                var text;
+
                 if (!engine.description.length) {
-                    var text = engine.name;
+                    text = engine.name;
                 } else {
-                    var text = String.format("{0} ({1})", engine.name, engine.description);
+                    text = String.format("{0} ({1})", engine.name, engine.description);
                 }
 
                 engines.push({
@@ -389,22 +391,28 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
 
         var root = this.foldersTree.getRootNode();
 
+        function getFolders() {
+            FEMhub.RPC.Folder.getFolders({}, function(result) {
+                if (result.ok === true) {
+                    recFillTree.call(this, result.folders, root);
+                    this.getMyFolders().select();
+                    this.getWorksheets();
+                    root.expand(true);
+                }
+            }, this);
+        }
+
+        // XXX: this is an obsolete hack (remove this)
+
         FEMhub.RPC.Folder.getRoot({}, function(result) {
             if (result.ok === true) {
-                FEMhub.RPC.Folder.getFolders({}, function(result) {
-                    if (result.ok === true) {
-                        recFillTree.call(this, result.folders, root);
-                        this.getMyFolders().select();
-                        this.getWorksheets();
-                        root.expand(true);
-                    }
-                }, this);
+                getFolders.call(this);
             }
         }, this);
     },
 
     addFolder: function(node) {
-        var node = this.getCurrentNode(node);
+        node = this.getCurrentNode(node);
 
         Ext.MessageBox.prompt('Add folder', 'Enter folder name:', function(button, title) {
             if (button === 'ok') {
@@ -435,7 +443,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
     },
 
     renameFolder: function(node) {
-        var node = this.getCurrentNode(node);
+        node = this.getCurrentNode(node);
 
         if (this.isMyFolders(node)) {
             Ext.MessageBox.show({
@@ -469,7 +477,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
     },
 
     deleteFolder: function(node) {
-        var node = this.getCurrentNode(node);
+        node = this.getCurrentNode(node);
 
         if (this.isMyFolders(node)) {
             Ext.MessageBox.show({
@@ -555,7 +563,7 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
     },
 
     getWorksheets: function(node) {
-        var node = this.getCurrentNode(node);
+        node = this.getCurrentNode(node);
 
         FEMhub.RPC.Folder.getWorksheets({uuid: node.id}, function(result) {
             if (result.ok === true) {
@@ -585,8 +593,8 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
     },
 
     newWorksheet: function(engine, handler, scope, node) {
-        var node = this.getCurrentNode(node);
         engine = engine || this.engines[0].uuid;
+        node = this.getCurrentNode(node);
 
         var params = { name: 'untitled', engine_uuid: engine, folder_uuid: node.id };
 
@@ -614,10 +622,12 @@ FEMhub.Browser = Ext.extend(Ext.Window, {
             return Ext.isDefined(wnd.getUUID) && wnd.getUUID() == conf.uuid;
         }, this);
 
+        var worksheet;
+
         if (worksheets.length) {
-            var worksheet = worksheets[0];
+            worksheet = worksheets[0];
         } else {
-            var worksheet = desktop.createWindow(FEMhub.Worksheet, { conf: conf });
+            worksheet = desktop.createWindow(FEMhub.Worksheet, { conf: conf });
         }
 
         worksheet.show();

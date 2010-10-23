@@ -8,13 +8,15 @@ FEMhub.msg.NotImplementedError = function() {
         buttons: Ext.MessageBox.OK,
         icon: Ext.MessageBox.INFO,
     });
-}
+};
 
 FEMhub.msg.show = function(obj, msg, handler, scope, buttons, icon) {
+    var title;
+
     if (Ext.isObject(obj)) {
-        var title = obj.title;
+        title = obj.title;
     } else {
-        var title = obj;
+        title = obj;
     }
 
     buttons = buttons || Ext.MessageBox.OK;
@@ -27,17 +29,17 @@ FEMhub.msg.show = function(obj, msg, handler, scope, buttons, icon) {
         fn: handler,
         scope: scope,
     });
-}
+};
 
 FEMhub.msg.info = function(title, msg, handler, scope, buttons) {
     FEMhub.msg.show(title, msg, handler, scope, buttons, Ext.MessageBox.INFO);
-}
+};
 
 FEMhub.msg.warning = function(title, msg, handler, scope, buttons) {
     FEMhub.msg.show(title, msg, handler, scope, buttons, Ext.MessageBox.WARNING);
-}
+};
 
 FEMhub.msg.error = function(title, msg, handler, scope, buttons) {
     FEMhub.msg.show(title, msg, handler, scope, buttons, Ext.MessageBox.ERROR);
-}
+};
 

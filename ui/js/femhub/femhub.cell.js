@@ -60,7 +60,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         /* pass */
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.Cell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell');
@@ -208,7 +208,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
         if (cell === null) {
             if (this.owner.cycleCells) {
-                var cell = this.getLastCell(type);
+                cell = this.getLastCell(type);
             } else {
                 return null;
             }

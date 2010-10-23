@@ -34,7 +34,7 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
             var desktop = FEMhub.getDesktop();
 
             if (desktop !== null) {
-                active = desktop.getGroup().getActive()
+                active = desktop.getGroup().getActive();
 
                 if (active === null) {
                     active = desktop;

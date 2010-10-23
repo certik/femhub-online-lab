@@ -75,7 +75,7 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
         ]);
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.OutputCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-output');

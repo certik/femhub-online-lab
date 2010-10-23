@@ -6,7 +6,7 @@ FEMhub.CellPanel = Ext.extend(Ext.BoxComponent, {
         FEMhub.CellPanel.superclass.constructor.call(this, config);
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.CellPanel.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cells');

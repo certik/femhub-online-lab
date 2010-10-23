@@ -18,9 +18,7 @@ FEMhub.Login = Ext.extend(Ext.Window, {
     constructor: function(config) {
         config = config || {};
 
-        this.addEvents({
-            'loginsuccess': true,
-        });
+        this.addEvents(['loginsuccess']);
 
         var langs = new Ext.data.ArrayStore({
             fields: ['name', 'code'],
@@ -177,33 +175,38 @@ FEMhub.Login = Ext.extend(Ext.Window, {
     login: function() {
         var username = Ext.getCmp('femhub-login-username');
         var password = Ext.getCmp('femhub-login-password');
-        var language = Ext.getCmp('femhub-login-language');
         var remember = Ext.getCmp('femhub-login-remember');
 
         var params = {
             username: username.getValue(),
             password: password.getValue(),
             remember: remember.getValue(),
-        }
+        };
 
         FEMhub.RPC.User.login(params, function(result) {
             if (result.ok === true) {
                 this.fireEvent('loginsuccess');
                 this.close();
             } else {
+                var msg;
+
                 switch (result.reason) {
                 case 'username':
-                    FEMhub.msg.error('Login failed', 'Account doesn\'t exist. Use "Create account" button to create new one.');
+                    msg = 'Account doesn\'t exist. Use "Create account" button to create new one.';
                     this.clearFields();
                     break;
                 case 'password':
-                    FEMhub.msg.error('Login failed', 'Wrong password. Use "Forgot password?" button to create new one.');
+                    msg = 'Wrong password. Use "Forgot password?" button to create new one.';
                     this.clearPassword();
                     break;
                 case 'disabled':
-                    FEMhub.msg.error('Login failed', 'Your account has been disabled.');
+                    msg = 'Your account has been disabled.';
                     break;
+                default:
+                    msg = result.reason;
                 }
+
+                FEMhub.msg.error('Login failed', msg);
             }
         }, this);
     },
@@ -372,7 +375,7 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
             username: username.getValue(),
             email: email.getValue(),
             password: password.getValue(),
-        }
+        };
 
         if (params.password != passwordRetype.getValue()) {
             Ext.MessageBox.show({
@@ -501,7 +504,7 @@ FEMhub.RemindPassword = Ext.extend(Ext.Window, {
 
         var params = {
             username: username.getValue(),
-        }
+        };
 
         FEMhub.RPC.User.remindPassword(params, function(result) {
             if (result.ok === true) {
@@ -519,25 +522,20 @@ FEMhub.RemindPassword = Ext.extend(Ext.Window, {
                     scope: this,
                 });
             } else {
+                var msg;
+
                 switch (result.reason) {
                 case 'does-not-exist':
-                    Ext.MessageBox.show({
-                        title: 'Remind password',
-                        msg: "'" + params.username + "' account does not exists. Choose a correct one.",
-                        buttons: Ext.MessageBox.OK,
-                        icon: Ext.MessageBox.ERROR,
-                    });
+                    msg = "'" + params.username + "' account does not exists. Choose a correct one.";
                     break;
                 case 'invalid-email':
-                    Ext.MessageBox.show({
-                        title: 'Remind password',
-                        msg: "Invalid E-mail. No message was sent.",
-                        buttons: Ext.MessageBox.OK,
-                        icon: Ext.MessageBox.ERROR,
-                    });
+                    msg = "Invalid E-mail. No message was sent.";
                     break;
+                default:
+                    msg = result.reason;
                 }
 
+                FEMhub.msg.error('Remind password', msg);
                 this.clearFields();
             }
         }, this);

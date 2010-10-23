@@ -79,9 +79,9 @@ Ext.extend(FEMhub.TaskButton, Ext.Button, {
         });
 
         this.context.on('beforeshow', function() {
-            var win = this.win;
+            var items, win = this.win;
 
-            var items = [
+            items = [
                 this.context.getComponent('move'),
                 this.context.getComponent('fit'),
             ];
@@ -91,7 +91,7 @@ Ext.extend(FEMhub.TaskButton, Ext.Button, {
             items[0].setDisabled(disabled);
             items[1].setDisabled(disabled);
 
-            var items = [
+            items = [
                 this.context.getComponent('restore'),
                 this.context.getComponent('minimize'),
                 this.context.getComponent('maximize'),
