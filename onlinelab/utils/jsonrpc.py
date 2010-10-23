@@ -18,13 +18,6 @@ def datetime(obj):
     else:
         return None
 
-def unicode_encode_dict(d):
-    p = {}
-    for k in d:
-        k = unicode.encode(k)
-        p[k] = d[k]
-    return p
-
 class JSONRPCError(Exception):
     """Base class for JSON-RPC errors. """
 
@@ -171,8 +164,7 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 
                 if type(self.params) == dict:
                     try:
-                        params = unicode_encode_dict(self.params)
-                        func(**params)
+                        func(**dict([ (unicode(k), v) for k, v in self.params.items() ]))
                     except TypeError, exc:
                         raise InvalidParams(exc.args[0])
                     else:
