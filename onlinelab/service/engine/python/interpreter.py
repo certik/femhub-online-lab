@@ -245,9 +245,13 @@ class PythonInterpreter(object):
     def split(self, source):
         """Extract last logical line from multi-line source code. """
         string = StringIO(source).readline
-        tokens = tokenize.generate_tokens(string)
 
-        for tok, _, (n, _), _, _ in reversed(list(tokens)):
+        try:
+            tokens = reversed(list(tokenize.generate_tokens(string)))
+        except (OverflowError, SyntaxError, ValueError):
+            return None, source
+
+        for tok, _, (n, _), _, _ in tokens:
             if tok == tokenize.NEWLINE:
                 lines = source.split('\n')
 
