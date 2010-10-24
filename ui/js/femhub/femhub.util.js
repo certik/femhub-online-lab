@@ -43,3 +43,11 @@ FEMhub.util.capitalizeFirst = function(str) {
     return !str ? str : str.charAt(0).toUpperCase() + str.slice(1);
 };
 
+FEMhub.util.eachPair = function(obj, handler, scope) {
+    var index = 0;
+
+    for (var key in obj) {
+        handler.call(scope || window, key, obj[key], index++, obj);
+    }
+};
+
