@@ -530,6 +530,14 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
             cell.autocomplete();
         }
     },
+
+    actionPreprocessCell: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null) {
+            cell.preprocessCell();
+        }
+    },
 });
 
 Ext.reg('x-femhub-worksheet', FEMhub.Worksheet);
@@ -553,7 +561,6 @@ FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
         'ENTER     -shift +ctrl -alt': 'inplaceEvaluateCell',
         'E         +shift -ctrl +alt': 'inplaceEvaluateCell',
         'I         -shift -ctrl +alt': 'interruptCell',
-        '.         -shift -ctrl +alt': 'copyCell',
         'W         -shift -ctrl +alt': 'wipeCell',
         'C         -shift -ctrl +alt': 'clearCell',
         'R         -shift -ctrl +alt': 'removeCell',
@@ -567,6 +574,8 @@ FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
         'Q         -shift -ctrl +alt': 'quitCell',
         ']         -shift -ctrl +alt': 'nextBracket',
         '[         -shift -ctrl +alt': 'prevBracket',
+        'P         -shift -ctrl +alt': 'preprocessCell',
+        '.         -shift -ctrl +alt': 'previousInput',
     },
 });
 

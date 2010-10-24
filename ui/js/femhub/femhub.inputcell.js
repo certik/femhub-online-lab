@@ -458,10 +458,24 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
     },
 
+    preprocessCell: function() {
+        var spaces = '';
+
+        for (var i = 0; i < this.owner.tabWidth; i++) {
+            spaces += ' ';
+        }
+
+        var input = this.getInput();
+        input = input.replace(/\t/g, spaces);
+        this.setInput(input);
+
+        return input;
+    },
+
     evaluateCell: function(config) {
         config = config || {};
 
-        var input = this.getInput();
+        var input = this.preprocessCell();
 
         this.el_evaluate.removeClass('femhub-enabled');
         this.el_clear.removeClass('femhub-enabled');
