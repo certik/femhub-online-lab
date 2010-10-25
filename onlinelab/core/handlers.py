@@ -81,7 +81,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
         try:
             template = self.settings['template_loader'].load(name)
         except IOError:
-            self.return_api_error("Template not found")
+            self.return_api_error('template-not-found')
         else:
             if context is None:
                 context = {}
@@ -89,7 +89,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
             try:
                 rendered = template.generate(**context)
             except:
-                self.return_api_error("Template rendering error")
+                self.return_api_error('template-render-error')
             else:
                 self.return_api_result({'rendered': rendered})
 
