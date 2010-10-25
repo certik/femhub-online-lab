@@ -155,6 +155,17 @@ FEMhub.Mappings.Global = Ext.extend(FEMhub.Mapping, {
                 }
             },
         },
+        windowClose: {
+            specs: [
+                'Q +shift -ctrl +alt',
+            ],
+            text: 'Close the active window',
+            handler: function(active, params, key, evt) {
+                if (!(active instanceof FEMhub.Desktop)) {
+                    active.close();
+                }
+            },
+        },
     },
 });
 

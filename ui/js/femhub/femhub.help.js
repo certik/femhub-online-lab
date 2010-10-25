@@ -68,10 +68,6 @@ FEMhub.Help = Ext.extend(FEMhub.Window, {
     scrollUpAction: function() {
         this.body.scroll('t', 40);
     },
-
-    quitAction: function() {
-        this.close();
-    },
 });
 
 FEMhub.Modules.Help = Ext.extend(FEMhub.Module, {
@@ -97,12 +93,6 @@ FEMhub.Mappings.Help = Ext.extend(FEMhub.Mapping, {
                 'K -shift -ctrl +alt',
             ],
             text: 'Scroll up',
-        },
-        quitAction: {
-            specs: [
-                'Q +shift -ctrl +alt',
-            ],
-            text: 'Close this window',
         },
     },
 });
