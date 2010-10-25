@@ -164,8 +164,8 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
     },
 
     clearFields: function() {
-        clearPassword();
-        clearUsername();
+        this.clearPassword();
+        this.clearUsername();
     },
 
     setUsername: function(username) {
