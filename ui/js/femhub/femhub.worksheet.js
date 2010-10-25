@@ -1,5 +1,5 @@
 
-FEMhub.Worksheet = Ext.extend(Ext.Window, {
+FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     imports: [],
 
     constructor: function(config) {

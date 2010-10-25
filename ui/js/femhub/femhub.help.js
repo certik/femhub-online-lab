@@ -1,5 +1,5 @@
 
-FEMhub.Help = Ext.extend(Ext.Window, {
+FEMhub.Help = Ext.extend(FEMhub.Window, {
     defaultTemplate: 'femhub/help.html',
 
     constructor: function(config) {

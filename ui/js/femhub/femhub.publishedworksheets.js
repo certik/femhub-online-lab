@@ -1,5 +1,5 @@
 
-FEMhub.PublishedWorksheets = Ext.extend(Ext.Window, {
+FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     grid: null,
 
     constructor: function(config) {

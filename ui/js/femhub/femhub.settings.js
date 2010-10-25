@@ -1,5 +1,5 @@
 
-FEMhub.Settings = Ext.extend(Ext.Window, {
+FEMhub.Settings = Ext.extend(FEMhub.Window, {
     tabsPanel: null,
 
     constructor: function(config) {

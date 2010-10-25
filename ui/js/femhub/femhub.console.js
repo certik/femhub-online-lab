@@ -1,5 +1,5 @@
 
-FEMhub.Console = Ext.extend(Ext.Window, {
+FEMhub.Console = Ext.extend(FEMhub.Window, {
     constructor: function(config) {
         config = config || {};
 

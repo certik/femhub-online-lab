@@ -1,5 +1,5 @@
 
-FEMhub.Browser = Ext.extend(Ext.Window, {
+FEMhub.Browser = Ext.extend(FEMhub.Window, {
     toolbar: null,
     foldersTree: null,
     worksheetsGrid: null,

@@ -1,5 +1,5 @@
 
-FEMhub.WorksheetChooser = Ext.extend(Ext.Window, {
+FEMhub.WorksheetChooser = Ext.extend(FEMhub.Window, {
 
     constructor: function(config) {
         config = config || {};

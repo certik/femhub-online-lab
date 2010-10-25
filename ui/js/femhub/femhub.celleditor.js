@@ -1,5 +1,5 @@
 
-FEMhub.CellEditor = Ext.extend(Ext.Window, {
+FEMhub.CellEditor = Ext.extend(FEMhub.Window, {
     htmlEditor: null,
 
     constructor: function(config) {

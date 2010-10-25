@@ -1,4 +1,5 @@
-FEMhub.MeshEditor = Ext.extend(Ext.Window, {
+
+FEMhub.MeshEditor = Ext.extend(FEMhub.Window, {
     constructor: function(config) {
         config = config || {};
 

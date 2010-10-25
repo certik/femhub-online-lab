@@ -1,5 +1,5 @@
 
-FEMhub.Login = Ext.extend(Ext.Window, {
+FEMhub.Login = Ext.extend(FEMhub.Window, {
     loginHtml: '<div class="femhub-login-head">The FEMhub Online Laboratory</div>' +
                '<div class="femhub-login-text">' +
                'The goal of the FEMhub Online Lab is to make scientific computing ' +
@@ -212,7 +212,7 @@ FEMhub.Login = Ext.extend(Ext.Window, {
     },
 });
 
-FEMhub.CreateAccount = Ext.extend(Ext.Window, {
+FEMhub.CreateAccount = Ext.extend(FEMhub.Window, {
     constructor: function(login, config) {
         this.login = login;
         config = config || {};
@@ -418,7 +418,7 @@ FEMhub.CreateAccount = Ext.extend(Ext.Window, {
     },
 });
 
-FEMhub.RemindPassword = Ext.extend(Ext.Window, {
+FEMhub.RemindPassword = Ext.extend(FEMhub.Window, {
     constructor: function(login, config) {
         this.login = login;
         config = config || {};
