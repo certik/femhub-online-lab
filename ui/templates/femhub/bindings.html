@@ -1,0 +1,24 @@
+
+<h2>{{ local['description'] }}</h2>
+
+<dl>
+{% for binding in local['bindings'] %}
+    <dt>
+        {% if binding['shift'] %}
+            <b>Shift</b>
+            +
+        {% end %}
+        {% if binding['ctrl'] %}
+            <b>Ctrl</b>
+            +
+        {% end %}
+        {% if binding['alt'] %}
+            <b>Alt</b>
+            +
+        {% end %}
+        <b>{{ binding['prettyKey'] }}</b>
+    </dt>
+    <dd>{{ binding['text'] }}</dd>
+{% end %}
+</dl>
+

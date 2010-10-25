@@ -128,3 +128,33 @@ FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
 
 FEMhub.Mappings = {}; // global namespace of Online Lab key mappings
 
+FEMhub.Mappings.Global = Ext.extend(FEMhub.Mapping, {
+    global: true,
+    bindings: {
+        bindingsHelp: {
+            specs: [
+                {key: 191, shift: true, ctrl: false, alt: false},
+            ],
+            text: 'Display help about available key bindings',
+            handler: function(active, params, key, evt) {
+                var bindings = active.getBindings();
+
+                if (bindings !== null) {
+                    bindings = bindings.getBindingsList();
+
+                    (new FEMhub.Help({
+                        title: 'Key bindings',
+                        template: 'femhub/bindings.html',
+                        context: {
+                            local: {
+                                description: 'Local key bindings',
+                                bindings: bindings,
+                            },
+                        },
+                    })).show();
+                }
+            },
+        },
+    },
+});
+
