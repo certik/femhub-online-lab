@@ -316,9 +316,8 @@ FEMhub.Desktop = function(lab) {
         this.taskbar.disable();
     };
 
-    // XXX: Desktop should be a Component
-    this.getXType = function() {
-        return 'x-femhub-desktop';
+    this.getBindings = function() {
+        return null;
     };
 };
 

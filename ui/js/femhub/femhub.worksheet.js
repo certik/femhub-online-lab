@@ -358,6 +358,10 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
         }, this);
     },
 
+    getBindings: function() {
+        return FEMhub.Bindings.Worksheet;
+    },
+
     evaluateCells: function() {
         if (this.imports.length) {
             this.evaluateImports(true);
@@ -366,7 +370,7 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
         }
     },
 
-    execAction: function(action, key, evt) {
+    execAction: function(action, params, key, evt) {
         var method = 'action' + FEMhub.util.capitalizeFirst(action);
         this[method].call(this, this.getCellsManager());
     },
@@ -543,39 +547,143 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
 Ext.reg('x-femhub-worksheet', FEMhub.Worksheet);
 
 FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
-    xtype: 'x-femhub-worksheet',
     bindings: {
-        'TAB       -shift -ctrl -alt': 'introspectCell',
-        'T         -shift -ctrl +alt': 'introspectCell',
-        'SPACE     -shift +ctrl -alt': 'introspectCell',
-        // XXX: 'DOWN      -shift -ctrl -alt': 'activateNextCell',
-        'J         -shift -ctrl +alt': 'activateNextCell',
-        // XXX: 'UP        -shift -ctrl -alt': 'activatePrevCell',
-        'K         -shift -ctrl +alt': 'activatePrevCell',
-        'LEFT      -shift -ctrl +alt': 'collapseCell',
-        'H         -shift -ctrl +alt': 'collapseCell',
-        'RIGHT     -shift -ctrl +alt': 'expandCell',
-        'L         -shift -ctrl +alt': 'expandCell',
-        'ENTER     +shift -ctrl -alt': 'forwardEvaluateCell',
-        'E         -shift -ctrl +alt': 'forwardEvaluateCell',
-        'ENTER     -shift +ctrl -alt': 'inplaceEvaluateCell',
-        'E         +shift -ctrl +alt': 'inplaceEvaluateCell',
-        'I         -shift -ctrl +alt': 'interruptCell',
-        'W         -shift -ctrl +alt': 'wipeCell',
-        'C         -shift -ctrl +alt': 'clearCell',
-        'R         -shift -ctrl +alt': 'removeCell',
-        // XXX: 'S         +shift -ctrl +alt': 'splitCellUpper',
-        // XXX: 'S         -shift -ctrl +alt': 'splitCellLower',
-        'DOWN      +shift -ctrl +alt': 'mergeCellAfter',
-        'J         +shift -ctrl +alt': 'mergeCellAfter',
-        'UP        +shift -ctrl +alt': 'mergeCellBefore',
-        'K         +shift -ctrl +alt': 'mergeCellBefore',
-        'A         -shift -ctrl +alt': 'activateCell',
-        'Q         -shift -ctrl +alt': 'quitCell',
-        ']         -shift -ctrl +alt': 'nextBracket',
-        '[         -shift -ctrl +alt': 'prevBracket',
-        'P         -shift -ctrl +alt': 'preprocessCell',
-        '.         -shift -ctrl +alt': 'previousInput',
+        introspectCell: {
+            specs: [
+                'TAB       -shift -ctrl -alt',
+                'T         -shift -ctrl +alt',
+                'SPACE     -shift +ctrl -alt',
+            ],
+            text: 'Introspect contents of the active cell',
+        },
+        activateNextCell: {
+            specs: [
+                // XXX: 'DOWN      -shift -ctrl -alt',
+                'J         -shift -ctrl +alt',
+            ],
+            text: 'Move focus to the following cell',
+        },
+        activatePrevCell: {
+            specs: [
+                // XXX: 'UP        -shift -ctrl -alt',
+                'K         -shift -ctrl +alt',
+            ],
+            text: 'Move focus to the preceeding cell',
+        },
+        collapseCell: {
+            specs: [
+                'LEFT      -shift -ctrl +alt',
+                'H         -shift -ctrl +alt',
+            ],
+            text: 'Collapse the active cell',
+        },
+        expandCell: {
+            specs: [
+                'RIGHT     -shift -ctrl +alt',
+                'L         -shift -ctrl +alt',
+            ],
+            text: 'Expand the active cell',
+        },
+        forwardEvaluateCell: {
+            specs: [
+                'ENTER     +shift -ctrl -alt',
+                'E         -shift -ctrl +alt',
+            ],
+            text: 'Evaluate the active cell and move focus to the following cell',
+        },
+        inplaceEvaluateCell: {
+            specs: [
+                'ENTER     -shift +ctrl -alt',
+                'E         +shift -ctrl +alt',
+            ],
+            text: 'Evaluate the active cell and keep focus in-place',
+        },
+        interruptCell: {
+            specs: [
+                'I         -shift -ctrl +alt',
+            ],
+            text: 'Interrupt evaluation of the active cell',
+        },
+        wipeCell: {
+            specs: [
+                'W         -shift -ctrl +alt',
+            ],
+            text: 'Remove contents of the active cell keeping its related cells',
+        },
+        clearCell: {
+            specs: [
+                'C         -shift -ctrl +alt',
+            ],
+            text: 'Remove contents of the active cells and its related cells',
+        },
+        removeCell: {
+            specs: [
+                'R         -shift -ctrl +alt',
+            ],
+            text: 'Remove the active cell and all cells related with it',
+        },
+        splitCellUpper: {
+            specs: [
+                'S         +shift -ctrl +alt',
+            ],
+            text: 'Split the active cell and locate cursor in the upper part',
+        },
+        splitCellLower: {
+            specs: [
+                'S         -shift -ctrl +alt',
+            ],
+            text: 'Split the active cell and locate cursor in the lower part',
+        },
+        mergeCellAfter: {
+            specs: [
+                'DOWN      +shift -ctrl +alt',
+                'J         +shift -ctrl +alt',
+            ],
+            text: 'Merge the active cell with the following cell',
+        },
+        mergeCellBefore: {
+            specs: [
+                'UP        +shift -ctrl +alt',
+                'K         +shift -ctrl +alt',
+            ],
+            text: 'Merge the active cell with the preceeding cell',
+        },
+        activateCell: {
+            specs: [
+                'A         -shift -ctrl +alt',
+            ],
+            text: 'Focus the last active cell',
+        },
+        quitCell: {
+            specs: [
+                'Q         -shift -ctrl +alt',
+            ],
+            text: 'Deactive the currently active cell',
+        },
+        nextBracket: {
+            specs: [
+                ']         -shift -ctrl +alt',
+            ],
+            text: 'Move cursor to the next bracket in source code',
+        },
+        prevBracket: {
+            specs: [
+                '[         -shift -ctrl +alt',
+            ],
+            text: 'Move cursor to the previous bracket in source code',
+        },
+        preprocessCell: {
+            specs: [
+                'P         -shift -ctrl +alt',
+            ],
+            text: 'Fix indentation and cleanup the active cell',
+        },
+        previousInput: {
+            specs: [
+                '.         -shift -ctrl +alt',
+            ],
+            text: 'Copy previous input to the active cell',
+        },
     },
 });
 

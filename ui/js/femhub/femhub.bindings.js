@@ -10,14 +10,16 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
         for (var mapping in FEMhub.Mappings) {
             var obj = new FEMhub.Mappings[mapping]();
 
-            for (var binding in obj.bindings) {
-                var data = obj.bindings[binding];
+            FEMhub.Bindings[mapping] = obj;
 
-                this.keymap.addBinding(Ext.apply(data, {
-                    handler: this.handler.createDelegate(this, [obj.xtype, data.action]),
-                    scope: this,
-                }));
-            }
+            FEMhub.util.eachPair(obj.bindings, function(action, data) {
+                Ext.each(data.specs, function(spec) {
+                    this.keymap.addBinding(Ext.apply(spec, {
+                        handler: this.handler.createDelegate(this, [obj, action, data]),
+                        scope: this,
+                    }));
+                }, this);
+            }, this);
         }
     },
 
@@ -47,19 +49,21 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
         return active;
     },
 
-    handler: function(xtype, action, key, evt) {
+    handler: function(binding, action, data, key, evt) {
         var active = this.getActive();
 
-        if (active !== null && active.getXType() == xtype) {
-            if (Ext.isFunction(action)) {
-                action(active, key, evt);
-            } else {
-                var method = active[action];
+        if (binding.global || (active !== null && active.getBindings() == binding)) {
+            var params = data.params || {};
 
-                if (Ext.isDefined(method)) {
-                    method.call(active, key, evt);
+            if (Ext.isDefined(data.handler)) {
+                data.handler.call(data.scope || active, active, params, key, evt);
+            } else {
+                var handler = active[action];
+
+                if (Ext.isDefined(handler)) {
+                    handler.call(active, params, key, evt);
                 } else {
-                    active.execAction(action, key, evt);
+                    active.execAction(action, params, key, evt);
                 }
             }
         }
@@ -67,31 +71,58 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
 });
 
 FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
-    xtype: null,
+    global: false,
     bindings: {},
 
     constructor: function(config) {
         FEMhub.Mapping.superclass.constructor.call(this, config);
 
-        for (var binding in this.bindings) {
-            var components = binding.split(/\s+/);
+        FEMhub.util.eachPair(this.bindings, function(action, data) {
+            this.bindings[action] = Ext.apply(data, {
+                specs: this.translateSpecs(data.specs),
+            });
+        }, this);
+    },
 
-            var key = components[0].toUpperCase();
-            var modifiers = components.slice(1);
+    translateSpecs: function(specs) {
+        var translated = [];
 
-            var action = this.bindings[binding];
+        Ext.each(specs, function(spec) {
+            if (Ext.isString(spec)) {
+                var components = spec.split(/\s+/);
 
-            var data = {
-                key: Ext.EventObject[key] || key,
-                action: action,
-            };
+                var key = components[0].toUpperCase();
+                var modifiers = components.slice(1);
 
-            Ext.each(modifiers, function(modifier) {
-                data[modifier.slice(1)] = (modifier[0] == '+');
+                var spec = {
+                    key: Ext.EventObject[key] || key,
+                    prettyKey: key,
+                    shift: false,
+                    ctrl: false,
+                    alt: false,
+                };
+
+                Ext.each(modifiers, function(modifier) {
+                    spec[modifier.slice(1)] = (modifier[0] == '+');
+                }, this);
+            }
+
+            translated.push(spec);
+        }, this);
+
+        return translated;
+    },
+
+    getBindingsList: function() {
+        var bindings = [];
+
+        FEMhub.util.eachPair(this.bindings, function(action, data) {
+            Ext.each(data.specs, function(spec) {
+                bindings.push(Ext.apply(spec, {text: data.text}));
             }, this);
+        }, this);
 
-            this.bindings[binding] = data;
-        }
+        return bindings;
     },
 });
 
