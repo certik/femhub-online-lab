@@ -660,7 +660,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             'Please enter source code:',
             function(button, text) {
                 if (button === 'ok') {
-                    FEMhub.RPC.Docutils.import({
+                    FEMhub.RPC.Docutils.importRST({
                         name: 'untitled (RST import)',
                         rst: text,
                         engine_uuid: this.engines[0].uuid,
@@ -682,7 +682,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     },
 
     exportAsRST: function(uuid) {
-        FEMhub.RPC.Docutils.export({uuid: uuid}, function(result) {
+        FEMhub.RPC.Docutils.exportRST({uuid: uuid}, function(result) {
             if (result.ok === true) {
                 var viewer = new FEMhub.TextViewer({text: result.rst});
                 viewer.show();

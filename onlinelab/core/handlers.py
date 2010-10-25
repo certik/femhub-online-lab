@@ -66,8 +66,8 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
         'RPC.Worksheet.fork',
         'RPC.Worksheet.load',
         'RPC.Worksheet.save',
-        'RPC.Docutils.import',
-        'RPC.Docutils.export',
+        'RPC.Docutils.importRST',
+        'RPC.Docutils.exportRST',
         'RPC.Docutils.render',
     ]
 
@@ -623,7 +623,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
         return result
 
     @jsonrpc.authenticated
-    def RPC__Docutils__import(self, name, rst, engine_uuid, folder_uuid):
+    def RPC__Docutils__importRST(self, name, rst, engine_uuid, folder_uuid):
         """Import worksheet contents from a document with Cell-RST syntax. """
         try:
             if folder_uuid is not None:
@@ -659,7 +659,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
                     self.return_api_result({'uuid': worksheet.uuid, 'count': len(cells)})
 
     @jsonrpc.authenticated
-    def RPC__Docutils__export(self, uuid):
+    def RPC__Docutils__exportRST(self, uuid):
         """Export worksheet contents to a document with Cell-RST syntax. """
         try:
             worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
