@@ -1,13 +1,17 @@
 
 FEMhub.Help = Ext.extend(Ext.Window, {
+    defaultTemplate: 'femhub/help.html',
+
     constructor: function(config) {
         config = config || {};
 
-        Ext.apply(config, {
+        Ext.applyIf(config, {
             title: 'Help',
             iconCls: 'femhub-help-icon',
             bodyCssClass: 'femhub-help-body',
             layout: 'fit',
+            width: 400,
+            height: 300,
             buttons: [{
                 text: 'Close',
                 handler: function() {
@@ -23,12 +27,32 @@ FEMhub.Help = Ext.extend(Ext.Window, {
     onRender: function() {
         FEMhub.Help.superclass.onRender.apply(this, arguments);
 
-        FEMhub.RPC.Template.render({ name: 'femhub/help.html' }, function(result) {
+        var params = {
+            name: this.template || this.defaultTemplate,
+            context: this.context,
+        };
+
+        FEMhub.RPC.Template.render(params, function(result) {
             if (result.ok === true) {
                 this.body.createChild({
                     tag: 'div',
                     html: result.rendered,
                 });
+            } else {
+                var msg;
+
+                switch(result.reason) {
+                case 'template-not-found':
+                    msg = "'" + params.name + "' template not found.";
+                    break;
+                case'template-render-error':
+                    msg = "'" + params.name + "' failed to render.";
+                    break;
+                default:
+                    msg = Ext.util.Format.htmlEncode(result.reason);
+                }
+
+                FEMhub.msg.error("Engine error", msg);
             }
         }, this);
     },
