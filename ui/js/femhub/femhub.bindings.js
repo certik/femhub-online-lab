@@ -133,7 +133,7 @@ FEMhub.Mappings.Global = Ext.extend(FEMhub.Mapping, {
     bindings: {
         bindingsHelp: {
             specs: [
-                {key: 191, shift: true, ctrl: false, alt: false},
+                {key: 191, shift: true, ctrl: false, alt: true},
             ],
             text: 'Display help about available key bindings',
             handler: function(active, params, key, evt) {
