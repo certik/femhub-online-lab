@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+"""Remove trailing comma from JavaScript objects and arrays. """
+
+import os, sys, re
+
+if len(sys.argv) == 2:
+    base = sys.argv[1]
+else:
+    print "usage: commas.py PATH"
+    sys.exit(1)
+
+regex = re.compile(r",(\s*\n\s*[}\]])")
+
+total = 0
+
+for path in os.listdir(base):
+    if not path.endswith('.js'):
+        continue
+
+    print ">>> Processing '%s'" % path
+    path = os.path.join(base, path)
+
+    with open(path, 'r') as f:
+        js = f.read()
+
+    js, n = regex.subn(r"\1", js)
+
+    with open(path, 'w') as f:
+        f.write(js)
+
+    print "--- %d occurrences found" % n
+    total += n
+
+print
+print "%d total occurrences" % total
+print "OK"
+
