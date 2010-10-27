@@ -83,8 +83,12 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
         except IOError:
             self.return_api_error('template-not-found')
         else:
-            if context is None:
+            if context is not  None:
+                context = dict(context)
+            else:
                 context = {}
+
+            context['static_url'] = self.static_url
 
             try:
                 rendered = template.generate(**context)
