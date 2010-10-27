@@ -32,6 +32,7 @@ FEMhub.MeshEditor = Ext.extend(FEMhub.Window, {
                 this.body.createChild({
                     tag: 'div',
                     html: result.rendered,
+                    style: 'width: 100%; height: 100%',
                 });
             }
         }, this);
