@@ -39,9 +39,7 @@ FEMhub.RPC.init = function(ready, scope) {
 
             ready.call(scope || this);
         },
-        failure: function(result, request) {
-            FEMhub.log(Ext.decode(result.responseText).error.message);
-        },
+        failure: FEMhub.RPC.failure,
     });
 };
 
@@ -61,34 +59,36 @@ FEMhub.RPC.call = function(method, params, handler, scope, url) {
                 handler.call(scope || this, Ext.decode(result.responseText).result);
             }
         },
-        failure: function(result, request) {
-            var msg;
-
-            if (!Ext.isDefined(result.responseText) || result.status >= 500) {
-                if (result.status > 0) {
-                    msg = String.format("{0}: {1}", result.status, result.statusText);
-                } else {
-                    msg = result.statusText; // e.g. "communication failed"
-                }
-
-                if (FEMhub.verbose) {
-                    FEMhub.msg.error("Critical Error", msg);
-                } else {
-                    FEMhub.log(msg);
-                }
-            } else {
-                var response = Ext.decode(result.responseText);
-
-                if (response.error) {
-                    msg = String.format("{0}: {1}", response.error.code, response.error.message);
-                } else {
-                    msg = result.statusText;
-                }
-
-                FEMhub.msg.error("System Error", msg);
-            }
-        },
+        failure: FEMhub.RPC.failure,
     });
+};
+
+FEMhub.RPC.failure = function(result, request) {
+    var msg;
+
+    if (!Ext.isDefined(result.responseText) || result.status >= 500) {
+        if (result.status > 0) {
+            msg = String.format("{0}: {1}", result.status, result.statusText);
+        } else {
+            msg = result.statusText; // e.g. "communication failed"
+        }
+
+        if (FEMhub.verbose) {
+            FEMhub.msg.error("Critical Error", msg);
+        } else {
+            FEMhub.log(msg);
+        }
+    } else {
+        var response = Ext.decode(result.responseText);
+
+        if (response.error) {
+            msg = String.format("{0}: {1}", response.error.code, response.error.message);
+        } else {
+            msg = result.statusText;
+        }
+
+        FEMhub.msg.error("System Error", msg);
+    }
 };
 
 FEMhub.RPC.Engine = {};
