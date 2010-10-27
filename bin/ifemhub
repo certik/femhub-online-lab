@@ -11,7 +11,7 @@ import uuid
 from optparse import OptionParser
 import traceback
 
-from onlinelab.console.jsonrpc import JSONRPCService
+from onlinelab.console.jsonrpc import JSONRPCService, JSONRPCError
 
 class Console(code.InteractiveConsole):
 
@@ -107,7 +107,11 @@ class Console(code.InteractiveConsole):
     def kill(self):
         if not self.killed:
             print "Killing the engine..."
-            self.json.kill(self.uuid)
+            try:
+                self.json.kill(self.uuid)
+                print "    Done."
+            except JSONRPCError:
+                print "    Failed."
             self.killed = True
 
     def __enter__(self):
