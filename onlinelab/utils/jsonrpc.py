@@ -164,8 +164,8 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 
                 if type(self.params) == dict:
                     try:
-                        func(**dict([ (unicode(k), v) for k, v in self.params.items() ]))
-                    except TypeError, exc:
+                        func(**dict([ (str(k), v) for k, v in self.params.items() ]))
+                    except (UnicodeError, TypeError), exc:
                         raise InvalidParams(exc.args[0])
                     else:
                         return
