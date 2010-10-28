@@ -1,17 +1,27 @@
 
 FEMhub.RPC = {};
 
+FEMhub.RPC.ajax = function(config) {
+    config = config || {};
+
+    if (Ext.isDefined(config.data)) {
+        config.jsonData = config.data;
+    }
+
+    Ext.Ajax.request(config);
+};
+
 FEMhub.RPC.init = function(ready, scope) {
-    Ext.Ajax.request({
-        url: FEMhub.json,
+    FEMhub.RPC.ajax({
+        url: FEMhub.client,
         method: "POST",
-        jsonData: Ext.encode({
+        data: Ext.encode({
             jsonrpc: "2.0",
             method: "system.describe",
             params: {},
             id: 0,
         }),
-        success: function(result, request) {
+        success: function(result, evt) {
             var response = Ext.decode(result.responseText);
 
             Ext.each(response.result.procs, function(proc) {
@@ -44,17 +54,16 @@ FEMhub.RPC.init = function(ready, scope) {
 };
 
 FEMhub.RPC.call = function(method, params, handler, scope, url) {
-    Ext.Ajax.request({
-        url: url || FEMhub.json,
+    FEMhub.RPC.ajax({
+        url: url || FEMhub.client,
         method: "POST",
-        jsonData: Ext.encode({
+        data: Ext.encode({
             jsonrpc: "2.0",
             method: method,
             params: params || {},
             id: 0,
         }),
-        timeout: 86400000,
-        success: function(result, request) {
+        success: function(result, evt) {
             if (Ext.isDefined(handler)) {
                 handler.call(scope || this, Ext.decode(result.responseText).result);
             }
