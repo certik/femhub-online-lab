@@ -43,3 +43,7 @@ FEMhub.msg.error = function(title, msg, handler, scope, buttons) {
     FEMhub.msg.show(title, msg, handler, scope, buttons, Ext.MessageBox.ERROR);
 };
 
+FEMhub.msg.critical = function(msg, handler, scope) {
+    FEMhub.msg.error("Critical Error", msg, handler, scope);
+};
+
