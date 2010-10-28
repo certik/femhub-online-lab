@@ -38,7 +38,22 @@ class MainHandler(tornado.web.RequestHandler):
         except:
             raise tornado.web.HTTPError(500)
 
-class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
+class WebHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
+    """Base class for user <-> core APIs (client/async). """
+
+    def initialize(self):
+        """Setup this handler for CORS request handling. """
+        settings = Settings.instance()
+
+        if not settings.cors:
+            self.allowed_origins = False
+        else:
+            if settings.allowed_origins is None:
+                self.allowed_origins = True
+            else:
+                self.allowed_origins = settings.allowed_origins
+
+class ClientHandler(WebHandler):
     """Handle JSON-RPC method calls from the user interface. """
 
     __methods__ = [
@@ -697,12 +712,13 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
         parts = docutils.core.publish_parts(rst, writer_name='html')
         self.return_api_result({'html': parts['fragment']})
 
-class AsyncHandler(jsonrpc.APIRequestHandler):
+class AsyncHandler(WebHandler):
     """Handle message routing between clients and services. """
 
     __methods__ = ['init', 'kill', 'stat', 'complete', 'evaluate', 'interrupt']
 
     def initialize(self):
+        super(AsyncHandler, self).initialize()
         self.manager = services.ServiceManager().instance()
 
     def forward(self, uuid, method, params):

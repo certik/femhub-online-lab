@@ -298,6 +298,11 @@ class OnlineLab(object):
                 'action': ConfigureAction,
             },
         ),
+        'cors': (
+            ('--cors',), {
+                'action': ConfigureAction,
+            },
+        ),
         'engine-timeout': (
             ('--engine-timeout',), {
                 'type': int,
@@ -309,7 +314,8 @@ class OnlineLab(object):
         'core': {
             'init': ['ui-path'],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
-                'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path', 'auth'],
+                'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path',
+                'auth', 'cors'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
