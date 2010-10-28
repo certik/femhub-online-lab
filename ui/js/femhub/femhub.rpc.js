@@ -4,16 +4,60 @@ FEMhub.RPC = {};
 FEMhub.RPC.ajax = function(config) {
     config = config || {};
 
-    if (Ext.isDefined(config.data)) {
-        config.jsonData = config.data;
+    if (config.cors === true) {
+        FEMhub.RPC.cors(config);
+    } else {
+        if (Ext.isDefined(config.data)) {
+            config.jsonData = config.data;
+        }
+
+        Ext.Ajax.request(config);
+    }
+};
+
+FEMhub.RPC.cors = function(config) {
+    config = config || {};
+
+    if (!Ext.isDefined(XMLHttpRequest)) {
+        FEMhub.msg.critical("Your web browser is obsolete. Upgrade it to run Online Lab.");
+        return;
     }
 
-    Ext.Ajax.request(config);
+    var xhr = new XMLHttpRequest();
+
+    if (!("withCredentials" in xhr)) {
+        FEMhub.msg.critical("Your web browser doesn't support authorized cross-site requests.");
+        return;
+    }
+
+    xhr.open(config.method, config.url, true);
+    xhr.withCredentials = "true";
+
+    xhr.onload = function(evt) {
+        if (this.status >= 200 && this.status < 300) {
+            if (Ext.isDefined(config.success)) {
+                config.success.call(config.scope || this, xhr);
+            }
+        } else {
+            if (Ext.isDefined(config.failure)) {
+                config.failure.call(config.scope || this, xhr);
+            }
+        }
+    };
+
+    xhr.onerror = xhr.onabort = function(evt) {
+        if (Ext.isDefined(config.failure)) {
+            config.failure.call(config.scope || this, xhr);
+        }
+    };
+
+    xhr.send(config.data || null);
 };
 
 FEMhub.RPC.init = function(ready, scope) {
     FEMhub.RPC.ajax({
         url: FEMhub.client,
+        cors: FEMhub.cors,
         method: "POST",
         data: Ext.encode({
             jsonrpc: "2.0",
@@ -53,9 +97,10 @@ FEMhub.RPC.init = function(ready, scope) {
     });
 };
 
-FEMhub.RPC.call = function(method, params, handler, scope, url) {
+FEMhub.RPC.call = function(method, params, handler, scope, url, cors) {
     FEMhub.RPC.ajax({
         url: url || FEMhub.client,
+        cors: cors || FEMhub.cors,
         method: "POST",
         data: Ext.encode({
             jsonrpc: "2.0",
@@ -72,18 +117,18 @@ FEMhub.RPC.call = function(method, params, handler, scope, url) {
     });
 };
 
-FEMhub.RPC.failure = function(result, request) {
+FEMhub.RPC.failure = function(result, evt) {
     var msg;
 
-    if (!Ext.isDefined(result.responseText) || result.status >= 500) {
+    if (!result.responseText || result.status >= 500) {
         if (result.status > 0) {
             msg = String.format("{0}: {1}", result.status, result.statusText);
         } else {
-            msg = result.statusText; // e.g. "communication failed"
+            msg = result.statusText || "communication failed";
         }
 
         if (FEMhub.verbose) {
-            FEMhub.msg.error("Critical Error", msg);
+            FEMhub.msg.critical(msg);
         } else {
             FEMhub.log(msg);
         }
