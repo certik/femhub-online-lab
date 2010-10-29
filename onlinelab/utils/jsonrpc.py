@@ -128,10 +128,25 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 
         self.return_result({'procs': procs})
 
+    def is_json_content_type(self):
+        """Check if Content-Type header is available and set properly. """
+        content_type = self.request.headers.get('Content-Type')
+
+        if content_type is None or not content_type.startswith('application/json'):
+            logging.warning("JSON-RPC: error: invalid Content-Type: %s" % content_type)
+            self.set_status(400)
+            self.finish()
+            return False
+
+        return True
+
     @tornado.web.asynchronous
     def post(self):
         """Receive and process JSON-RPC requests. """
         logging.info("JSON-RPC: received RPC method call")
+
+        if not self.is_json_content_type():
+            return
 
         try:
             try:
