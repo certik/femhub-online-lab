@@ -124,7 +124,15 @@ FEMhub.RPC.failure = function(result, evt) {
         if (result.status > 0) {
             msg = String.format("{0}: {1}", result.status, result.statusText);
         } else {
-            msg = result.statusText || "communication failed";
+            try {
+                if (!result.statusText || result.statusText === 'OK') {
+                    msg = "communication failed";
+                } else {
+                    msg = result.statusText;
+                }
+            } catch (err) {
+                msg = "communication failed";
+            }
         }
 
         if (FEMhub.verbose) {
