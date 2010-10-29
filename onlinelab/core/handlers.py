@@ -14,6 +14,7 @@ import tornado.web
 import tornado.escape
 
 import auth
+import cors
 import services
 
 from ..utils import jsonrpc
@@ -38,20 +39,26 @@ class MainHandler(tornado.web.RequestHandler):
         except:
             raise tornado.web.HTTPError(500)
 
-class WebHandler(auth.DjangoMixin, jsonrpc.APIRequestHandler):
+class WebHandler(auth.DjangoMixin, cors.CORSMixin, jsonrpc.APIRequestHandler):
     """Base class for user <-> core APIs (client/async). """
 
     def initialize(self):
-        """Setup this handler for CORS request handling. """
-        settings = Settings.instance()
+        """Setup internal configuration of this handler. """
+        self.config = settings = Settings.instance()
 
-        if not settings.cors:
-            self.allowed_origins = False
+        if not settings.cross_site:
+            self.cross_site = False
         else:
-            if settings.allowed_origins is None:
+            self.cross_site = True
+
+            if settings.allow_all_origins:
                 self.allowed_origins = True
             else:
                 self.allowed_origins = settings.allowed_origins
+
+    def prepare(self):
+        """Prepare this handler for handling CORS requests. """
+        self.prepare_for_cors()
 
 class ClientHandler(WebHandler):
     """Handle JSON-RPC method calls from the user interface. """
@@ -127,7 +134,7 @@ class ClientHandler(WebHandler):
 
         user = auth.authenticate(username=username, password=password)
 
-        if Settings.instance().auth and username == 'lab':
+        if self.config.auth and username == 'lab':
             user = None
 
         if user is None:

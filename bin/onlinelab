@@ -298,14 +298,25 @@ class OnlineLab(object):
                 'action': ConfigureAction,
             },
         ),
-        'cors': (
-            ('--cors',), {
-                'action': ConfigureAction,
-            },
-        ),
         'engine-timeout': (
             ('--engine-timeout',), {
                 'type': int,
+            },
+        ),
+        'cross-site': (
+            ('--cross-site',), {
+                'action': ConfigureAction,
+            },
+        ),
+        'allow-origin': (
+            ('--allow-origin',), {
+                'action': 'append',
+                'dest': 'allowed_origins',
+            },
+        ),
+        'allow-all-origins': (
+            ('--allow-all-origins',), {
+                'action': ConfigureAction,
             },
         ),
     }
@@ -315,7 +326,7 @@ class OnlineLab(object):
             'init': ['ui-path'],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
                 'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path',
-                'auth', 'cors'],
+                'auth', 'cross-site', 'allow-origin', 'allow-all-origins'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],

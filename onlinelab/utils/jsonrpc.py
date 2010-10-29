@@ -128,97 +128,62 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 
         self.return_result({'procs': procs})
 
-    def is_allowed_origin(self, origin):
-        """Check whether we should allow an origin or not. """
-        try:
-            allowed_origins = getattr(self, 'allowed_origins')
-        except AttributeError:
-            return False
-        else:
-            if type(allowed_origins) is bool:
-                return allowed_origins
-            else:
-                return origin in allowed_origins
-
-    def cors(self):
-        """Handle JSON-RPC cross-domain requests. """
-        origin = self.request.headers.get('Origin')
-
-        if origin is not None:
-            if self.is_allowed_origin(origin):
-                self.set_header('Access-Control-Allow-Origin', origin)
-                self.set_header('Access-Control-Allow-Methods', 'OPTIONS, GET, POST')
-                self.set_header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With')
-                self.set_header('Access-Control-Allow-Credentials', 'true')
-            else:
-                logging.warning("JSON-RPC: cross-domain request disallowed: %s" % origin)
-                self.set_status(403)
-                self.finish()
-                return False
-
-        return True
-
     @tornado.web.asynchronous
     def post(self):
         """Receive and process JSON-RPC requests. """
         logging.info("JSON-RPC: received RPC method call")
 
-        if self.cors():
+        try:
             try:
-                try:
-                    data = tornado.escape.json_decode(self.request.body)
-                except ValueError:
-                    raise ParseError
-                else:
-                    for name in ['jsonrpc', 'id', 'method', 'params']:
-                        value = data.get(name, None)
+                data = tornado.escape.json_decode(self.request.body)
+            except ValueError:
+                raise ParseError
+            else:
+                for name in ['jsonrpc', 'id', 'method', 'params']:
+                    value = data.get(name, None)
 
-                        if value is not None:
-                            setattr(self, name, value)
-                        else:
-                            raise InvalidRequest("'%s' parameter is mandatory" % name)
+                    if value is not None:
+                        setattr(self, name, value)
+                    else:
+                        raise InvalidRequest("'%s' parameter is mandatory" % name)
 
-                    if self.method == 'system.describe':
-                        self.return_description()
+                if self.method == 'system.describe':
+                    self.return_description()
+                    return
+
+                if self.method not in self.__methods__:
+                    raise MethodNotFound("'%s' is not a valid method" % self.method)
+
+                func = getattr(self, self.method.replace('.', '__'))
+
+                if func is None:
+                    raise InternalError("'%s' method hasn't been implemented" % self.method)
+
+                if getattr(func, 'authenticated', False) and not self.current_user.is_authenticated():
+                    raise AuthenticationRequired("%s' method requires authentication" % self.method)
+
+                if type(self.params) == dict:
+                    try:
+                        func(**dict([ (str(k), v) for k, v in self.params.items() ]))
+                    except (UnicodeError, TypeError), exc:
+                        raise InvalidParams(exc.args[0])
+                    else:
                         return
 
-                    if self.method not in self.__methods__:
-                        raise MethodNotFound("'%s' is not a valid method" % self.method)
-
-                    func = getattr(self, self.method.replace('.', '__'))
-
-                    if func is None:
-                        raise InternalError("'%s' method hasn't been implemented" % self.method)
-
-                    if getattr(func, 'authenticated', False) and not self.current_user.is_authenticated():
-                        raise AuthenticationRequired("%s' method requires authentication" % self.method)
-
-                    if type(self.params) == dict:
-                        try:
-                            func(**dict([ (str(k), v) for k, v in self.params.items() ]))
-                        except (UnicodeError, TypeError), exc:
-                            raise InvalidParams(exc.args[0])
-                        else:
-                            return
-
-                    if type(self.params) == list:
-                        try:
-                            func(*self.params)
-                        except TypeError, exc:
-                            raise InvalidParams("Invalid number of positional arguments")
-                        else:
-                            return
-
+                if type(self.params) == list:
                     try:
-                        func(self.params)
+                        func(*self.params)
                     except TypeError, exc:
-                        raise InvalidParams("Method does not take any arguments")
-            except JSONRPCError, exc:
-                getattr(self, 'return_' + exc.name)(exc.data)
+                        raise InvalidParams("Invalid number of positional arguments")
+                    else:
+                        return
 
-    def options(self):
-        """Inform a client about our capabilities. """
-        self.cors()
+                try:
+                    func(self.params)
+                except TypeError, exc:
+                    raise InvalidParams("Method does not take any arguments")
+        except JSONRPCError, exc:
+            getattr(self, 'return_' + exc.name)(exc.data)
 
 class JSONRPCProxy(object):
     """Simple proxy for making JSON-RPC requests. """

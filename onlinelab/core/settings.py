@@ -14,8 +14,9 @@ options = [
     ('log_max_size', 'int'),
     ('log_num_backups', 'int'),
     ('auth', 'bool'),
-    ('cors', 'bool'),
+    ('cross_site', 'bool'),
     ('allowed_origins', 'list'),
+    ('allow_all_origins', 'bool'),
 ]
 
 defaults = {
@@ -32,7 +33,8 @@ defaults = {
     'log_max_size': 10*1000*1000,      # store 10 MB in a log file
     'log_num_backups': 10,             # keep 10 log files at most
     'auth': True,
-    'cors': False,
-    'allowed_origins': None,
+    'cross_site': False,
+    'allowed_origins': [],
+    'allow_all_origins': False,
 }
 
