@@ -9,6 +9,7 @@ FEMhub.RPC.ajax = function(config) {
     } else {
         if (Ext.isDefined(config.data)) {
             config.jsonData = config.data;
+            config.data = undefined;
         }
 
         Ext.Ajax.request(config);
@@ -32,6 +33,8 @@ FEMhub.RPC.cors = function(config) {
 
     xhr.open(config.method, config.url, true);
     xhr.withCredentials = "true";
+
+    xhr.setRequestHeader('Content-Type', 'application/json');
 
     xhr.onload = function(evt) {
         if (this.status >= 200 && this.status < 300) {
