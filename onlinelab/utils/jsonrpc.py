@@ -7,7 +7,9 @@ import functools
 
 import tornado.web
 import tornado.escape
-import tornado.httpclient
+
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httputil import HTTPHeaders
 
 import extensions
 
@@ -211,7 +213,7 @@ class JSONRPCProxy(object):
 
     def call(self, method, params, okay=None, fail=None):
         """Make an asynchronous JSON-RPC method call. """
-        http_client = tornado.httpclient.AsyncHTTPClient()
+        client = AsyncHTTPClient()
 
         body = tornado.escape.json_encode({
             'jsonrpc': '2.0',
@@ -222,8 +224,11 @@ class JSONRPCProxy(object):
 
         logging.info("JSON-RPC: call '%s' method on %s" % (method, self.url))
 
-        http_request = tornado.httpclient.HTTPRequest(self.url, method='POST', body=body, request_timeout=0)
-        http_client.fetch(http_request, functools.partial(self._on_response_handler, okay, fail))
+        headers = HTTPHeaders({'Content-Type': 'application/json'})
+        request = HTTPRequest(self.url, method='POST', body=body,
+            headers=headers, request_timeout=0)
+
+        client.fetch(request, functools.partial(self._on_response_handler, okay, fail))
 
     def _on_response_handler(self, okay, fail, response):
         """Parse and process response from a JSON-RPC server. """
