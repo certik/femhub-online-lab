@@ -7,27 +7,38 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     engines: null,
 
     constructor: function(config) {
+        config = config || {};
+
         this.initEngines();
 
-        this.initToolbar();
+        this.toolbar = this.initToolbar();
+        this.statusbar = this.initStatusbar();
+
         this.initFoldersTree();
         this.initWorksheetsGrid();
 
-        config = config || {};
-
         Ext.apply(config, {
-            title: "Browser",
+            title: 'Browser',
             iconCls: 'femhub-browser-icon',
             layout: 'border',
             tbar: this.toolbar,
+            bbar: this.statusbar,
             items: [this.foldersTree, this.worksheetsGrid],
         });
 
         FEMhub.Browser.superclass.constructor.call(this, config);
     },
 
+    initStatusbar: function() {
+        return new Ext.ux.StatusBar({
+            busyText: '',
+            defaultText: '',
+            defaultIconCls: 'femhub-ok-icon',
+        });
+    },
+
     initToolbar: function() {
-        this.toolbar = new Ext.Toolbar({
+        return new Ext.Toolbar({
             enableOverflow: true,
             items: [{
                 xtype: 'button',
@@ -402,12 +413,16 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             }, this);
         }
 
+        this.statusbar.showBusy();
+
         // XXX: this is an obsolete hack (remove this)
 
         FEMhub.RPC.Folder.getRoot({}, function(result) {
             if (result.ok === true) {
                 getFolders.call(this);
             }
+
+            this.statusbar.clearStatus({useDefaults: true});
         }, this);
     },
 
@@ -564,6 +579,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
 
     getWorksheets: function(node) {
         node = this.getCurrentNode(node);
+        this.statusbar.showBusy();
 
         FEMhub.RPC.Folder.getWorksheets({uuid: node.id}, function(result) {
             if (result.ok === true) {
@@ -585,6 +601,8 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             } else {
                 FEMhub.log("Failed to get worksheets");
             }
+
+            this.statusbar.clearStatus({useDefaults: true});
         }, this);
     },
 

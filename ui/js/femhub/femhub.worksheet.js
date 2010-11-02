@@ -16,6 +16,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
             iconCls: 'femhub-worksheet-icon',
             layout: 'fit',
             tbar: this.initToolbar(),
+            bbar: this.initStatusbar(),
             items: this.cells,
         });
 
@@ -28,6 +29,14 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
 
     getUUID: function() {
         return this.getCellsManager().getUUID();
+    },
+
+    initStatusbar: function() {
+        return new Ext.ux.StatusBar({
+            busyText: '',
+            defaultText: '',
+            defaultIconCls: 'femhub-ok-icon',
+        });
     },
 
     initToolbar: function() {

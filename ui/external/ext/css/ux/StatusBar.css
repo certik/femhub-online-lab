@@ -1,0 +1,13 @@
+
+.x-statusbar .x-status-text {
+    cursor: default;
+    min-height: 16px;
+    padding-left: 20px !important;
+    background-repeat: no-repeat !important;
+    background-position: 2px center !important;
+}
+
+.x-statusbar .x-status-busy {
+    background-image: url(/static/img/femhub/animations/loading.gif) !important;
+}
+

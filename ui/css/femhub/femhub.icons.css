@@ -143,3 +143,15 @@
     background-position: left center !important;
 }
 
+.femhub-ok-icon {
+    background-image: url(/static/img/femhub/icons/ok.png) !important;
+}
+
+.femhub-success-icon {
+    background-image: url(/static/img/femhub/icons/accept.png) !important;
+}
+
+.femhub-failure-icon {
+    background-image: url(/static/img/femhub/icons/exclamation.png) !important;
+}
+
