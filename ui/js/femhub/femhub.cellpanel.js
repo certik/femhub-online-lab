@@ -3,6 +3,14 @@ FEMhub.CellPanel = Ext.extend(Ext.BoxComponent, {
     cellsManager: null,
 
     constructor: function(config) {
+        config = config || {};
+
+        this.cellsManager = new FEMhub.CellManager(config.conf);
+
+        config = Ext.apply({}, config, {
+            items: this.cellsManager,
+        });
+
         FEMhub.CellPanel.superclass.constructor.call(this, config);
     },
 
@@ -10,10 +18,7 @@ FEMhub.CellPanel = Ext.extend(Ext.BoxComponent, {
         FEMhub.CellPanel.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cells');
-
-        this.cellsManager = new FEMhub.CellManager(
-            Ext.applyIf({ root: this.el }, this.conf)
-        );
+        this.cellsManager.setRoot(this.el);
 
         this.cellsManager.initEngine();
         this.cellsManager.loadCells();

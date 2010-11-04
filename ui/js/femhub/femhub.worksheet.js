@@ -9,14 +9,45 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
             config.conf.name = 'untitled';
         }
 
-        this.cells = new FEMhub.CellPanel({ conf: config.conf });
+        this.toolbar = this.initToolbar();
+        this.statusbar = this.initStatusbar();
+
+        this.cells = new FEMhub.CellPanel({
+            conf: config.conf,
+        });
+
+        var manager = this.getCellsManager();
+
+        function start(text) {
+            return this.statusbar.showBusy({text: text});
+        }
+
+        function end(ok, id) {
+            this.statusbar.clearBusy(id);
+        }
+
+        manager.on({
+            initstart: start.partial(this, ["Initializing engine"]),
+            initend: end,
+            killstart: start.partial(this, ["Terminating engine"]),
+            killend: end,
+            statstart: start.partial(this, ["Gathering statistics"]),
+            statend: end,
+            completestart: start.partial(this, ["Completing"]),
+            completeend: end,
+            evaluatestart: start.partial(this, ["Evaluating"]),
+            evaluateend: end,
+            interruptstart: start.partial(this, ["Interrupting"]),
+            interruptend: end,
+            scope: this,
+        });
 
         Ext.applyIf(config, {
             title: config.conf.name,
             iconCls: 'femhub-worksheet-icon',
             layout: 'fit',
-            tbar: this.initToolbar(),
-            bbar: this.initStatusbar(),
+            tbar: this.toolbar,
+            bbar: this.statusbar,
             items: this.cells,
         });
 
