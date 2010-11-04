@@ -30,10 +30,9 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     },
 
     initStatusbar: function() {
-        return new Ext.ux.StatusBar({
+        return new FEMhub.Statusbar({
             busyText: '',
             defaultText: '',
-            defaultIconCls: 'femhub-ok-icon',
         });
     },
 
@@ -422,7 +421,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 getFolders.call(this);
             }
 
-            this.statusbar.clearStatus({useDefaults: true});
+            this.statusbar.clearBusy();
         }, this);
     },
 
@@ -602,7 +601,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 FEMhub.log("Failed to get worksheets");
             }
 
-            this.statusbar.clearStatus({useDefaults: true});
+            this.statusbar.clearBusy();
         }, this);
     },
 

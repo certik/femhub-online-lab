@@ -32,10 +32,9 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     },
 
     initStatusbar: function() {
-        return new Ext.ux.StatusBar({
+        return new FEMhub.Statusbar({
             busyText: '',
             defaultText: '',
-            defaultIconCls: 'femhub-ok-icon',
         });
     },
 
