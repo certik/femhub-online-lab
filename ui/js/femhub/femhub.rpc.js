@@ -105,7 +105,7 @@ FEMhub.RPC.init = function(ready, scope) {
 };
 
 FEMhub.RPC.call = function(url, method, params, handler, scope) {
-    var config = {}, okay, fail, start, end;
+    var config = {}, okay, fail, start, end, ret;
 
     if (Ext.isObject(handler)) {
         config = handler;
@@ -139,11 +139,11 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
 
             if (statusbar instanceof FEMhub.Statusbar) {
                 start = function() {
-                    statusbar.showBusy();
+                    return statusbar.showBusy();
                 };
 
-                end = function(ok) {
-                    statusbar.clearBusy();
+                end = function(ok, id) {
+                    statusbar.clearBusy(id);
                 };
             } else if (Ext.isObject(status)) {
                 if (Ext.isFunction(status.start)) {
@@ -164,7 +164,7 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
     }
 
     if (Ext.isDefined(start)) {
-        start.call(scope);
+        ret = start.call(scope);
     }
 
     FEMhub.RPC.ajax({
@@ -179,7 +179,7 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
         }),
         success: function(result, evt) {
             if (Ext.isDefined(end)) {
-                end.call(scope, true);
+                end.call(scope, true, ret);
             }
 
             result = Ext.decode(result.responseText).result;
@@ -193,7 +193,7 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
                     }
                 } else {
                     if (Ext.isDefined(fail)) {
-                        fail.call(scope, result);
+                        fail.call(scope, result.reason, result);
                     }
                 }
             }
