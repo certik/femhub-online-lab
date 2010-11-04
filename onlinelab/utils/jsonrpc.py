@@ -205,11 +205,13 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 class JSONRPCProxy(object):
     """Simple proxy for making JSON-RPC requests. """
 
-    def __init__(self, url, rpc=None):
+    def __init__(self, url, rpc=None, log_errors=True):
         if rpc is not None:
             self.url = urlparse.urljoin(url, rpc)
         else:
             self.url = url
+
+        self.log_errors = log_errors
 
     def call(self, method, params, okay=None, fail=None):
         """Make an asynchronous JSON-RPC method call. """
@@ -235,7 +237,7 @@ class JSONRPCProxy(object):
         error = None
 
         try:
-            if response.code != 200:
+            if response.code != 200 and self.log_errors:
                 logging.error("JSON-RPC: got %s HTTP response code" % response.code)
 
             if response.body is None:
@@ -254,7 +256,8 @@ class JSONRPCProxy(object):
                 if okay is not None:
                     okay(data.get('result', None))
         except JSONRPCError, exc:
-            logging.error("JSON-RPC: error: %s" % exc.data)
+            if self.log_errors:
+                logging.error("JSON-RPC: error: %s" % exc.data)
 
             if fail is not None:
                 fail(error, http_code=response.code)

@@ -229,7 +229,7 @@ def start(args):
     def _services_callback():
         """Gets executed when IOLoop is started. """
         for service in models.Service.objects.all():
-            proxy = jsonrpc.JSONRPCProxy(service.url, 'core')
+            proxy = jsonrpc.JSONRPCProxy(service.url, 'core', log_errors=False)
 
             okay = functools.partial(_on_ping_okay, service)
             fail = functools.partial(_on_ping_fail, service)
