@@ -100,23 +100,107 @@ FEMhub.RPC.init = function(ready, scope) {
     });
 };
 
-FEMhub.RPC.call = function(method, params, handler, scope, url, cors) {
+FEMhub.RPC.call = function(method, params, handler, scope) {
+    var config = {}, okay, fail, start, end;
+
+    if (Ext.isObject(handler)) {
+        config = handler;
+
+        if (Ext.isFunction(config.handler)) {
+            handler = config.handler;
+        } else {
+            handler = undefined;
+
+            if (Ext.isFunction(config.okay)) {
+                okay = config.okay;
+            }
+
+            if (Ext.isFunction(config.fail)) {
+                fail = config.fail;
+            }
+        }
+
+        if (Ext.isDefined(config.scope)) {
+            scope = config.scope;
+        }
+
+        if (Ext.isDefined(config.status)) {
+            var status = config.status, statusbar;
+
+            if (Ext.isDefined(status.statusbar)) {
+                statusbar = status.statusbar;
+            } else {
+                statusbar = status;
+            }
+
+            if (statusbar instanceof FEMhub.Statusbar) {
+                start = function() {
+                    statusbar.showBusy();
+                };
+
+                end = function(ok) {
+                    statusbar.clearBusy();
+                };
+            } else if (Ext.isObject(status)) {
+                if (Ext.isFunction(status.start)) {
+                    start = status.start;
+                }
+
+                if (Ext.isFunction(status.end)) {
+                    end = status.end;
+                }
+            } else if (Ext.isFunction(status)) {
+                start = status;
+            }
+        }
+    }
+
+    if (!Ext.isDefined(scope)) {
+        scope = window;
+    }
+
+    if (Ext.isDefined(start)) {
+        start.call(scope);
+    }
+
     FEMhub.RPC.ajax({
-        url: url || FEMhub.client,
-        cors: cors || FEMhub.cors,
-        method: "POST",
+        url: config.url || FEMhub.client,
+        cors: config.cors || FEMhub.cors,
+        method: 'POST',
         data: Ext.encode({
-            jsonrpc: "2.0",
+            jsonrpc: '2.0',
             method: method,
             params: params || {},
             id: 0,
         }),
         success: function(result, evt) {
+            if (Ext.isDefined(end)) {
+                end.call(scope, true);
+            }
+
+            result = Ext.decode(result.responseText).result;
+
             if (Ext.isDefined(handler)) {
-                handler.call(scope || this, Ext.decode(result.responseText).result);
+                handler.call(scope, result);
+            } else {
+                if (result.ok === true) {
+                    if (Ext.isDefined(okay)) {
+                        okay.call(scope, result);
+                    }
+                } else {
+                    if (Ext.isDefined(fail)) {
+                        fail.call(scope, result);
+                    }
+                }
             }
         },
-        failure: FEMhub.RPC.failure,
+        failure: function(result, evt) {
+            if (Ext.isDefined(end)) {
+                end.call(scope, false);
+            }
+
+            FEMhub.RPC.failure(result, evt);
+        },
     });
 };
 
@@ -159,26 +243,50 @@ FEMhub.RPC.failure = function(result, evt) {
 FEMhub.RPC.Engine = {};
 
 FEMhub.RPC.Engine.init = function(params, handler, scope) {
-    FEMhub.RPC.call('init', params, handler, scope, FEMhub.async);
+    FEMhub.RPC.call('init', params, {
+        handler: handler,
+        scope: scope,
+        url: FEMhub.async,
+    });
 };
 
 FEMhub.RPC.Engine.kill = function(params, handler, scope) {
-    FEMhub.RPC.call('kill', params, handler, scope, FEMhub.async);
+    FEMhub.RPC.call('kill', params, {
+        handler: handler,
+        scope: scope,
+        url: FEMhub.async,
+    });
 };
 
 FEMhub.RPC.Engine.stat = function(params, handler, scope) {
-    FEMhub.RPC.call('stat', params, handler, scope, FEMhub.async);
+    FEMhub.RPC.call('stat', params, {
+        handler: handler,
+        scope: scope,
+        url: FEMhub.async,
+    });
 };
 
 FEMhub.RPC.Engine.complete = function(params, handler, scope) {
-    FEMhub.RPC.call('complete', params, handler, scope, FEMhub.async);
+    FEMhub.RPC.call('complete', params, {
+        handler: handler,
+        scope: scope,
+        url: FEMhub.async,
+    });
 };
 
 FEMhub.RPC.Engine.evaluate = function(params, handler, scope) {
-    FEMhub.RPC.call('evaluate', params, handler, scope, FEMhub.async);
+    FEMhub.RPC.call('evaluate', params, {
+        handler: handler,
+        scope: scope,
+        url: FEMhub.async,
+    });
 };
 
 FEMhub.RPC.Engine.interrupt = function(params, handler, scope) {
-    FEMhub.RPC.call('interrupt', params, handler, scope, FEMhub.async);
+    FEMhub.RPC.call('interrupt', params, {
+        handler: handler,
+        scope: scope,
+        url: FEMhub.async,
+    });
 };
 
