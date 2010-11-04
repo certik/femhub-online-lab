@@ -412,17 +412,17 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             }, this);
         }
 
-        this.statusbar.showBusy();
-
         // XXX: this is an obsolete hack (remove this)
 
-        FEMhub.RPC.Folder.getRoot({}, function(result) {
-            if (result.ok === true) {
-                getFolders.call(this);
-            }
-
-            this.statusbar.clearBusy();
-        }, this);
+        FEMhub.RPC.Folder.getRoot({}, {
+            handler: function(result) {
+                if (result.ok === true) {
+                    getFolders.call(this);
+                }
+            },
+            scope: this,
+            status: this,
+        });
     },
 
     addFolder: function(node) {
@@ -578,31 +578,32 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
 
     getWorksheets: function(node) {
         node = this.getCurrentNode(node);
-        this.statusbar.showBusy();
 
-        FEMhub.RPC.Folder.getWorksheets({uuid: node.id}, function(result) {
-            if (result.ok === true) {
-                var store = this.worksheetsGrid.getStore();
-                store.removeAll();
+        FEMhub.RPC.Folder.getWorksheets({uuid: node.id}, {
+            handler: function(result) {
+                if (result.ok === true) {
+                    var store = this.worksheetsGrid.getStore();
+                    store.removeAll();
 
-                var record = Ext.data.Record.create([
-                    'title', 'engine', 'created', 'published'
-                ]);
+                    var record = Ext.data.Record.create([
+                        'title', 'engine', 'created', 'published'
+                    ]);
 
-                Ext.each(result.worksheets, function(worksheet) {
-                    store.add(new record({
-                        title: worksheet.name,
-                        engine: worksheet.engine.name,
-                        created: worksheet.created,
-                        published: worksheet.published,
-                    }, worksheet.uuid));
-                }, this);
-            } else {
-                FEMhub.log("Failed to get worksheets");
-            }
-
-            this.statusbar.clearBusy();
-        }, this);
+                    Ext.each(result.worksheets, function(worksheet) {
+                        store.add(new record({
+                            title: worksheet.name,
+                            engine: worksheet.engine.name,
+                            created: worksheet.created,
+                            published: worksheet.published,
+                        }, worksheet.uuid));
+                    }, this);
+                } else {
+                    FEMhub.log("Failed to get worksheets");
+                }
+            },
+            scope: this,
+            status: this,
+        });
     },
 
     addWorksheetAt: function(node, engine, handler, scope) {
