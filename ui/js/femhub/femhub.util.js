@@ -51,3 +51,5 @@ FEMhub.util.eachPair = function(obj, handler, scope) {
     }
 };
 
+Function.prototype.partial = Function.prototype.createDelegate;
+
