@@ -1,8 +1,7 @@
 
 FEMhub = {
     version: [0, 0, 1],
-    client: "/client/",
-    async: "/async/",
+    urls: ['/client/', '/async/'],
     cors: false,
     verbose: true,
 };

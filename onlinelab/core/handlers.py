@@ -722,7 +722,13 @@ class ClientHandler(WebHandler):
 class AsyncHandler(WebHandler):
     """Handle message routing between clients and services. """
 
-    __methods__ = ['init', 'kill', 'stat', 'complete', 'evaluate', 'interrupt']
+    __methods__ = [
+        'RPC.Engine.init',
+        'RPC.Engine.kill',
+        'RPC.Engine.stat',
+        'RPC.Engine.complete',
+        'RPC.Engine.evaluate',
+        'RPC.Engine.interrupt']
 
     def initialize(self):
         super(AsyncHandler, self).initialize()
@@ -762,28 +768,28 @@ class AsyncHandler(WebHandler):
         else:
             self.return_internal_error()
 
-    def init(self, uuid):
+    def RPC__Engine__init(self, uuid):
         """Forward 'init' method call to the assigned service. """
         self.forward(uuid, 'init', {'uuid': uuid})
 
-    def kill(self, uuid):
+    def RPC__Engine__kill(self, uuid):
         """Forward 'kill' method call to the assigned service. """
         self.forward(uuid, 'kill', {'uuid': uuid})
         self.manager.unbind(uuid)
 
-    def stat(self, uuid):
+    def RPC__Engine__stat(self, uuid):
         """Forward 'stat' method call to the assigned service. """
         self.forward(uuid, 'stat', {'uuid': uuid})
 
-    def complete(self, uuid, source):
+    def RPC__Engine__complete(self, uuid, source):
         """Forward 'complete' method call to the assigned service. """
         self.forward(uuid, 'complete', {'uuid': uuid, 'source': source})
 
-    def evaluate(self, uuid, source, cellid=None):
+    def RPC__Engine__evaluate(self, uuid, source, cellid=None):
         """Forward 'evaluate' method call to the assigned service. """
         self.forward(uuid, 'evaluate', {'uuid': uuid, 'source': source, 'cellid': cellid})
 
-    def interrupt(self, uuid, cellid=None):
+    def RPC__Engine__interrupt(self, uuid, cellid=None):
         """Forward 'interrupt' method call to the assigned service. """
         self.forward(uuid, 'interrupt', {'uuid': uuid, 'cellid': cellid})
 
