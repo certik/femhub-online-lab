@@ -43,6 +43,8 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         });
 
         this.addEvents([
+            'loadstart', 'loadend',
+            'savestart', 'saveend',
             'initstart', 'initend',
             'killstart', 'killend',
             'statstart', 'statend',
@@ -356,8 +358,8 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
     },
 
     loadCells: function() {
-        FEMhub.RPC.Worksheet.load({uuid: this.uuid}, function(result) {
-            if (result.ok === true) {
+        FEMhub.RPC.Worksheet.load({uuid: this.uuid}, {
+            okay: function(result) {
                 if (result.cells.length === 0) {
                     if (this.startEmpty !== false) {
                         this.newCell({
@@ -382,8 +384,20 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
 
                     this.statusSaved = true;
                 }
-            }
-        }, this);
+            },
+            fail: function(reason, result) {
+                // TODO
+            },
+            scope: this,
+            status: {
+                start: function() {
+                    return this.fireEvent('loadstart', this);
+                },
+                end: function(ok, ret) {
+                    this.fireEvent('loadend', this, ok, ret);
+                },
+            },
+        });
     },
 
     saveCells: function(handler, scope) {
@@ -401,8 +415,8 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
 
         var params = {uuid: this.uuid, cells: data};
 
-        FEMhub.RPC.Worksheet.save(params, function(result) {
-            if (result.ok === true) {
+        FEMhub.RPC.Worksheet.save(params, {
+            okay: function(result) {
                 Ext.each(cells, function(cell) {
                     cell.saved = true;
                 });
@@ -412,8 +426,20 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                 if (Ext.isDefined(handler)) {
                     handler.call(scope || this);
                 }
-            }
-        }, this);
+            },
+            fail: function(reason, result) {
+                // TODO
+            },
+            scope: this,
+            status: {
+                start: function() {
+                    return this.fireEvent('savestart', this);
+                },
+                end: function(ok, ret) {
+                    this.fireEvent('saveend', this, ok, ret);
+                },
+            },
+        });
     },
 
     isSaved: function() {
