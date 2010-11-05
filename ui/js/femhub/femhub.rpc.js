@@ -105,7 +105,7 @@ FEMhub.RPC.init = function(ready, scope) {
 };
 
 FEMhub.RPC.call = function(url, method, params, handler, scope) {
-    var config = {}, okay, fail, start, end, ret;
+    var config = {}, okay, fail, start, end, ret, sscope;
 
     if (Ext.isObject(handler)) {
         config = handler;
@@ -131,27 +131,31 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
         if (Ext.isDefined(config.status)) {
             var status = config.status, statusbar;
 
-            if (Ext.isDefined(status.statusbar)) {
-                statusbar = status.statusbar;
-            } else {
-                statusbar = status;
-            }
-
-            if (statusbar instanceof FEMhub.Statusbar) {
-                start = function() {
-                    return statusbar.showBusy();
-                };
-
-                end = function(ok, id) {
-                    statusbar.clearBusy(id);
-                };
-            } else if (Ext.isObject(status)) {
-                if (Ext.isFunction(status.start)) {
-                    start = status.start;
+            if (Ext.isObject(status)) {
+                if (Ext.isDefined(status.statusbar)) {
+                    statusbar = status.statusbar;
+                } else {
+                    statusbar = status;
                 }
 
-                if (Ext.isFunction(status.end)) {
-                    end = status.end;
+                if (statusbar instanceof FEMhub.Statusbar) {
+                    start = function() {
+                        return statusbar.showBusy();
+                    };
+
+                    end = function(ok, id) {
+                        statusbar.clearBusy(id);
+                    };
+                } else {
+                    if (Ext.isFunction(status.start)) {
+                        start = status.start;
+                    }
+
+                    if (Ext.isFunction(status.end)) {
+                        end = status.end;
+                    }
+
+                    sscope = status.scope;
                 }
             } else if (Ext.isFunction(status)) {
                 start = status;
@@ -163,8 +167,12 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
         scope = window;
     }
 
+    if (!Ext.isDefined(sscope)) {
+        sscope = scope;
+    }
+
     if (Ext.isDefined(start)) {
-        ret = start.call(scope);
+        ret = start.call(sscope);
 
         if (!end && Ext.isFunction(ret)) {
             end = ret;
@@ -183,7 +191,7 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
         }),
         success: function(result, evt) {
             if (Ext.isDefined(end)) {
-                end.call(scope, true, ret);
+                end.call(sscope, true, ret);
             }
 
             result = Ext.decode(result.responseText).result;
@@ -204,7 +212,7 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
         },
         failure: function(result, evt) {
             if (Ext.isDefined(end)) {
-                end.call(scope, false, ret);
+                end.call(sscope, false, ret);
             }
 
             FEMhub.RPC.failure(result, evt);
