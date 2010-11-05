@@ -412,11 +412,9 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
             var source = input.slice(start, end);
 
-            FEMhub.RPC.Engine.complete({
-                uuid: this.owner.uuid,
+            this.owner.completeCode({
                 source: source,
-            }, function(result) {
-                if (result.ok === true) {
+                okay: function(result) {
                     var items = [],
                         completions = result.completions;
 
@@ -451,10 +449,12 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                     });
 
                     context.showAt([0, 0]);
-                } else {
-                    this.owner.showEngineError(result.reason);
-                }
-            }, this);
+                },
+                fail: function(reason, result) {
+                    this.owner.showEngineError(reason);
+                },
+                scope: this,
+            });
         }
     },
 
@@ -562,12 +562,10 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             }
         }
 
-        FEMhub.RPC.Engine.evaluate({
-            uuid: this.owner.uuid,
+        this.owner.evaluateCode({
             source: input,
             cellid: this.id,
-        }, function(result) {
-            if (result.ok === true) {
+            okay: function(result) {
                 var cells = [];
 
                 if (Ext.isDefined(result.info)) {
@@ -636,11 +634,13 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
 
                 evalSuccess.call(this, result.index, cells);
-            } else {
-                this.owner.showEngineError(result.reason);
+            },
+            fail: function(reason, result) {
+                this.owner.showEngineError(reason);
                 evalFailed.call(this);
-            }
-        }, this);
+            },
+            scope: this,
+        });
     },
 
     wipeCell: function() {
@@ -659,14 +659,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
     interruptCell: function() {
         if (this.evaluating) {
-            FEMhub.RPC.Engine.interrupt({
-                uuid: this.owner.uuid,
-                cellid: this.id,
-            }, function(result) {
-                if (result.ok !== true) {
-                    this.owner.showEngineError(result.reason);
-                }
-            }, this);
+            this.owner.interruptEngine(this.id);
         }
     },
 

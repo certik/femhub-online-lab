@@ -311,8 +311,8 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         });
     },
 
-    interruptEngine: function() {
-        FEMhub.RPC.Engine.interrupt({uuid: this.uuid}, {
+    interruptEngine: function(cellid) {
+        FEMhub.RPC.Engine.interrupt({uuid: this.uuid, cellid: cellid}, {
             fail: function(reason, result) {
                 this.showEngineError(reason);
             },
@@ -454,10 +454,53 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         return this.statusSaved;
     },
 
-    evaluateCode: function(source) {
-        FEMhub.RPC.Engine.evaluate({
+    evaluateCode: function(obj) {
+        if (Ext.isString(obj)) {
+            var source = obj;
+
+            FEMhub.RPC.Engine.evaluate({
+                uuid: this.uuid,
+                source: source,
+            });
+        } else {
+            FEMhub.RPC.Engine.evaluate({
+                uuid: this.uuid,
+                source: obj.source,
+                cellid: obj.cellid,
+            }, {
+                okay: obj.okay,
+                fail: obj.fail,
+                scope: obj.scope,
+                status: {
+                    start: function() {
+                        return this.fireEvent('evaluatestart', this);
+                    },
+                    end: function(ok, ret) {
+                        this.fireEvent('evaluateend', this, ok, ret);
+                    },
+                    scope: this,
+                },
+            });
+        }
+    },
+
+    completeCode: function(obj) {
+        FEMhub.RPC.Engine.complete({
             uuid: this.uuid,
-            source: source,
+            source: obj.source,
+        }, {
+            okay: obj.okay,
+            fail: obj.fail,
+            scope: obj.scope,
+            status: {
+                start: function() {
+                    return this.fireEvent('completestart', this);
+                },
+                end: function(ok, ret) {
+                    this.fireEvent('completeend', this, ok, ret);
+                },
+                scope: this,
+            },
         });
     },
 
