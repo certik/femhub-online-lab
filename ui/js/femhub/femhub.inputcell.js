@@ -600,8 +600,16 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                     cells.push({output: output, type: type});
                 }
 
+                if (result.shout) {
+                    cells.push({output: result.shout, type: 'output'});
+                }
+
                 if (result.out) {
                     cells.push({output: result.out, type: 'output'});
+                }
+
+                if (result.sherr) {
+                    cells.push({output: result.sherr, type: 'error'});
                 }
 
                 if (result.err) {

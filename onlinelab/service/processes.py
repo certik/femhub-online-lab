@@ -2,7 +2,9 @@
 
 import os
 import re
+import sys
 import time
+import fcntl
 import signal
 import shutil
 import logging
@@ -10,6 +12,8 @@ import xmlrpclib
 import functools
 import subprocess
 import collections
+
+from StringIO import StringIO
 
 import psutil
 import pyinotify
@@ -218,8 +222,8 @@ class ProcessManager(object):
         # will tell us this by sending a single line of well formatted output
         # (containing port numer and PID) via a pipe.
 
-        proc = subprocess.Popen(command, preexec_fn=preexec_fn,
-            cwd=cwd, env=env, close_fds=True, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(command, preexec_fn=preexec_fn, cwd=cwd, env=env,
+            close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # File descriptor of the pipe (fd) is our connector the process, so
         # we will monitor this descriptor to see the change in status of the
@@ -287,8 +291,10 @@ class ProcessManager(object):
 
                 self.processes[uuid] = process
 
-                handler = functools.partial(self._on_disconnect, uuid, cwd, uid, gid)
-                self.ioloop.add_handler(fd, handler, self.ioloop.ERROR)
+                # XXX: move this to EngineProcess
+
+                # handler = functools.partial(self._on_disconnect, uuid, cwd, uid, gid)
+                # self.ioloop.add_handler(fd, handler, self.ioloop.ERROR)
 
                 logging.info("Started new child process (pid=%s)" % process.pid)
 
@@ -420,6 +426,65 @@ class EngineProcess(object):
         self.queue = collections.deque()
         self.url = "http://localhost:%s" % port
         self.files = []
+
+        self.out = StringIO()
+        self.err = StringIO()
+
+        stdout = proc.stdout.fileno()
+        stderr = proc.stderr.fileno()
+
+        self._set_nonblocking(stdout)
+        self._set_nonblocking(stderr)
+
+        ioloop = tornado.ioloop.IOLoop.instance()
+
+        ioloop.add_handler(stdout, self._on_stdout, ioloop.READ | ioloop.ERROR)
+        ioloop.add_handler(stderr, self._on_stderr, ioloop.READ | ioloop.ERROR)
+
+    def __del__(self):
+        """Delete this engine's instance. """
+        logging.info("%s deleted" % self.uuid)
+
+    def _set_nonblocking(self, fd):
+        """Set non-blocking property on a file descriptor. """
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+    def _reset_io(self):
+        """Close and recreate local ``stdout`` and ``stderr``. """
+        self.out.close()
+        self.out = StringIO()
+
+        self.err.close()
+        self.err = StringIO()
+
+    def _on_stdout(self, fd, events):
+        """Monitor engine's ``stdout``. """
+        ioloop = tornado.ioloop.IOLoop.instance()
+
+        if events & ioloop.ERROR:
+            ioloop.remove_handler(fd)
+        else:
+            while True:
+                try:
+                    line = self.proc.stdout.readline()
+                    self.out.write(line)
+                except IOError:
+                    break
+
+    def _on_stderr(self, fd, events):
+        """Monitor engine's ``stderr``. """
+        ioloop = tornado.ioloop.IOLoop.instance()
+
+        if events & ioloop.ERROR:
+            ioloop.remove_handler(fd)
+        else:
+            while True:
+                try:
+                    line = self.proc.stderr.readline()
+                    self.err.write(line)
+                except IOError:
+                    break
 
     @property
     def pid(self):
@@ -566,8 +631,14 @@ class EngineProcess(object):
         else:
             fail('response-code: %s' % response.code)
 
+        self._reset_io()
+
     def _process_response(self, result, okay):
         """Perform final processing of evaluation results. """
         result['files'] = self.files
+
+        result['shout'] = self.out.getvalue()
+        result['sherr'] = self.err.getvalue()
+
         okay(result)
 
