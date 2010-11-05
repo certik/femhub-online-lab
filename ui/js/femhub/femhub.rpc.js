@@ -165,6 +165,10 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
 
     if (Ext.isDefined(start)) {
         ret = start.call(scope);
+
+        if (!end && Ext.isFunction(ret)) {
+            end = ret;
+        }
     }
 
     FEMhub.RPC.ajax({
