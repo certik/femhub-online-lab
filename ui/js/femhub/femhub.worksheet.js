@@ -18,27 +18,25 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
 
         var manager = this.getCellsManager();
 
-        function start(text) {
-            return this.statusbar.showBusy({text: text});
-        }
+        function start(manager, text, evt) {
+            var id = this.statusbar.showBusy({text: text});
 
-        function end(ok, id) {
-            this.statusbar.clearBusy(id);
+            manager.on(evt, function(manager, ok, ret) {
+                try {
+                    this.statusbar.clearBusy(id);
+                } catch (err) {};
+            }, this, {single: true});
         }
 
         manager.on({
-            initstart: start.partial(this, ["Initializing engine"]),
-            initend: end,
-            killstart: start.partial(this, ["Terminating engine"]),
-            killend: end,
-            statstart: start.partial(this, ["Gathering statistics"]),
-            statend: end,
-            completestart: start.partial(this, ["Completing"]),
-            completeend: end,
-            evaluatestart: start.partial(this, ["Evaluating"]),
-            evaluateend: end,
-            interruptstart: start.partial(this, ["Interrupting"]),
-            interruptend: end,
+            loadstart: start.partial(this, ["Loading worksheet", 'loadend'], 1),
+            savestart: start.partial(this, ["Saving worksheet", 'saveend'], 1),
+            initstart: start.partial(this, ["Initializing engine", 'initend'], 1),
+            killstart: start.partial(this, ["Terminating engine", 'killend'], 1),
+            statstart: start.partial(this, ["Gathering statistics", 'statend'], 1),
+            completestart: start.partial(this, ["Completing", 'completeend'], 1),
+            evaluatestart: start.partial(this, ["Evaluating", 'evaluateend'], 1),
+            interruptstart: start.partial(this, ["Interrupting", 'interruptend'], 1),
             scope: this,
         });
 

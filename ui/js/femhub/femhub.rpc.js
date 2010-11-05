@@ -200,7 +200,7 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
         },
         failure: function(result, evt) {
             if (Ext.isDefined(end)) {
-                end.call(scope, false);
+                end.call(scope, false, ret);
             }
 
             FEMhub.RPC.failure(result, evt);
