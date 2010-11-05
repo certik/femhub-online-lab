@@ -33,12 +33,12 @@ class Console(code.InteractiveConsole):
         sys.ps3 = ''     # output
 
         print "Initializing the engine..."
-        self.json.init(self.uuid)
+        self.json.RPC.Engine.init(self.uuid)
 
     def completer(self, text, state):
         try:
             if state == 0:
-                data = self.json.complete(self.uuid, text)
+                data = self.json.RPC.Engine.complete(self.uuid, text)
                 completions = data["completions"]
                 self.matches = [c["match"] for c in completions]
             if state < len(self.matches):
@@ -50,7 +50,7 @@ class Console(code.InteractiveConsole):
             traceback.print_exc()
 
     def runcode(self, src):
-        result = self.json.evaluate(self.uuid, src)
+        result = self.json.RPC.Engine.evaluate(self.uuid, src)
         if self.debug:
             print result
 
@@ -108,7 +108,7 @@ class Console(code.InteractiveConsole):
         if not self.killed:
             print "Killing the engine..."
             try:
-                self.json.kill(self.uuid)
+                self.json.RPC.Engine.kill(self.uuid)
                 print "    Done."
             except JSONRPCError:
                 print "    Failed."
@@ -152,3 +152,4 @@ FEMhub interactive remote console"""
 
 if __name__ == '__main__':
     main()
+
