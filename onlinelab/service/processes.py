@@ -445,10 +445,16 @@ class EngineProcess(object):
         """Delete this engine's instance. """
         logging.info("%s deleted" % self.uuid)
 
-    def _set_nonblocking(self, fd):
+    def _set_nonblocking(self, fd, nonblocking=True):
         """Set non-blocking property on a file descriptor. """
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+        if nonblocking:
+            fl |=   os.O_NONBLOCK
+        else:
+            fl &= (~os.O_NONBLOCK) & 0xFFFFFFFF
+
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl)
 
     def _reset_io(self):
         """Close and recreate local ``stdout`` and ``stderr``. """
