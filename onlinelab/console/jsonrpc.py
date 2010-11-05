@@ -1,7 +1,7 @@
 """Convenient interface to JSON RPC services. """
 
 from uuid import uuid4
-from urllib import urlopen
+from urllib2 import urlopen, Request
 from simplejson import dumps, loads
 
 class JSONRPCError(Exception):
@@ -38,7 +38,11 @@ class JSONRPCMethod(object):
             'id': uuid4().hex,
         })
 
-        url = urlopen(self.url, data)
+        request = Request(self.url, data, {
+            'Content-Type': 'application/json',
+        })
+
+        url = urlopen(request)
         response = loads(url.read())
         url.close()
 
