@@ -209,6 +209,7 @@ body {
 
 .femhub-login-body {
     padding-top: 82px;
+    padding-bottom: 20px;
     background: #ffffff url(/static/img/femhub/femhub.jpg) no-repeat left top;
 }
 

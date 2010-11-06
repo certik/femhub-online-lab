@@ -97,7 +97,7 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
             title: "Welcome to FEMhub Online Lab",
             bodyCssClass: 'femhub-login-body',
             width: 563,
-            height: 375,
+            autoHeight: true,
             layout: 'table',
             layoutConfig: {
                 columns: 2,
