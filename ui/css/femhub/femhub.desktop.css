@@ -207,6 +207,10 @@ body {
     background-position: -18px 0;
 }
 
+.femhub-login-form {
+    padding: 40px 10px 10px 10px;
+}
+
 .femhub-login-body {
     padding-top: 82px;
     padding-bottom: 20px;

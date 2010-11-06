@@ -1,24 +1,23 @@
 
 FEMhub.Login = Ext.extend(FEMhub.Window, {
-    loginHtml: '<div class="femhub-login-head">The FEMhub Online Laboratory</div>' +
-               '<div class="femhub-login-text">' +
-               'The goal of the FEMhub Online Lab is to make scientific computing ' +
-               'accessible to anyone. No need to ' +
-               'own a strong computer or buy expensive software. Everything ' +
-               'takes place inside the web browser window, that turns into a ' +
-               'virtual computer desktop. The Online lab is accessible from ' +
-               'PCs, laptops, netbooks, iPads, PDAs, and even web-enabled ' +
-               'smart phones. ' +
-               'The Online Lab is powered by computers of the ' +
-               '<a href="http://hpfem.org">hp-FEM group</a> at the ' +
-               '<a href="http://www.unr.edu/"> University of Nevada, Reno</a>.</div>',
-
-               // XXX: add more info link (centered) -> window
 
     constructor: function(config) {
         config = config || {};
 
         this.addEvents(['loginsuccess']);
+
+        var content = new Ext.Panel({
+            bodyStyle: 'padding: 10px',
+            border: false,
+            width: 300,
+            listeners: {
+                afterrender: function(panel) {
+                    FEMhub.Template.render('femhub/login.html', function(html) {
+                        panel.body.update(html);
+                    });
+                },
+            },
+        });
 
         var langs = new Ext.data.ArrayStore({
             fields: ['name', 'code'],
@@ -42,10 +41,10 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
             iconClsPrefix: 'femhub-flag-',
         });
 
-        var login = new Ext.form.FormPanel({
+        var form = new Ext.form.FormPanel({
+            bodyCssClass: 'femhub-login-form',
             labelWidth: 65,
             border: false,
-            padding: 10,
             items: [{
                 id: 'femhub-login-username',
                 fieldLabel: 'Username',
@@ -98,21 +97,10 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
             bodyCssClass: 'femhub-login-body',
             width: 563,
             autoHeight: true,
-            layout: 'table',
-            layoutConfig: {
-                columns: 2,
-            },
+            layout: 'column',
             closable: false,
             resizable: false,
-            items: [
-                {
-                    html: this.loginHtml,
-                    bodyStyle: 'padding: 10px',
-                    border: false,
-                    width: 300,
-                },
-                login,
-            ],
+            items: [content, form],
             buttons: [{
                 text: 'Create account',
                 minWidth: 110,
