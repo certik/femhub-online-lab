@@ -9,6 +9,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
             config.conf.name = 'untitled';
         }
 
+        this.menubar = this.initMenubar();
         this.toolbar = this.initToolbar();
         this.statusbar = this.initStatusbar();
 
@@ -44,9 +45,14 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
             title: config.conf.name,
             iconCls: 'femhub-worksheet-icon',
             layout: 'fit',
-            tbar: this.toolbar,
+            tbar: this.menubar,
             bbar: this.statusbar,
-            items: this.cells,
+            items: {
+                layout: 'fit',
+                border: false,
+                tbar: this.toolbar,
+                items: this.cells,
+            },
         });
 
         FEMhub.Worksheet.superclass.constructor.call(this, config);
@@ -64,6 +70,73 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         return new FEMhub.Statusbar({
             busyText: '',
             defaultText: '',
+        });
+    },
+
+    initMenubar: function() {
+        return new FEMhub.Menubar({
+            items: [{
+                text: 'Worksheet',
+                menu: [{
+                    text: 'Save',
+                    handler: function() {
+                        this.getCellsManager().saveCells();
+                    },
+                    scope: this,
+                }, {
+                    text: 'Close',
+                    handler: function() {
+                        this.close();
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'Cell',
+                menu: [{
+                    text: 'Remove all output',
+                    handler: function() {
+                        this.getCellsManager().removeOutputCells();
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'Engine',
+                menu: [{
+                    text: 'Interrupt',
+                    handler: function() {
+                        this.getCellsManager().interruptEngine();
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'View',
+                menu: [{
+                    text: 'Toolbar',
+                    checked: true,
+                    checkHandler: function(item, checked) {
+                        this.toolbar.setVisible(checked);
+                        this.doLayout();
+                    },
+                    scope: this,
+                }, {
+                    text: 'Status',
+                    checked: true,
+                    checkHandler: function(item, checked) {
+                        this.statusbar.setVisible(checked);
+                        this.doLayout();
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'Help',
+                menu: [{
+                    text: 'Key bindings',
+                    handler: function() {
+                        FEMhub.msg.NotImplementedError();
+                    },
+                    scope: this,
+                }],
+            }],
         });
     },
 
