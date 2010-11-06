@@ -222,7 +222,7 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         var cells = this.getCells(type);
 
         for (var i = 0; i < cells.length; i++) {
-            handler.call(scope || this, cells[i]);
+            handler.call(scope || this, cells[i], i, cells);
         }
     },
 
@@ -586,6 +586,26 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         prev.focusCell();
 
         return prev;
+    },
+
+    setModified: function() {
+        this.statusSaved = false;
+        this.fireEvent('modified', this);
+    },
+
+    setSaved: function() {
+        this.statusSaved = true;
+        this.fireEvent('saved', this);
+    },
+
+    removeOutputCells: function() {
+        this.setModified();
+
+        this.each(function(cell) {
+            if (cell instanceof FEMhub.OutputCell) {
+                cell.destroy();
+            }
+        });
     },
 });
 
