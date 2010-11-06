@@ -464,6 +464,24 @@ class EngineProcess(object):
         self.err.close()
         self.err = StringIO()
 
+    def _read_stdout(self):
+        """Transfer ``stdout`` from a PIPE to a string buffer. """
+        while True:
+            try:
+                line = self.proc.stdout.readline()
+                self.out.write(line)
+            except IOError:
+                break
+
+    def _read_stderr(self):
+        """Transfer ``stderr`` from a PIPE to a string buffer. """
+        while True:
+            try:
+                line = self.proc.stderr.readline()
+                self.err.write(line)
+            except IOError:
+                break
+
     def _on_stdout(self, fd, events):
         """Monitor engine's ``stdout``. """
         ioloop = tornado.ioloop.IOLoop.instance()
@@ -471,12 +489,7 @@ class EngineProcess(object):
         if events & ioloop.ERROR:
             ioloop.remove_handler(fd)
         else:
-            while True:
-                try:
-                    line = self.proc.stdout.readline()
-                    self.out.write(line)
-                except IOError:
-                    break
+            self._read_stdout()
 
     def _on_stderr(self, fd, events):
         """Monitor engine's ``stderr``. """
@@ -485,12 +498,7 @@ class EngineProcess(object):
         if events & ioloop.ERROR:
             ioloop.remove_handler(fd)
         else:
-            while True:
-                try:
-                    line = self.proc.stderr.readline()
-                    self.err.write(line)
-                except IOError:
-                    break
+            self._read_stderr()
 
     @property
     def pid(self):
@@ -642,6 +650,9 @@ class EngineProcess(object):
     def _process_response(self, result, okay):
         """Perform final processing of evaluation results. """
         result['files'] = self.files
+
+        self._read_stdout()
+        self._read_stderr()
 
         result['shout'] = self.out.getvalue()
         result['sherr'] = self.err.getvalue()
