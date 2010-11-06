@@ -97,7 +97,6 @@ class ClientHandler(WebHandler):
         """Politely reply to a greeting from a client. """
         self.return_api_result({'message': 'Hi, this Online Lab!'})
 
-    @jsonrpc.authenticated
     def RPC__Template__render(self, name, context=None):
         """Render a template in the given context. """
         try:
