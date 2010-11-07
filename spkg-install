@@ -1,8 +1,9 @@
 #! /bin/sh
 
+set -e
+
 if [ "$SPKG_LOCAL" = "" ]; then
    echo "SPKG_LOCAL undefined ... exiting";
-   echo "Maybe run 'femhub --shell'?"
    exit 1
 fi
 
@@ -13,6 +14,7 @@ rm -rf $SPKG_LOCAL/lib/python/site-packages/onlinelab
 CONFIG_DIR_BACKUP=`mktemp -d --tmpdir=$SPKG_LOCAL/share/`
 mkdir -p $CONFIG_DIR
 mv $CONFIG_DIR $CONFIG_DIR_BACKUP/
+echo "Old data are stored in: $CONFIG_DIR_BACKUP"
 
 # install online lab
 cp -pr onlinelab $SPKG_LOCAL/lib/python/site-packages/
@@ -30,7 +32,10 @@ onlinelab service init --home=$CONFIG_DIR/service-home
 # LD_LIBRARY_PATH and other things are properly set):
 echo "ENVIRON = True" >> $CONFIG_DIR/service-home/settings.py
 
-if [ $? -ne 0 ]; then
-   echo "Error installing $PACKAGE_NAME."
-   exit 1
+# Try to copy the data from the old installation:
+if [ -f "$CONFIG_DIR_BACKUP/onlinelab/core-home/onlinelab.db" ]; then
+    echo "Copying old database into the new lab"
+    cp "$CONFIG_DIR_BACKUP/onlinelab/core-home/onlinelab.db" $CONFIG_DIR/core-home/
+else
+    echo "No old database found, nothing copied."
 fi
