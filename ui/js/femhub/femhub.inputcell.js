@@ -433,7 +433,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                     }
 
                     var context = new Ext.menu.Menu({
-                        id: 'femhub-completion-menu',
+                        maxHeight: 200,
                         items: items,
                         listeners: {
                             click: {
@@ -448,7 +448,28 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                         },
                     });
 
-                    context.showAt([0, 0]);
+                    var textarea = this.el_textarea;
+                    var xy = textarea.getXY();
+
+                    var lineStart = FEMhub.text.getLineStart(input, start);
+                    var line = input.slice(lineStart, end);
+
+                    var text = Ext.util.TextMetrics.measure(textarea, 'x');
+                    var nl = FEMhub.text.getNumberOfLinesBefore(input, start);
+
+                    xy[0] += line.length*text.width;
+                    xy[1] += (nl + 1)*text.height;
+
+                    xy[0] += textarea.getBorderWidth('l');
+                    xy[1] += textarea.getBorderWidth('t');
+
+                    xy[0] += textarea.getMargins('l');
+                    xy[1] += textarea.getMargins('t');
+
+                    xy[0] += textarea.getPadding('l');
+                    xy[1] += textarea.getPadding('t');
+
+                    context.showAt(xy);
                 },
                 fail: function(reason, result) {
                     this.owner.showEngineError(reason);
