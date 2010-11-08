@@ -117,8 +117,10 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                                     FEMhub.RPC.Worksheet.loadPublished(params,
                                                 function(result) {
                                         if (result.ok === true) {
-                                            FEMhub.msg.info(this,
-                                                "Looks good." + result.cells);
+                                            var win = new FEMhub.PublicWorksheet(result.cells);
+                                            win.show();
+                                            //FEMhub.msg.info(this,
+                                            //    "Looks good." + result.cells);
                                             //this.getWorksheets();
                                         }
                                     }, this);
@@ -577,3 +579,74 @@ FEMhub.Modules.Logout = Ext.extend(FEMhub.Module, {
     },
 });
 
+FEMhub.PublicWorksheet = Ext.extend(FEMhub.Window, {
+    grid: null,
+
+    constructor: function(cells) {
+        config = {};
+
+        this.initCells();
+
+        var buttons = new Array();
+        buttons.push({
+                text: 'Cancel',
+                handler: function() {
+                    this.close();
+                },
+                scope: this,
+            });
+
+        Ext.apply(config, {
+            title: "Public worksheet",
+            iconCls: 'femhub-published-icon',
+            minimizalble: false,
+            maximizable: false,
+            closable: true,
+            resizable: true,
+            width: 500,
+            height: 400,
+            layout: 'fit',
+            items: this.grid,
+            buttons: buttons,
+        });
+
+        FEMhub.PublicWorksheet.superclass.constructor.call(this, config);
+    },
+
+    initCells: function() {
+        this.grid = new Ext.grid.GridPanel({
+            ds: new Ext.data.GroupingStore({
+                reader: new Ext.data.ArrayReader({}, [
+                    { name: 'user' },
+                    { name: 'uuid' },
+                    { name: 'title' },
+                    { name: 'engine' },
+                    { name: 'created' },
+                    { name: 'published' },
+                ]),
+                sortInfo: {
+                    field: 'title',
+                    direction: 'ASC',
+                },
+                groupField: 'user',
+            }),
+            cm: new Ext.grid.ColumnModel({
+                columns: [
+                    {header: "User", width: 100, sortable: true, dataIndex: 'user', hidden: true},
+                    {header: "Title", width: 200, sortable: true, dataIndex: 'title'},
+                    {header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
+                    {header: "Published", width: 100, sortable: true, dataIndex: 'published'},
+                ],
+                defaults: {
+                    menuDisabled: true,
+                },
+            }),
+            sm: new Ext.grid.RowSelectionModel({singleSelect: true}),
+            view: new Ext.grid.GroupingView({
+                groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "worksheets" : "worksheet"]})',
+                forceFit:true,
+            }),
+            border: false,
+        });
+    },
+});
