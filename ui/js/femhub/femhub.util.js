@@ -53,3 +53,50 @@ FEMhub.util.eachPair = function(obj, handler, scope) {
 
 Function.prototype.partial = Function.prototype.createDelegate;
 
+FEMhub.util.getWindowXY = function(config) {
+    var view = config.view || {
+        width: window.innerWidth,
+        height: window.innerHeight,
+    };
+
+    var width = config.width;
+    var height = config.height;
+
+    var x = config.x || ((view.width - width)/2);
+    var y = config.y || ((view.height - height)/2);
+
+    var manager = config.manager || Ext.WindowMgr;
+
+    var windows = [];
+
+    manager.each(function(window) {
+        if (!window.hidden) {
+            windows.push(window);
+        }
+    });
+
+    function overlaps(x, y) {
+        for (var i in windows) {
+            var window = windows[i];
+
+            if (window.x == x && window.y == y) {
+                windows.splice(i, 1);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    while (true) {
+        if (overlaps(x, y)) {
+            x += 20;
+            y += 20;
+        } else {
+            break;
+        }
+    }
+
+    return {x: x, y: y};
+};
+
