@@ -119,9 +119,6 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                                         if (result.ok === true) {
                                             var win = new FEMhub.PublicWorksheet(result.cells);
                                             win.show();
-                                            //FEMhub.msg.info(this,
-                                            //    "Looks good." + result.cells);
-                                            //this.getWorksheets();
                                         }
                                     }, this);
                                 },
@@ -585,7 +582,7 @@ FEMhub.PublicWorksheet = Ext.extend(FEMhub.Window, {
     constructor: function(cells) {
         config = {};
 
-        this.initCells();
+        this.initCells(cells);
 
         var buttons = new Array();
         buttons.push({
@@ -605,7 +602,11 @@ FEMhub.PublicWorksheet = Ext.extend(FEMhub.Window, {
             resizable: true,
             width: 500,
             height: 400,
-            layout: 'fit',
+            layout: 'vbox',
+            layoutConfig: {
+                align: 'stretch',
+                pack: 'start',
+                },
             items: this.grid,
             buttons: buttons,
         });
@@ -613,40 +614,13 @@ FEMhub.PublicWorksheet = Ext.extend(FEMhub.Window, {
         FEMhub.PublicWorksheet.superclass.constructor.call(this, config);
     },
 
-    initCells: function() {
-        this.grid = new Ext.grid.GridPanel({
-            ds: new Ext.data.GroupingStore({
-                reader: new Ext.data.ArrayReader({}, [
-                    { name: 'user' },
-                    { name: 'uuid' },
-                    { name: 'title' },
-                    { name: 'engine' },
-                    { name: 'created' },
-                    { name: 'published' },
-                ]),
-                sortInfo: {
-                    field: 'title',
-                    direction: 'ASC',
-                },
-                groupField: 'user',
-            }),
-            cm: new Ext.grid.ColumnModel({
-                columns: [
-                    {header: "User", width: 100, sortable: true, dataIndex: 'user', hidden: true},
-                    {header: "Title", width: 200, sortable: true, dataIndex: 'title'},
-                    {header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
-                    {header: "Published", width: 100, sortable: true, dataIndex: 'published'},
-                ],
-                defaults: {
-                    menuDisabled: true,
-                },
-            }),
-            sm: new Ext.grid.RowSelectionModel({singleSelect: true}),
-            view: new Ext.grid.GroupingView({
-                groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "worksheets" : "worksheet"]})',
-                forceFit:true,
-            }),
-            border: false,
-        });
+    initCells: function(cells) {
+        this.grid = [];
+        Ext.each(cells, function(cell) {
+                this.grid.push({
+                    title: "cell type:" + cell.type,
+                    html: cell.content,
+                });
+            }, this);
     },
 });
