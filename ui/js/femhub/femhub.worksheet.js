@@ -14,10 +14,17 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         this.statusbar = this.initStatusbar();
 
         this.cells = new FEMhub.CellPanel({
-            conf: config.conf,
+            managerConfig: config.conf,
+            listeners: {
+                cellmanagerready: function(panel, manager) {
+                    manager.initEngine();
+                    manager.loadCells();
+                },
+                scope: this,
+            },
         });
 
-        var manager = this.getCellsManager();
+        var manager = this.getCellManager();
 
         function start(manager, text, evt) {
             var id = this.statusbar.showBusy({text: text});
@@ -58,12 +65,12 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         FEMhub.Worksheet.superclass.constructor.call(this, config);
     },
 
-    getCellsManager: function() {
-        return this.cells.getCellsManager();
+    getCellManager: function() {
+        return this.cells.getCellManager();
     },
 
     getUUID: function() {
-        return this.getCellsManager().getUUID();
+        return this.getCellManager().getUUID();
     },
 
     initStatusbar: function() {
@@ -80,7 +87,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 menu: [{
                     text: 'Save',
                     handler: function() {
-                        this.getCellsManager().saveCells();
+                        this.getCellManager().saveCells();
                     },
                     scope: this,
                 }, {
@@ -95,7 +102,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 menu: [{
                     text: 'Remove all output',
                     handler: function() {
-                        this.getCellsManager().removeOutputCells();
+                        this.getCellManager().removeOutputCells();
                     },
                     scope: this,
                 }],
@@ -104,7 +111,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 menu: [{
                     text: 'Interrupt',
                     handler: function() {
-                        this.getCellsManager().interruptEngine();
+                        this.getCellManager().interruptEngine();
                     },
                     scope: this,
                 }],
@@ -210,7 +217,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 tooltip: "Increase cells' font size.",
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().increaseFontSize();
+                    this.getCellManager().increaseFontSize();
                 },
                 scope: this,
             }, {
@@ -219,7 +226,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 tooltip: "Decrease cells' font size.",
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().decreaseFontSize();
+                    this.getCellManager().decreaseFontSize();
                 },
                 scope: this,
             }, '-', {
@@ -229,7 +236,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 tooltip: 'Refresh the user interface.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().justifyCells();
+                    this.getCellManager().justifyCells();
                 },
                 scope: this,
             }, {
@@ -249,7 +256,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 tooltip: 'Save changes to this worksheet.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().saveCells();
+                    this.getCellManager().saveCells();
                 },
                 scope: this,
             }, {
@@ -258,7 +265,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 tooltip: 'Save changes and close this window.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().saveCells(this.close, this);
+                    this.getCellManager().saveCells(this.close, this);
                 },
                 scope: this,
             }, '-', {
@@ -268,7 +275,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 tooltip: 'Interrupt currently evaluating cell.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().interruptEngine();
+                    this.getCellManager().interruptEngine();
                 },
                 scope: this,
             }],
@@ -288,7 +295,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     },
 
     close: function() {
-        var manager = this.getCellsManager();
+        var manager = this.getCellManager();
 
         if (manager.isSaved()) {
             FEMhub.Worksheet.superclass.close.call(this);
@@ -317,7 +324,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     },
 
     importCells: function(source) {
-        var cells = this.getCellsManager();
+        var cells = this.getCellManager();
 
         var TEXT = 0;
         var INPUT = 1;
@@ -455,14 +462,14 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 if (result.ok === true) {
                     if (Ext.isDefined(result.cells)) {
                         Ext.each(result.cells, function(cell) {
-                            var manager = this.getCellsManager();
+                            var manager = this.getCellManager();
                             manager.evaluateCode(cell.content);
                         }, this);
                     }
                 }
 
                 if (++index == this.imports.length && evalCells) {
-                    this.getCellsManager().evaluateCells();
+                    this.getCellManager().evaluateCells();
                 }
             }, this);
         }, this);
@@ -476,13 +483,13 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         if (this.imports.length) {
             this.evaluateImports(true);
         } else {
-            this.getCellsManager().evaluateCells();
+            this.getCellManager().evaluateCells();
         }
     },
 
     execAction: function(action, params, key, evt) {
         var method = 'action' + FEMhub.util.capitalizeFirst(action);
-        this[method].call(this, this.getCellsManager());
+        this[method].call(this, this.getCellManager());
     },
 
     actionActivateCell: function(manager) {
