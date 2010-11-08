@@ -19,7 +19,9 @@ import psutil
 import pyinotify
 
 import tornado.ioloop
-import tornado.httpclient
+
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httputil import HTTPHeaders
 
 import utilities
 
@@ -618,12 +620,13 @@ class EngineProcess(object):
             args, okay, fail = self.evaluating = self.queue.pop()
 
             body = utilities.xml_encode(args.source, method)
+            headers = HTTPHeaders({'Content-Type': 'application/xml'})
 
-            http_client = tornado.httpclient.AsyncHTTPClient()
-            http_request = tornado.httpclient.HTTPRequest(self.url,
-                method='POST', body=body, request_timeout=0)
+            request = HTTPRequest(self.url, method='POST',
+                body=body, headers=headers, request_timeout=0)
 
-            http_client.fetch(http_request, self._on_evaluate_handler)
+            client = AsyncHTTPClient()
+            client.fetch(request, self._on_evaluate_handler)
 
     def _on_evaluate_timeout(self):
         raise NotImplementedError
