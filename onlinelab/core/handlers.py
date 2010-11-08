@@ -561,17 +561,27 @@ class ClientHandler(WebHandler):
             'name': worksheet.name,
         })
 
-    @jsonrpc.authenticated
+    def allowWorksheetAccess(self, worksheet):
+        """Returns ``True`` if current user is allowed to load this worksheet. """
+        if worksheet.published is not None:
+            return True
+        else:
+            return self.user.is_authenticated() and worksheet.user == self.user
+
     def RPC__Worksheet__load(self, uuid, type=None):
         """Load cells (in order) associated with a worksheet. """
         try:
-            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+            worksheet = Worksheet.objects.get(uuid=uuid)
         except Worksheet.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
+            if not self.allowWorksheetAccess(worksheet):
+                self.return_api_error('permission-denied')
+                return
+
             data, cells = {}, []
 
-            for cell in Cell.objects.filter(user=self.user, worksheet=worksheet):
+            for cell in Cell.objects.filter(worksheet=worksheet):
                 if type is None or cell.type == type:
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
