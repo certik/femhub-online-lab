@@ -646,9 +646,8 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionIntrospectCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
-            // XXX: cell.introspectCell();
-            cell.autocomplete();
+        if (cell !== null && cell.introspectCell) {
+            cell.introspectCell();
         }
     },
 

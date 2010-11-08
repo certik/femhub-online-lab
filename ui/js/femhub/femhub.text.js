@@ -111,5 +111,23 @@ FEMhub.text = {
 
         return count;
     },
+
+    isFilledWithBefore: function(text, index, fill) {
+        while (index > 0) {
+            var chr = text[index-1];
+
+            if (FEMhub.text.isNewline(chr)) {
+                return true;
+            } else {
+                if (chr === fill) {
+                    index--;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    },
 };
 

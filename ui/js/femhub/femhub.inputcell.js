@@ -390,6 +390,40 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         this.setSelection({ start: pos, end: pos });
     },
 
+    introspectCell: function() {
+        var selection = this.getSelection();
+
+        if (selection.start == selection.end) {
+            var input = this.getInput();
+            var index = selection.start;
+
+            if (FEMhub.text.isFilledWithBefore(input, index, ' ')) {
+                this.indent();
+            } else {
+                this.autocomplete();
+            }
+        }
+    },
+
+    indent: function() {
+        var selection = this.getSelection();
+
+        if (selection.start == selection.end) {
+            var input = this.getInput();
+            var pos = selection.start;
+
+            var head = input.slice(0, pos);
+            var tail = input.slice(pos);
+
+            for (var i = 0; i < this.owner.tabWidth; i++) {
+                head += ' ';
+            }
+
+            this.setInput(head + tail);
+            this.setSelection(pos + this.owner.tabWidth);
+        }
+    },
+
     autocomplete: function() {
         var selection = this.getSelection();
 
