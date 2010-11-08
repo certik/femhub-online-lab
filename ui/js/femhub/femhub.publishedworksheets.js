@@ -33,8 +33,47 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     constructor: function(config) {
         config = config || {};
 
-        this.grid = this.initGrid();
-        this.fillGrid();
+        var buttons = new Array();
+        if (logged_in) {
+            buttons.push({
+                text: 'Fork',
+                handler: function() {
+                    var model = this.grid.getSelectionModel();
+
+                    if (!model.hasSelection()) {
+                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'Fork'.");
+                    } else {
+                        var record = model.getSelected();
+                        this.fireEvent('worksheetforked', record.data.uuid);
+                        this.close();
+                    }
+                },
+                scope: this,
+            });
+        } else {
+            buttons.push({
+                text: 'View (read-only)',
+                handler: function() {
+                    var model = this.grid.getSelectionModel();
+
+                    if (!model.hasSelection()) {
+                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'View'.");
+                    } else {
+                        var record = model.getSelected();
+                        this.fireEvent('worksheetviewed', record.data.uuid);
+                        //this.close();
+                    }
+                },
+                scope: this,
+            });
+        }
+        buttons.push({
+                text: 'Cancel',
+                handler: function() {
+                    this.close();
+                },
+                scope: this,
+            });
 
         config = Ext.apply({
             title: "Published worksheets",
