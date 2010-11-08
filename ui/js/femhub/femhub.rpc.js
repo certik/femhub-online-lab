@@ -119,7 +119,7 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
                 okay = config.okay;
             }
 
-            if (Ext.isFunction(config.fail)) {
+            if (Ext.isDefined(config.fail)) {
                 fail = config.fail;
             }
         }
@@ -205,7 +205,27 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
                     }
                 } else {
                     if (Ext.isDefined(fail)) {
-                        fail.call(scope, result.reason, result);
+                        if (Ext.isFunction(fail)) {
+                            fail.call(scope, result.reason, result);
+                        } else {
+                            var errors, title;
+
+                            if (Ext.isDefined(fail.errors)) {
+                                errors = fail.errors;
+                                title = fail.title;
+                            } else {
+                                errors = fail;
+                                title = 'Error';
+                            }
+
+                            var msg = errors[result.reason];
+
+                            if (!Ext.isDefined(msg)) {
+                                msg = Ext.util.Format.htmlEncode(result.reason);
+                            }
+
+                            FEMhub.msg.error(title, msg);
+                        }
                     }
                 }
             }
