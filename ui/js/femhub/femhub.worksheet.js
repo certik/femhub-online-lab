@@ -545,6 +545,22 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         }
     },
 
+    actionHandlePrev: function(manager, evt) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.handlePrev) {
+            cell.handlePrev(evt);
+        }
+    },
+
+    actionHandleNext: function(manager, evt) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.handleNext) {
+            cell.handleNext(evt);
+        }
+    },
+
     actionNextBracket: function(manager) {
         var cell = manager.getFocusedCell();
 
@@ -697,12 +713,56 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
             cell.preprocessCell();
         }
     },
+
+    actionInsertInputCellBefore: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.insertInputCellBefore) {
+            cell.insertInputCellBefore();
+        }
+    },
+
+    actionInsertInputCellAfter: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.insertInputCellAfter) {
+            cell.insertInputCellAfter();
+        }
+    },
+
+    actionInsertTextCellBefore: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.insertTextCellBefore) {
+            cell.insertTextCellBefore();
+        }
+    },
+
+    actionInsertTextCellAfter: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.insertTextCellAfter) {
+            cell.insertTextCellAfter();
+        }
+    },
 });
 
 Ext.reg('x-femhub-worksheet', FEMhub.Worksheet);
 
 FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
     bindings: {
+        handlePrev: {
+            specs: [
+                'UP        -shift -ctrl -alt nostop',
+            ],
+            text: 'Move cursor to the previous line or cell',
+        },
+        handleNext: {
+            specs: [
+                'DOWN      -shift -ctrl -alt nostop',
+            ],
+            text: 'Move cursor to the following line or cell',
+        },
         introspectCell: {
             specs: [
                 'TAB       -shift -ctrl -alt',
@@ -713,14 +773,14 @@ FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
         },
         activateNextCell: {
             specs: [
-                // XXX: 'DOWN      -shift -ctrl -alt',
+                'DOWN      -shift +ctrl -alt',
                 'J         -shift -ctrl +alt',
             ],
             text: 'Move focus to the following cell',
         },
         activatePrevCell: {
             specs: [
-                // XXX: 'UP        -shift -ctrl -alt',
+                'UP        -shift +ctrl -alt',
                 'K         -shift -ctrl +alt',
             ],
             text: 'Move focus to the preceeding cell',
@@ -850,6 +910,30 @@ FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
                 '.         -shift -ctrl +alt',
             ],
             text: 'Copy previous input to the active cell',
+        },
+        insertInputCellBefore: {
+            specs: [
+                'UP        -shift -ctrl +alt',
+            ],
+            text: 'Insert an input cell before the active cell',
+        },
+        insertInputCellAfter: {
+            specs: [
+                'DOWN      -shift -ctrl +alt',
+            ],
+            text: 'Insert a text cell after the active cell',
+        },
+        insertTextCellBefore: {
+            specs: [
+                'UP        +shift +ctrl +alt',
+            ],
+            text: 'Insert an input cell before the active cell',
+        },
+        insertTextCellAfter: {
+            specs: [
+                'DOWN      +shift +ctrl +alt',
+            ],
+            text: 'Insert a text cell after the active cell',
         },
     },
 });

@@ -264,5 +264,15 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     hasFocus: function() {
         return this.focused;
     },
+
+    handlePrev: function(evt) {
+        evt.stopEvent();
+        this.owner.activatePrevCell(this);
+    },
+
+    handleNext: function(evt) {
+        evt.stopEvent();
+        this.owner.activateNextCell(this);
+    },
 });
 

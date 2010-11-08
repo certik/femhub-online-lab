@@ -77,5 +77,9 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
 
         return cell;
     },
+
+    backspace: function() {
+        this.removeCell();
+    },
 });
 

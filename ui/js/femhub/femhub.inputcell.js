@@ -674,5 +674,37 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         this.destroyOutputCells();
         FEMhub.InputCell.superclass.removeCell.call(this);
     },
+
+    handlePrev: function(evt) {
+        if (this.collapsed) {
+            FEMhub.InputCell.superclass.handlePrev.call(this, evt);
+        } else {
+            var input = this.getInput();
+            var index = input.indexOf('\n');
+
+            var selection = this.getSelection();
+
+            if (index === -1 || selection.start <= index) {
+                this.setSelection(selection.start);
+                FEMhub.InputCell.superclass.handlePrev.call(this, evt);
+            }
+        }
+    },
+
+    handleNext: function(evt) {
+        if (this.collapsed) {
+            FEMhub.InputCell.superclass.handleNext.call(this, evt);
+        } else {
+            var input = this.getInput();
+            var index = input.lastIndexOf('\n');
+
+            var selection = this.getSelection();
+
+            if (index === -1 || selection.end > index) {
+                this.setSelection(selection.end);
+                FEMhub.InputCell.superclass.handleNext.call(this, evt);
+            }
+        }
+    },
 });
 
