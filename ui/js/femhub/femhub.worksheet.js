@@ -475,16 +475,16 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         }, this);
     },
 
-    getBindings: function() {
-        return FEMhub.Bindings.Worksheet;
-    },
-
     evaluateCells: function() {
         if (this.imports.length) {
             this.evaluateImports(true);
         } else {
             this.getCellManager().evaluateCells();
         }
+    },
+
+    getBindings: function() {
+        return FEMhub.Bindings.Worksheet;
     },
 
     execAction: function(action, params, key, evt) {
@@ -525,7 +525,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionNextBracket: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.nextBracket) {
             cell.nextBracket();
         }
     },
@@ -533,7 +533,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionPrevBracket: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.prevBracket) {
             cell.prevBracket();
         }
     },
@@ -541,7 +541,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionWipeCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.wipeCell) {
             cell.wipeCell();
         }
     },
@@ -549,7 +549,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionClearCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.clearCell) {
             cell.clearCell();
         }
     },
@@ -557,7 +557,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionRemoveCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.removeCell) {
             cell.removeCell();
         }
     },
@@ -565,7 +565,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionQuitCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.blurCell) {
             cell.blurCell();
             window.focus();
         }
@@ -574,7 +574,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionCollapseCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.collapseCell) {
             cell.collapseCell();
         }
     },
@@ -582,7 +582,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionExpandCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.expandCell) {
             cell.expandCell();
         }
     },
@@ -590,7 +590,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionSplitCellUpper: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.splitCellUpper) {
             cell.splitCellUpper();
         }
     },
@@ -598,7 +598,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionSplitCellLower: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.splitCellLower) {
             cell.splitCellLower();
         }
     },
@@ -606,7 +606,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionMergeCellBefore: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.mergeCellBefore) {
             cell.mergeCellBefore();
         }
     },
@@ -614,7 +614,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionMergeCellAfter: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.mergeCellAfter) {
             cell.mergeCellAfter();
         }
     },
@@ -622,7 +622,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionForwardEvaluateCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.evaluateCell) {
             cell.evaluateCell({keepfocus: false});
         }
     },
@@ -630,7 +630,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionInplaceEvaluateCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.evaluateCell) {
             cell.evaluateCell({keepfocus: true});
         }
     },
@@ -638,7 +638,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionInterruptCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.interruptCell) {
             cell.interruptCell();
         }
     },
@@ -654,7 +654,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     actionPreprocessCell: function(manager) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null) {
+        if (cell !== null && cell.preprocessCell) {
             cell.preprocessCell();
         }
     },
