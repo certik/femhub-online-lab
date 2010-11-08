@@ -102,6 +102,15 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
             resizable: false,
             items: [content, form],
             buttons: [{
+                text: 'Published worksheets',
+                minWidth: 110,
+                handler: function() {
+                    var published = new FEMhub.PublishedWorksheets({ });
+
+                    published.show();
+                },
+                scope: this,
+            }, {
                 text: 'Create account',
                 minWidth: 110,
                 handler: function() {
