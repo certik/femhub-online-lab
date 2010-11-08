@@ -38,6 +38,13 @@ FEMhub.WorksheetViewer = Ext.extend(FEMhub.Window, {
             }],
         }, config);
 
+        if (!Ext.isDefined(config.x) && !Ext.isDefined(config.y)) {
+            Ext.apply(config, FEMhub.util.getWindowXY({
+                width: config.width,
+                height: config.height,
+            }));
+        }
+
         FEMhub.WorksheetViewer.superclass.constructor.call(this, config);
     },
 

@@ -63,39 +63,12 @@ FEMhub.Desktop = function(lab) {
         var width = Math.min(0.8*view.width, 700);
         var height = Math.min(0.8*view.height, 500);
 
-        var _windows = [];
-
-        this.getManager().each(function(wnd) {
-            _windows.push(wnd);
+        var xy = FEMhub.util.getWindowXY({
+            width: width,
+            height: height,
+            view: view,
+            manager: this.getManager(),
         });
-
-        function overlaps(xx, yy) {
-            for (var i = 0; i < _windows.length; i++) {
-                var wnd = _windows[i];
-
-                if (wnd.hidden) {
-                    continue;
-                }
-
-                if (wnd.x == xx && wnd.y == yy) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        var x = (view.width - width)/2;
-        var y = (view.height - height)/2;
-
-        while (true) {
-            if (overlaps(x, y)) {
-                x += 20;
-                y += 20;
-            } else {
-                break;
-            }
-        }
 
         Ext.applyIf(config, {
             renderTo: desktopEl,
@@ -106,8 +79,8 @@ FEMhub.Desktop = function(lab) {
             onEsc: Ext.emptyFn,
             width: width,
             height: height,
-            x: x,
-            y: y,
+            x: xy.x,
+            y: xy.y,
         });
 
         var win = new cls(config);

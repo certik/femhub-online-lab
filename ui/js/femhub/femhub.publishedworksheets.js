@@ -49,6 +49,13 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             items: this.grid,
         }, config);
 
+        if (!Ext.isDefined(config.x) && !Ext.isDefined(config.y)) {
+            Ext.apply(config, FEMhub.util.getWindowXY({
+                width: config.width,
+                height: config.height,
+            }));
+        }
+
         config.buttons = this.initButtons(config.buttons);
 
         FEMhub.PublishedWorksheets.superclass.constructor.call(this, config);
