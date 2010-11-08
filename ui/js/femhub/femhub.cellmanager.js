@@ -308,6 +308,10 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                     },
                 },
             });
+        } else {
+            if (Ext.isDefined(config.handler)) {
+                config.handler.call(config.scope || this, this);
+            }
         }
     },
 
@@ -336,6 +340,10 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                     },
                 },
             });
+        } else {
+            if (Ext.isDefined(config.handler)) {
+                config.handler.call(config.scope || this, this);
+            }
         }
     },
 

@@ -311,8 +311,17 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     close: function() {
         var manager = this.getCellManager();
 
+        function doClose() {
+            manager.killEngine({
+                handler: function() {
+                    FEMhub.Worksheet.superclass.close.call(this);
+                },
+                scope: this,
+            });
+        }
+
         if (manager.isSaved()) {
-            FEMhub.Worksheet.superclass.close.call(this);
+            doClose.call(this);
         } else {
             Ext.MessageBox.show({
                 title: 'Save changes?',
@@ -323,7 +332,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                         case 'yes':
                             manager.saveCells();
                         case 'no':
-                            FEMhub.Worksheet.superclass.close.call(this);
+                            doClose.call(this);
                             break;
                         case 'cancel':
                             break;
