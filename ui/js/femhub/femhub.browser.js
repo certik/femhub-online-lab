@@ -710,27 +710,45 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
 
     forkWorksheet: function() {
         var published = new FEMhub.PublishedWorksheets({
-            listeners: {
-                worksheetforked: {
-                    fn: function(uuid) {
+            buttons: [{
+                text: 'Fork',
+                handler: function() {
+                    var worksheet = published.getWorksheet();
+
+                    if (worksheet === null) {
+                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'Fork'.");
+                    } else {
                         var node = this.getCurrentNode();
 
                         var params = {
-                            origin_uuid: uuid,
+                            origin_uuid: worksheet.uuid,
                             folder_uuid: node.id,
                         };
 
-                        FEMhub.RPC.Worksheet.fork(params, function(result) {
-                            if (result.ok === true) {
+                        FEMhub.RPC.Worksheet.fork(params, {
+                            okay: function(result) {
                                 FEMhub.msg.info(this, "'" + result.name + "' was forked sucessfully.");
                                 this.getWorksheets();
-                            }
-                        }, this);
-                    },
-                    scope: this,
+                                published.close();
+                            },
+                            fail: {
+                                'origin-does-not-exist': "Origin worksheet doesn't exist.",
+                                'folder-does-not-exist': "Destination folder doesn't exist.",
+                                'origin-is-not-published': "Origin worksheet isn't published.",
+                            },
+                            scope: this,
+                        });
+                    }
                 },
-            },
-        }, true);
+                scope: this,
+            }, {
+                text: 'Close',
+                handler: function() {
+                    published.close();
+                },
+                scope: this,
+            }],
+        });
 
         published.show();
     },

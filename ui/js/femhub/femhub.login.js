@@ -105,9 +105,15 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                 text: 'Published worksheets',
                 minWidth: 110,
                 handler: function() {
-                    var published = new FEMhub.PublishedWorksheets({ },
-                        logged_in=false);
-
+                    var published = new FEMhub.PublishedWorksheets({
+                        buttons: [{
+                            text: 'Close',
+                            handler: function() {
+                                published.close();
+                            },
+                            scope: this,
+                        }],
+                    });
                     published.show();
                 },
                 scope: this,

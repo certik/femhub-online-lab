@@ -2,41 +2,13 @@
 FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     grid: null,
 
-    constructor: function(config, logged_in) {
+    constructor: function(config) {
         config = config || {};
 
-        this.addEvents(['worksheetforked']);
-
-        this.initGrid();
+        this.grid = this.initGrid();
         this.fillGrid();
 
-        var buttons = new Array();
-        if (logged_in) {
-            buttons.push({
-                text: 'Fork',
-                handler: function() {
-                    var model = this.grid.getSelectionModel();
-
-                    if (!model.hasSelection()) {
-                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'Fork'.");
-                    } else {
-                        var record = model.getSelected();
-                        this.fireEvent('worksheetforked', record.data.uuid);
-                        this.close();
-                    }
-                },
-                scope: this,
-            });
-        }
-        buttons.push({
-                text: 'Cancel',
-                handler: function() {
-                    this.close();
-                },
-                scope: this,
-            });
-
-        Ext.apply(config, {
+        config = Ext.apply({
             title: "Published worksheets",
             iconCls: 'femhub-published-icon',
             minimizalble: false,
@@ -47,14 +19,13 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             height: 400,
             layout: 'fit',
             items: this.grid,
-            buttons: buttons,
-        });
+        }, config);
 
         FEMhub.PublishedWorksheets.superclass.constructor.call(this, config);
     },
 
     initGrid: function() {
-        this.grid = new Ext.grid.GridPanel({
+        return new Ext.grid.GridPanel({
             ds: new Ext.data.GroupingStore({
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'user' },
@@ -91,9 +62,8 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     },
 
     fillGrid: function() {
-        FEMhub.RPC.Core.getPublishedWorksheets({},
-                function(result) {
-            if (result.ok === true) {
+        FEMhub.RPC.Core.getPublishedWorksheets({}, {
+            okay: function(result) {
                 var store = this.grid.getStore();
                 store.removeAll();
 
@@ -113,8 +83,19 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                         }, worksheet.uuid));
                     }, this);
                 }, this);
-            }
-        }, this);
+            },
+            scope: this,
+        });
+    },
+
+    getWorksheet: function() {
+        var model = this.grid.getSelectionModel();
+
+        if (!model.hasSelection()) {
+            return null;
+        } else {
+            return model.getSelected().data;
+        }
     },
 });
 
