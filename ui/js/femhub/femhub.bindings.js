@@ -5,7 +5,7 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
     constructor: function(config) {
         FEMhub.Bindings.superclass.constructor.call(this, config);
 
-        this.keymap = new Ext.KeyMap(document);
+        this.keymap = new FEMhub.KeyMap(document);
 
         for (var mapping in FEMhub.Mappings) {
             var obj = new FEMhub.Mappings[mapping]();
@@ -15,7 +15,7 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
             FEMhub.util.eachPair(obj.bindings, function(action, data) {
                 Ext.each(data.specs, function(spec) {
                     this.keymap.addBinding(Ext.apply(spec, {
-                        handler: this.handler.createDelegate(this, [obj, action, data]),
+                        handler: this.handler.createDelegate(this, [obj, action, data], 0),
                         scope: this,
                     }));
                 }, this);
@@ -63,7 +63,7 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
                 if (Ext.isDefined(handler)) {
                     handler.call(active, params, key, evt);
                 } else {
-                    active.execAction(action, params, key, evt);
+                    active.execAction(action, params, data, key, evt);
                 }
             }
         }
@@ -90,6 +90,12 @@ FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
         Ext.each(specs, function(spec) {
             if (Ext.isString(spec)) {
                 var components = spec.split(/\s+/);
+                var stop = true;
+
+                if (components[components.length-1] === 'nostop') {
+                    components.pop();
+                    stop = false;
+                }
 
                 var key = components[0].toUpperCase();
                 var modifiers = components.slice(1);
@@ -100,7 +106,7 @@ FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
                     shift: false,
                     ctrl: false,
                     alt: false,
-                    stopEvent: true,
+                    stopEvent: stop,
                 };
 
                 Ext.each(modifiers, function(modifier) {

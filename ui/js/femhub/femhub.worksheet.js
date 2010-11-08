@@ -510,9 +510,9 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         return FEMhub.Bindings.Worksheet;
     },
 
-    execAction: function(action, params, key, evt) {
+    execAction: function(action, params, data, key, evt) {
         var method = 'action' + FEMhub.util.capitalizeFirst(action);
-        this[method].call(this, this.getCellManager());
+        this[method].call(this, this.getCellManager(), evt);
     },
 
     actionActivateCell: function(manager) {
