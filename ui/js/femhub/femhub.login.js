@@ -181,32 +181,21 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
             remember: remember.getValue(),
         };
 
-        FEMhub.RPC.User.login(params, function(result) {
-            if (result.ok === true) {
+        FEMhub.RPC.User.login(params, {
+            okay: function(result) {
                 this.fireEvent('loginsuccess');
                 this.close();
-            } else {
-                var msg;
-
-                switch (result.reason) {
-                case 'username':
-                    msg = 'Account doesn\'t exist. Use "Create account" button to create new one.';
-                    this.clearFields();
-                    break;
-                case 'password':
-                    msg = 'Wrong password. Use "Forgot password?" button to create new one.';
-                    this.clearPassword();
-                    break;
-                case 'disabled':
-                    msg = 'Your account has been disabled.';
-                    break;
-                default:
-                    msg = result.reason;
-                }
-
-                FEMhub.msg.error('Login failed', msg);
-            }
-        }, this);
+            },
+            fail: {
+                title: "Login error",
+                errors: {
+                    'username': 'Account doesn\'t exist. Use "Create account" button to create new one.',
+                    'password': 'Wrong password. Use "Forgot password?" button to create new one.',
+                    'disabled': 'Your account has been disabled.',
+                },
+            },
+            scope: this,
+        });
     },
 });
 
