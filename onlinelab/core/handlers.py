@@ -88,6 +88,7 @@ class ClientHandler(WebHandler):
         'RPC.Worksheet.publish',
         'RPC.Worksheet.fork',
         'RPC.Worksheet.load',
+        'RPC.Worksheet.loadPublished',
         'RPC.Worksheet.save',
         'RPC.Docutils.importRST',
         'RPC.Docutils.exportRST',
@@ -582,6 +583,37 @@ class ClientHandler(WebHandler):
             data, cells = {}, []
 
             for cell in Cell.objects.filter(worksheet=worksheet):
+                if type is None or cell.type == type:
+                    data[cell.uuid] = {
+                        'uuid': cell.uuid,
+                        'type': cell.type,
+                        'content': cell.content,
+                    }
+
+            for uuid in worksheet.get_order():
+                if uuid in data:
+                    cells.append(data[uuid])
+
+            self.return_api_result({'cells': cells})
+
+    def RPC__Worksheet__loadPublished(self, uuid, type=None):
+        """
+        Load cells (in order) associated with a published worksheet.
+
+        This works just like RPC.Worksheet.load() except that it only allows to
+        load published worksheets and it doesn't require authentication.
+        """
+        try:
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            if worksheet.published is None:
+                self.return_api_error('worksheet-not-published')
+                return
+            data, cells = {}, []
+
+            for cell in Cell.objects.filter(user=self.user, worksheet=worksheet):
                 if type is None or cell.type == type:
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
