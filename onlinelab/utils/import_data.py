@@ -1,7 +1,18 @@
 """
 This module is able to import data to database.
 
-So far only from the old codenode lab.
+So far only from the old codenode lab. You can use either the load() function
+directly, or experiment with the database yourself, like this::
+
+>>> from onlinelab.utils.import_data import femhub_set_paths
+>>> femhub_set_paths()
+>>> from onlinelab.core.models import Worksheet
+>>> Worksheet.objects.all()
+[<Worksheet: Worksheet object>, <Worksheet: Worksheet object>]
+
+And you can import more models and query the database, extract data, fill in
+data and so on. See the django documentation for more information.
+
 """
 
 from os.path import expandvars
