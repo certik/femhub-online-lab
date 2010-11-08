@@ -8,115 +8,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     observedInputLength: 0,
     observationInterval: 250,
 
-    initComponent: function() {
-        FEMhub.InputCell.superclass.initComponent.call(this);
-
-        Ext.apply(this.bindings, {
-            x_tab: {
-                key: Ext.EventObject.TAB,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    var selection = this.getSelection();
-
-                    if (selection.start == selection.end) {
-                        var input = this.getInput();
-                        var pos = selection.start;
-
-                        var head = input.slice(0, pos);
-                        var tail = input.slice(pos);
-
-                        for (var i = 0; i < this.owner.tabWidth; i++) {
-                            head += ' ';
-                        }
-
-                        this.setInput(head + tail);
-                        this.setSelection(pos + this.owner.tabWidth);
-                    }
-                },
-            },
-            x_shift_tab: {
-                key: Ext.EventObject.TAB,
-                shift: true,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: Ext.emptyFn,
-            },
-            x_shift_enter: {
-                key: Ext.EventObject.ENTER,
-                shift: true,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    this.evaluateCell({ keepfocus: false });
-                },
-            },
-            x_ctrl_enter: {
-                key: Ext.EventObject.ENTER,
-                shift: false,
-                ctrl: true,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    this.evaluateCell({ keepfocus: true });
-                },
-            },
-            x_enter: {
-                key: Ext.EventObject.ENTER,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: this.newline,
-            },
-            x_backspace: {
-                key: Ext.EventObject.BACKSPACE,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: this.backspace,
-            },
-            x_ctrl_space: {
-                key: Ext.EventObject.SPACE,
-                shift: false,
-                ctrl: true,
-                alt: false,
-                scope: this,
-                stopEvent: false,
-                handler: this.autocomplete,
-            },
-            x_shift_ctrl_alt_up: {
-                key: Ext.EventObject.UP,
-                shift: true,
-                ctrl: true,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.mergeCellBefore,
-            },
-            x_shift_ctrl_alt_down: {
-                key: Ext.EventObject.DOWN,
-                shift: true,
-                ctrl: true,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.mergeCellAfter,
-            },
-        });
-    },
-
     getInput: function() {
         return this.el_textarea.getValue();
     },
@@ -192,24 +83,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         this.el_interrupt.on('click', this.interruptCell, this);
     },
 
-    setupInputCellKeyMap: function() {
-        this.keymap_textarea_stop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_tab, this.bindings.x_shift_tab,
-            this.bindings.x_enter, this.bindings.x_backspace,
-            this.bindings.x_shift_enter, this.bindings.x_ctrl_enter,
-            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
-            this.bindings.x_alt_up, this.bindings.x_alt_down,
-            this.bindings.x_shift_alt_up, this.bindings.x_shift_alt_down,
-            this.bindings.x_shift_ctrl_alt_up, this.bindings.x_shift_ctrl_alt_down,
-            this.bindings.x_alt_left,
-            this.bindings.x_ctrl_space,
-        ]);
-
-        this.keymap_textarea_nostop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_up, this.bindings.x_down,
-        ]);
-    },
-
     onRender: function() {
         FEMhub.InputCell.superclass.onRender.apply(this, arguments);
 
@@ -257,7 +130,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         this.setupInputCellObserver();
         this.setupInputCellEvents();
-        this.setupInputCellKeyMap();
 
         //if (this.start === true) {
         // TODO: this.el_textarea.update("Click here to start ...");

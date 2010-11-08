@@ -6,150 +6,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     initComponent: function() {
         FEMhub.IOCell.superclass.initComponent.call(this);
 
-        Ext.apply(this.bindings, {
-            x_ctrl_up: {
-                key: Ext.EventObject.UP,
-                shift: false,
-                ctrl: true,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    var cell = this.prevCell('input');
-
-                    if (cell.ctype == 'input') {
-                        cell.setSelection('end');
-                    }
-                },
-            },
-            x_ctrl_down: {
-                key: Ext.EventObject.DOWN,
-                shift: false,
-                ctrl: true,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    var cell = this.nextCell('input');
-
-                    if (cell.ctype == 'input') {
-                        cell.setSelection('start');
-                    }
-                },
-            },
-            x_alt_up: {
-                key: Ext.EventObject.UP,
-                shift: false,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.insertInputCellBefore,
-            },
-            x_alt_down: {
-                key: Ext.EventObject.DOWN,
-                shift: false,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.insertInputCellAfter,
-            },
-            x_alt_left: {
-                key: Ext.EventObject.LEFT,
-                shift: false,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.collapseCell,
-            },
-            x_alt_right: {
-                key: Ext.EventObject.RIGHT,
-                shift: false,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.expandCell,
-            },
-            x_up: {
-                key: Ext.EventObject.UP,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: false,
-                handler: function(key, ev) {
-                    var cell;
-
-                    if (this.collapsed || this.ctype != 'input') {
-                        ev.stopEvent();
-
-                        cell = this.prevCell('input'); // XXX
-
-                        if (cell.ctype == 'input') {
-                            cell.setSelection('end');
-                        }
-                    } else {
-                        var selection = this.getSelection();
-
-                        if (selection.start == selection.end) {
-                            var input = this.getText();
-                            var index = input.indexOf('\n');
-
-                            if (index == -1 || selection.start <= index) {
-                                ev.stopEvent();
-
-                                cell = this.prevCell('input'); // XXX
-
-                                if (cell.ctype == 'input') {
-                                    cell.setSelection('end');
-                                }
-                            }
-                        }
-                    }
-                },
-            },
-            x_down: {
-                key: Ext.EventObject.DOWN,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: false,
-                handler: function(key, ev) {
-                    var cell;
-
-                    if (this.collapsed || this.ctype != 'input') {
-                        ev.stopEvent();
-
-                        cell = this.nextCell('input'); // XXX
-
-                        if (cell.ctype == 'input') {
-                            cell.setSelection('start');
-                        }
-                    } else {
-                        var selection = this.getSelection();
-
-                        if (selection.start == selection.end) {
-                            var input = this.getText();
-                            var index = input.lastIndexOf('\n');
-
-                            if (index == -1 || selection.start > index) {
-                                ev.stopEvent();
-
-                                cell = this.nextCell('input'); // XXX
-
-                                if (cell.ctype == 'input') {
-                                    cell.setSelection('start');
-                                }
-                            }
-                        }
-                    }
-                },
-            },
-        });
     },
 
     showLabel: function() {
@@ -245,26 +101,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         }, this);
     },
 
-    setupIOCellKeyMap: function() {
-        this.keymap_expander_stop = new Ext.KeyMap(this.el_expander, [
-            this.bindings.x_alt_right,
-            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
-            this.bindings.x_alt_up, this.bindings.x_alt_down,
-        ]);
-
-        this.keymap_expander_nostop = new Ext.KeyMap(this.el_expander, [
-            this.bindings.x_up, this.bindings.x_down,
-        ]);
-
-        this.el.on('contextmenu', function(evt) {
-            if (evt.target.id == this.el.id || evt.target.id == this.el_label.id) {
-                var context = this.createContextMenu();
-                context.showAt(evt.getXY());
-                evt.stopEvent();
-            }
-        }, this);
-    },
-
     onRender: function() {
         FEMhub.IOCell.superclass.onRender.apply(this, arguments);
 
@@ -290,7 +126,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
 
         this.setupIOCellObserver();
         this.setupIOCellEvents();
-        this.setupIOCellKeyMap();
     },
 
     onFocusCell: function() {

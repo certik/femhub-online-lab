@@ -4,22 +4,6 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
 
     labelPrefix: 'Out',
 
-    initComponent: function() {
-        FEMhub.OutputCell.superclass.initComponent.call(this);
-
-        Ext.apply(this.bindings, {
-            x_backspace: {
-                key: Ext.EventObject.BACKSPACE,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: this.removeCell,
-            },
-        });
-    },
-
     getOutput: function() {
         var output = this.el_textarea.dom.innerHTML;
 
@@ -61,20 +45,6 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
         this.el_textarea.on('blur', this.blurCell, this);
     },
 
-    setupOutputCellKeyMap: function() {
-        this.keymap_textarea_stop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_backspace,
-            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
-            this.bindings.x_alt_up, this.bindings.x_alt_down,
-            this.bindings.x_alt_left,
-            this.bindings.x_ctrl_space,
-        ]);
-
-        this.keymap_textarea_nostop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_up, this.bindings.x_down,
-        ]);
-    },
-
     onRender: function() {
         FEMhub.OutputCell.superclass.onRender.apply(this, arguments);
 
@@ -91,7 +61,6 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
 
         this.setupOutputCellObserver();
         this.setupOutputCellEvents();
-        this.setupOutputCellKeyMap();
     },
 
     insertInputCellBefore: function() {

@@ -28,10 +28,6 @@ FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
         }, this);
     },
 
-    setupTextCellKeyMap: function() {
-        /* pass */
-    },
-
     onRender: function() {
         FEMhub.TextCell.superclass.onRender.apply(this, arguments);
 
@@ -45,7 +41,6 @@ FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
 
         this.setupTextCellObserver();
         this.setupTextCellEvents();
-        this.setupTextCellKeyMap();
     },
 
     setContent: function(content) {

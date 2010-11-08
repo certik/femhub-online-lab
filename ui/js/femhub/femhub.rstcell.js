@@ -14,10 +14,6 @@ FEMhub.RSTCell = Ext.extend(FEMhub.TextCell, {
         /* pass */
     },
 
-    setupRSTCellKeyMap: function() {
-        /* pass */
-    },
-
     onRender: function() {
         FEMhub.RSTCell.superclass.onRender.apply(this, arguments);
 
@@ -25,7 +21,6 @@ FEMhub.RSTCell = Ext.extend(FEMhub.TextCell, {
 
         this.setupRSTCellObserver();
         this.setupRSTCellEvents();
-        this.setupRSTCellKeyMap();
     },
 
     setContent: function(content) {

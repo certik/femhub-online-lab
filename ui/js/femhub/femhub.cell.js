@@ -6,7 +6,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     focused: false,
     collapsed: false,
     hiddenEl: null,
-    bindings: {},
 
     constructor: function(config) {
         if (Ext.isDefined(config.setup)) {
@@ -19,27 +18,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         }
 
         FEMhub.Cell.superclass.constructor.apply(this, arguments);
-
-        Ext.apply(this.bindings, {
-            x_shift_alt_up: {
-                key: Ext.EventObject.UP,
-                shift: true,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.insertTextCellBefore,
-            },
-            x_shift_alt_down: {
-                key: Ext.EventObject.DOWN,
-                shift: true,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.insertTextCellAfter,
-            },
-        });
     },
 
     initComponent: function() {
@@ -54,10 +32,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
     setupCellEvents: function() {
         this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
-    },
-
-    setupCellKeyMap: function() {
-        /* pass */
     },
 
     onRender: function() {
@@ -80,7 +54,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.setupCellObserver();
         this.setupCellEvents();
-        this.setupCellKeyMap();
     },
 
     onFocusCell: function() {
