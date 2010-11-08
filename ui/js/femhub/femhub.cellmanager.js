@@ -284,60 +284,66 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
     },
 
     initEngine: function() {
-        FEMhub.RPC.Engine.init({uuid: this.uuid}, {
-            okay: function(result) {
-                this.isInitialized = true;
-            },
-            fail: function(reason, result) {
-                this.showEngineError(reason);
-            },
-            scope: this,
-            status: {
-                start: function() {
-                    return this.fireEvent('initstart', this);
+        if (!this.isInitialized) {
+            FEMhub.RPC.Engine.init({uuid: this.uuid}, {
+                okay: function(result) {
+                    this.isInitialized = true;
                 },
-                end: function(ok, ret) {
-                    this.fireEvent('initend', this, ok, ret);
+                fail: function(reason, result) {
+                    this.showEngineError(reason);
                 },
-            },
-        });
+                scope: this,
+                status: {
+                    start: function() {
+                        return this.fireEvent('initstart', this);
+                    },
+                    end: function(ok, ret) {
+                        this.fireEvent('initend', this, ok, ret);
+                    },
+                },
+            });
+        }
     },
 
     killEngine: function() {
-        FEMhub.RPC.Engine.kill({uuid: this.uuid}, {
-            okay: function(result) {
-                this.isInitialized = false;
-            },
-            fail: function(reason, result) {
-                this.showEngineError(reason);
-            },
-            scope: this,
-            status: {
-                start: function() {
-                    return this.fireEvent('killstart', this);
+        if (this.isInitialized) {
+            FEMhub.RPC.Engine.kill({uuid: this.uuid}, {
+                okay: function(result) {
+                    this.isInitialized = false;
                 },
-                end: function(ok, ret) {
-                    this.fireEvent('killend', this, ok, ret);
+                fail: function(reason, result) {
+                    this.showEngineError(reason);
                 },
-            },
-        });
+                scope: this,
+                status: {
+                    start: function() {
+                        return this.fireEvent('killstart', this);
+                    },
+                    end: function(ok, ret) {
+                        this.fireEvent('killend', this, ok, ret);
+                    },
+                },
+            });
+        }
     },
 
     interruptEngine: function(cellid) {
-        FEMhub.RPC.Engine.interrupt({uuid: this.uuid, cellid: cellid}, {
-            fail: function(reason, result) {
-                this.showEngineError(reason);
-            },
-            scope: this,
-            status: {
-                start: function() {
-                    return this.fireEvent('interruptstart', this);
+        if (this.isInitialized) {
+            FEMhub.RPC.Engine.interrupt({uuid: this.uuid, cellid: cellid}, {
+                fail: function(reason, result) {
+                    this.showEngineError(reason);
                 },
-                end: function(ok, ret) {
-                    this.fireEvent('interruptend', this, ok, ret);
+                scope: this,
+                status: {
+                    start: function() {
+                        return this.fireEvent('interruptstart', this);
+                    },
+                    end: function(ok, ret) {
+                        this.fireEvent('interruptend', this, ok, ret);
+                    },
                 },
-            },
-        });
+            });
+        }
     },
 
     showEngineError: function(error) {
