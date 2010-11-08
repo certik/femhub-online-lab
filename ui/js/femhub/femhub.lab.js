@@ -9,6 +9,14 @@ FEMhub.Lab = function(config) {
     }, this);
 };
 
+FEMhub.Lab.run = function(config) {
+    if (!Ext.isDefined(FEMhub.lab)) {
+        FEMhub.lab = new FEMhub.Lab(config);
+    } else {
+        FEMhub.msg.critical("Online Lab was already started.");
+    }
+};
+
 Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     isReady: false,
     desktop: null,
