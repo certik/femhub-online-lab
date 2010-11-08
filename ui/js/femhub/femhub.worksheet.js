@@ -642,6 +642,22 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         }
     },
 
+    actionNewline: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.newline) {
+            cell.newline();
+        }
+    },
+
+    actionBackspace: function(manager) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.backspace) {
+            cell.backspace();
+        }
+    },
+
     actionForwardEvaluateCell: function(manager) {
         var cell = manager.getFocusedCell();
 
@@ -722,6 +738,18 @@ FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
                 'L         -shift -ctrl +alt',
             ],
             text: 'Expand the active cell',
+        },
+        newline: {
+            specs: [
+                'ENTER     -shift -ctrl -alt',
+            ],
+            text: 'Intelligently insert a newline',
+        },
+        backspace: {
+            specs: [
+                'BACKSPACE -shift -ctrl -alt',
+            ],
+            text: 'Intelligently remove the previous character',
         },
         forwardEvaluateCell: {
             specs: [
