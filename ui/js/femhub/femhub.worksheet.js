@@ -114,6 +114,20 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                         this.getCellManager().interruptEngine();
                     },
                     scope: this,
+                }, {
+                    text: 'Restart',
+                    handler: function() {
+                        var manager = this.getCellManager();
+
+                        manager.killEngine({
+                            force: true,
+                            handler: function() {
+                                manager.initEngine();
+                            },
+                            scope: this,
+                        });
+                    },
+                    scope: this,
                 }],
             }, {
                 text: 'View',

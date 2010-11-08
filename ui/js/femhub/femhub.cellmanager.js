@@ -283,11 +283,17 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         evaluateCell.call(this, first);
     },
 
-    initEngine: function() {
-        if (!this.isInitialized) {
+    initEngine: function(config) {
+        config = config || {};
+
+        if (!this.isInitialized || config.force === true) {
             FEMhub.RPC.Engine.init({uuid: this.uuid}, {
                 okay: function(result) {
                     this.isInitialized = true;
+
+                    if (Ext.isDefined(config.handler)) {
+                        config.handler.call(config.scope || this, this);
+                    }
                 },
                 fail: function(reason, result) {
                     this.showEngineError(reason);
@@ -305,11 +311,17 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         }
     },
 
-    killEngine: function() {
-        if (this.isInitialized) {
+    killEngine: function(config) {
+        config = config || {};
+
+        if (this.isInitialized || config.force === true) {
             FEMhub.RPC.Engine.kill({uuid: this.uuid}, {
                 okay: function(result) {
                     this.isInitialized = false;
+
+                    if (Ext.isDefined(config.handler)) {
+                        config.handler.call(config.scope || this, this);
+                    }
                 },
                 fail: function(reason, result) {
                     this.showEngineError(reason);
