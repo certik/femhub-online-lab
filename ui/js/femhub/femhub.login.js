@@ -109,22 +109,18 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                         listeners: {
                             worksheetviewed: {
                                 fn: function(uuid) {
-                                    alert(uuid);
-                                    /*
-                                    var node = this.getCurrentNode();
-
                                     var params = {
-                                        origin_uuid: uuid,
-                                        folder_uuid: node.id,
+                                        uuid: uuid,
                                     };
 
-                                    FEMhub.RPC.Worksheet.fork(params, function(result) {
+                                    FEMhub.RPC.Worksheet.loadPublished(params,
+                                                function(result) {
                                         if (result.ok === true) {
-                                            FEMhub.msg.info(this, "'" + result.name + "' was forked sucessfully.");
-                                            this.getWorksheets();
+                                            FEMhub.msg.info(this,
+                                                "Looks good." + result.cells);
+                                            //this.getWorksheets();
                                         }
                                     }, this);
-                                    */
                                 },
                                 scope: this,
                             },

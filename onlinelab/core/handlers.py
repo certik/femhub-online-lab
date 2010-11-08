@@ -594,7 +594,7 @@ class ClientHandler(WebHandler):
         load published worksheets and it doesn't require authentication.
         """
         try:
-            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+            worksheet = Worksheet.objects.get(uuid=uuid)
         except Worksheet.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
@@ -603,7 +603,7 @@ class ClientHandler(WebHandler):
                 return
             data, cells = {}, []
 
-            for cell in Cell.objects.filter(user=self.user, worksheet=worksheet):
+            for cell in Cell.objects.filter(worksheet=worksheet):
                 if type is None or cell.type == type:
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
