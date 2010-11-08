@@ -73,6 +73,7 @@ class ClientHandler(WebHandler):
         'RPC.User.remindPassword',
         'RPC.Core.getEngines',
         'RPC.Core.getUsers',
+        'RPC.Core.getPublishedWorksheets',
         'RPC.Folder.getRoot',
         'RPC.Folder.create',
         'RPC.Folder.remove',
@@ -236,6 +237,48 @@ class ClientHandler(WebHandler):
                 data['worksheets'] = user_worksheets
 
             users.append(data)
+
+        self.return_api_result({'users': users})
+
+    def RPC__Core__getPublishedWorksheets(self):
+        """
+        Return a list of all published worksheets by users.
+
+        This does not require any authentication, because all this information
+        is public. This method does not (under any circumstances) return any
+        private data (like emails and so on). It only returns users with
+        published worksheets.
+
+        Otherwise it is very similar to RPC.Core.getUsers().
+        """
+        users = []
+
+        for user in User.objects.all():
+            user_worksheets = []
+
+            for worksheet in Worksheet.objects.filter(user=user,
+                    published__isnull=False):
+                user_worksheets.append({
+                    'uuid': worksheet.uuid,
+                    'name': worksheet.name,
+                    'description': worksheet.description,
+                    'created': jsonrpc.datetime(worksheet.created),
+                    'modified': jsonrpc.datetime(worksheet.modified),
+                    'published': jsonrpc.datetime(worksheet.published),
+                    'engine': {
+                        'uuid': worksheet.engine.uuid,
+                        'name': worksheet.engine.name,
+                    },
+                })
+
+            if len(user_worksheets) > 0:
+                data = {
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'worksheets': user_worksheets,
+                }
+                users.append(data)
 
         self.return_api_result({'users': users})
 
