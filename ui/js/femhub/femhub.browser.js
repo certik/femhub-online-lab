@@ -716,7 +716,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     var worksheet = published.getWorksheet();
 
                     if (worksheet === null) {
-                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'Fork'.");
+                        FEMhub.msg.warning(published, "Select a worksheet first and then click 'Fork'.");
                     } else {
                         var node = this.getCurrentNode();
 

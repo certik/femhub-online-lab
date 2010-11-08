@@ -405,8 +405,12 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                     this.statusSaved = true;
                 }
             },
-            fail: function(reason, result) {
-                // TODO
+            fail: {
+                title: "Cell loader error",
+                errors: {
+                    'does-not-exist': "Worksheet does not exist.",
+                    'permission-denied': "You are not allowed to open this worksheet.",
+                },
             },
             scope: this,
             status: {

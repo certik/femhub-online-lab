@@ -30,13 +30,13 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'user' },
                     { name: 'uuid' },
-                    { name: 'title' },
+                    { name: 'name' },
                     { name: 'engine' },
                     { name: 'created' },
                     { name: 'published' },
                 ]),
                 sortInfo: {
-                    field: 'title',
+                    field: 'name',
                     direction: 'ASC',
                 },
                 groupField: 'user',
@@ -44,7 +44,7 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             cm: new Ext.grid.ColumnModel({
                 columns: [
                     {header: "User", width: 100, sortable: true, dataIndex: 'user', hidden: true},
-                    {header: "Title", width: 200, sortable: true, dataIndex: 'title'},
+                    {header: "Title", width: 200, sortable: true, dataIndex: 'name'},
                     {header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
                     {header: "Published", width: 100, sortable: true, dataIndex: 'published'},
                 ],
@@ -68,7 +68,7 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                 store.removeAll();
 
                 var record = Ext.data.Record.create([
-                    'user', 'uuid', 'title', 'engine', 'created', 'published'
+                    'user', 'uuid', 'name', 'engine', 'created', 'published'
                 ]);
 
                 Ext.each(result.users, function(user) {
@@ -76,7 +76,7 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                         store.add(new record({
                             user: user.username,
                             uuid: worksheet.uuid,
-                            title: worksheet.name,
+                            name: worksheet.name,
                             engine: worksheet.engine.name,
                             created: worksheet.created,
                             published: worksheet.published,
