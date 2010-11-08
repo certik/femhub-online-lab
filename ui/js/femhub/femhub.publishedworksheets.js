@@ -2,7 +2,7 @@
 FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     grid: null,
 
-    constructor: function(config) {
+    constructor: function(config, logged_in) {
         config = config || {};
 
         this.addEvents(['worksheetforked']);
@@ -10,18 +10,9 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
         this.initGrid();
         this.fillGrid();
 
-        Ext.apply(config, {
-            title: "Published worksheets",
-            iconCls: 'femhub-published-icon',
-            minimizalble: false,
-            maximizable: false,
-            closable: true,
-            resizable: true,
-            width: 500,
-            height: 400,
-            layout: 'fit',
-            items: this.grid,
-            buttons: [{
+        var buttons = new Array();
+        if (logged_in) {
+            buttons.push({
                 text: 'Fork',
                 handler: function() {
                     var model = this.grid.getSelectionModel();
@@ -35,13 +26,28 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                     }
                 },
                 scope: this,
-            }, {
+            });
+        }
+        buttons.push({
                 text: 'Cancel',
                 handler: function() {
                     this.close();
                 },
                 scope: this,
-            }],
+            });
+
+        Ext.apply(config, {
+            title: "Published worksheets",
+            iconCls: 'femhub-published-icon',
+            minimizalble: false,
+            maximizable: false,
+            closable: true,
+            resizable: true,
+            width: 500,
+            height: 400,
+            layout: 'fit',
+            items: this.grid,
+            buttons: buttons,
         });
 
         FEMhub.PublishedWorksheets.superclass.constructor.call(this, config);

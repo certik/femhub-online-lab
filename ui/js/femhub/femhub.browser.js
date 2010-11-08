@@ -730,7 +730,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     scope: this,
                 },
             },
-        });
+        }, true);
 
         published.show();
     },
