@@ -15,6 +15,18 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         raw: 'RAWCell',
     },
 
+    isOutputCellType: function(type) {
+        switch(type) {
+        case 'output':
+        case 'image':
+        case 'error':
+        case 'raw':
+            return true;
+        default:
+            return false;
+        }
+    },
+
     constructor: function(config) {
         config = config || {};
 
@@ -371,15 +383,17 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                     }
                 } else {
                     Ext.each(result.cells, function(data) {
-                        var cell = this.newCell({
-                            type: data.type,
-                            setup: {
-                                id: data.uuid,
-                                saved: true,
-                            },
-                        });
+                        if (this.loadOutputCells || !this.isOutputCellType(data.type)) {
+                            var cell = this.newCell({
+                                type: data.type,
+                                setup: {
+                                    id: data.uuid,
+                                    saved: true,
+                                },
+                            });
 
-                        cell.setText(data.content);
+                            cell.setText(data.content);
+                        }
                     }, this);
 
                     this.statusSaved = true;
