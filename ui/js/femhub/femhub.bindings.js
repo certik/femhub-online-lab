@@ -100,6 +100,7 @@ FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
                     shift: false,
                     ctrl: false,
                     alt: false,
+                    stopEvent: true,
                 };
 
                 Ext.each(modifiers, function(modifier) {
