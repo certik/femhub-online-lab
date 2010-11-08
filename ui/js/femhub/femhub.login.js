@@ -105,8 +105,31 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                 text: 'Published worksheets',
                 minWidth: 110,
                 handler: function() {
-                    var published = new FEMhub.PublishedWorksheets({ },
-                        logged_in=false);
+                    var published = new FEMhub.PublishedWorksheets({
+                        listeners: {
+                            worksheetviewed: {
+                                fn: function(uuid) {
+                                    alert(uuid);
+                                    /*
+                                    var node = this.getCurrentNode();
+
+                                    var params = {
+                                        origin_uuid: uuid,
+                                        folder_uuid: node.id,
+                                    };
+
+                                    FEMhub.RPC.Worksheet.fork(params, function(result) {
+                                        if (result.ok === true) {
+                                            FEMhub.msg.info(this, "'" + result.name + "' was forked sucessfully.");
+                                            this.getWorksheets();
+                                        }
+                                    }, this);
+                                    */
+                                },
+                                scope: this,
+                            },
+                        },
+                    }, logged_in=false);
 
                     published.show();
                 },

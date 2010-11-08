@@ -27,6 +27,22 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                 },
                 scope: this,
             });
+        } else {
+            buttons.push({
+                text: 'View (read-only)',
+                handler: function() {
+                    var model = this.grid.getSelectionModel();
+
+                    if (!model.hasSelection()) {
+                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'View'.");
+                    } else {
+                        var record = model.getSelected();
+                        this.fireEvent('worksheetviewed', record.data.uuid);
+                        //this.close();
+                    }
+                },
+                scope: this,
+            });
         }
         buttons.push({
                 text: 'Cancel',
