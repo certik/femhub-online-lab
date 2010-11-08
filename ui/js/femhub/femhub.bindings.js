@@ -15,7 +15,7 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
             FEMhub.util.eachPair(obj.bindings, function(action, data) {
                 Ext.each(data.specs, function(spec) {
                     this.keymap.addBinding(Ext.apply(spec, {
-                        handler: this.handler.createDelegate(this, [obj, action, data], 0),
+                        handler: this.handler.createDelegate(this, [obj, action, data, spec], 0),
                         scope: this,
                     }));
                 }, this);
@@ -49,11 +49,15 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
         return active;
     },
 
-    handler: function(binding, action, data, key, evt) {
+    handler: function(binding, action, data, spec, key, evt) {
         var active = this.getActive();
 
         if (binding.global || (active !== null && active.getBindings() == binding)) {
             var params = data.params || {};
+
+            if (spec.stop === true) {
+                evt.stopEvent();
+            }
 
             if (Ext.isDefined(data.handler)) {
                 data.handler.call(data.scope || active, active, params, key, evt);
@@ -63,7 +67,7 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
                 if (Ext.isDefined(handler)) {
                     handler.call(active, params, key, evt);
                 } else {
-                    active.execAction(action, params, data, key, evt);
+                    active.execAction(action, params, key, evt);
                 }
             }
         }
@@ -106,7 +110,7 @@ FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
                     shift: false,
                     ctrl: false,
                     alt: false,
-                    stopEvent: stop,
+                    stop: stop,
                 };
 
                 Ext.each(modifiers, function(modifier) {
