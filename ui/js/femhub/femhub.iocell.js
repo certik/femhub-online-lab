@@ -9,7 +9,11 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     },
 
     showLabel: function() {
-        this.el_label.show();
+        if (!this.collapsed) {
+            this.el_label.show();
+        } else {
+            this.hiddenEl.push(this.el_label);
+        }
     },
 
     hideLabel: function() {
