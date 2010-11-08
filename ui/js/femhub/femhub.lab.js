@@ -48,6 +48,16 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
         this.startLogin();
     },
 
+    cleanupLab: function() {
+        var group = this.desktop.getGroup();
+
+        group.each(function(wnd) {
+            if (wnd instanceof FEMhub.Worksheet) {
+                wnd.getCellManager().killEngine();
+            }
+        }, this);
+    },
+
     startLogin: function() {
         var login = new FEMhub.Login({
             listeners: {
@@ -81,16 +91,11 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     },
 
     onUnload: function(evt) {
-        var group = this.desktop.getGroup();
-
-        group.each(function(wnd) {
-            if (wnd.getXType() === 'x-femhub-worksheet') {
-                wnd.getCellManager().killEngine();
-            }
-        }, this);
 
         if (this.fireEvent('beforeunload', this) === false) {
             evt.stopEvent();
+        } else {
+            this.cleanupLab();
         }
     },
 

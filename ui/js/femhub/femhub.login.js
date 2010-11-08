@@ -544,6 +544,8 @@ FEMhub.Modules.Logout = Ext.extend(FEMhub.Module, {
             icon: Ext.MessageBox.QUESTION,
             fn: function(button) {
                 if (button === 'yes') {
+                    FEMhub.lab.cleanupLab();
+
                     FEMhub.RPC.User.logout({}, function() {
                         FEMhub.lab.restartLab();
                     }, this);
