@@ -280,6 +280,9 @@ class ClientHandler(WebHandler):
                 }
                 users.append(data)
 
+        # Sort users according to the number of published worksheets
+        users.sort(key=lambda user: len(user["worksheets"]), reverse=True)
+
         self.return_api_result({'users': users})
 
     @jsonrpc.authenticated
