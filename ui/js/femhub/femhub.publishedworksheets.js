@@ -85,7 +85,8 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     },
 
     fillGrid: function() {
-        FEMhub.RPC.Core.getUsers({worksheets: true}, function(result) {
+        FEMhub.RPC.Core.getPublishedWorksheets({},
+                function(result) {
             if (result.ok === true) {
                 var store = this.grid.getStore();
                 store.removeAll();
