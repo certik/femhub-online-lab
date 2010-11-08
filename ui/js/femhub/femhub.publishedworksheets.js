@@ -2,6 +2,34 @@
 FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     grid: null,
 
+    defaultButtons: {
+        view: {
+            text: 'View',
+            handler: function() {
+                var worksheet = this.getWorksheet();
+
+                if (worksheet === null) {
+                    FEMhub.msg.warning(this, "Select a worksheet first and then click 'View'.");
+                } else {
+                    var viewer = new FEMhub.WorksheetViewer({
+                        setup: {
+                            uuid: worksheet.uuid,
+                            name: worksheet.name,
+                            user: worksheet.user,
+                        },
+                    });
+                    viewer.show();
+                }
+            },
+        },
+        close: {
+            text: 'Close',
+            handler: function() {
+                this.close();
+            },
+        },
+    },
+
     constructor: function(config) {
         config = config || {};
 
@@ -21,7 +49,31 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             items: this.grid,
         }, config);
 
+        config.buttons = this.initButtons(config.buttons);
+
         FEMhub.PublishedWorksheets.superclass.constructor.call(this, config);
+    },
+
+    initButtons: function(buttons) {
+        var result = [];
+
+        if (!Ext.isDefined(buttons)) {
+            buttons = ['view', 'close'];
+        }
+
+        Ext.each(buttons, function(button) {
+            if (Ext.isString(button)) {
+                var config = this.defaultButtons[button];
+
+                if (Ext.isDefined(config)) {
+                    button = Ext.applyIf({scope: this}, config);
+                }
+            }
+
+            result.push(button);
+        }, this);
+
+        return result;
     },
 
     initGrid: function() {

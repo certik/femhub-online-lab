@@ -105,35 +105,8 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                 text: 'Published worksheets',
                 minWidth: 110,
                 handler: function() {
-                    var published = new FEMhub.PublishedWorksheets({
-                        buttons: [{
-                            text: 'View',
-                            handler: function() {
-                                var worksheet = published.getWorksheet();
-
-                                if (worksheet === null) {
-                                    FEMhub.msg.warning(published, "Select a worksheet first and then click 'View'.");
-                                } else {
-                                    var viewer = new FEMhub.WorksheetViewer({
-                                        setup: {
-                                            uuid: worksheet.uuid,
-                                            name: worksheet.name,
-                                            user: worksheet.user,
-                                        },
-                                    });
-                                    viewer.show();
-                                }
-                            },
-                            scope: this,
-                        }, {
-                            text: 'Close',
-                            handler: function() {
-                                published.close();
-                            },
-                            scope: this,
-                        }],
-                    });
-                    published.show();
+                    var win = new FEMhub.PublishedWorksheets();
+                    win.show();
                 },
                 scope: this,
             }, {

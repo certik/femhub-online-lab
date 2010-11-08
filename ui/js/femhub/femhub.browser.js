@@ -741,13 +741,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     }
                 },
                 scope: this,
-            }, {
-                text: 'Close',
-                handler: function() {
-                    published.close();
-                },
-                scope: this,
-            }],
+            }, 'view', '-', 'close'],
         });
 
         published.show();
