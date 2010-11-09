@@ -35,7 +35,7 @@ class MainHandler(tornado.web.RequestHandler):
         css = html.get_style_defs(arg='.highlight')
 
         try:
-            self.render('femhub/femhub.html', debug=settings.debug, extra_css=css)
+            self.render('femhub/desktop.html', debug=settings.debug, extra_css=css)
         except:
             raise tornado.web.HTTPError(500)
 
@@ -901,3 +901,4 @@ class PublishedWorksheetsHandler(tornado.web.RequestHandler):
                     extra_css=css, uuid=uuid, name=w.name, user=w.user.username)
         except:
             raise tornado.web.HTTPError(500)
+
