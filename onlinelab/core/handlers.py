@@ -884,21 +884,3 @@ class ErrorHandler(tornado.web.RequestHandler):
 
 tornado.web.ErrorHandler = ErrorHandler
 
-class PublishedWorksheetsHandler(tornado.web.RequestHandler):
-    """Render a public worksheet. """
-
-    def get(self, uuid):
-        settings = Settings.instance()
-
-        html = pygments.formatters.HtmlFormatter(nobackground=True)
-        css = html.get_style_defs(arg='.highlight')
-        w = Worksheet.objects.get(uuid=uuid)
-        if w.published is None:
-            raise tornado.web.HTTPError(500)
-
-        try:
-            self.render('femhub/worksheet.html', debug=settings.debug,
-                    extra_css=css, uuid=uuid, name=w.name, user=w.user.username)
-        except:
-            raise tornado.web.HTTPError(500)
-

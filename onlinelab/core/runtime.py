@@ -184,6 +184,7 @@ def start(args):
 
     import models
     import handlers
+    import restful
 
     # Before proceeding further lets clear routing table, because
     # services may be out of order or their capabilities changed,
@@ -196,7 +197,7 @@ def start(args):
         (r"/async/?", handlers.AsyncHandler),
         (r"/client/?", handlers.ClientHandler),
         (r"/service/?", handlers.ServiceHandler),
-        (r"/worksheets/([0-9a-f]+)/?", handlers.PublishedWorksheetsHandler),
+        (r"/worksheets/([0-9a-f]+)/?", restful.PublishedWorksheetHandler),
     ], **app_settings)
 
     server = tornado.httpserver.HTTPServer(application)
