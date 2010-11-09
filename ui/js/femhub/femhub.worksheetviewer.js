@@ -15,9 +15,9 @@ FEMhub.WorksheetViewer = Ext.extend(FEMhub.Window, {
             },
         });
 
+        var uuid = config.setup.uuid;
         var name = config.setup.name;
         var user = config.setup.user;
-        var uuid = config.setup.uuid;
 
         config = Ext.apply({
             title: 'Preview of "' + name + '" by ' + user,
@@ -26,14 +26,14 @@ FEMhub.WorksheetViewer = Ext.extend(FEMhub.Window, {
             maximizable: false,
             closable: true,
             resizable: true,
-            width: 500,
-            height: 400,
+            width: 700,
+            height: 600,
             layout: 'fit',
-            items: [{
-                title: '<a href="/worksheets/' + uuid + '/">Public URL</a>',
+            items: {
+                title: '<a href="/worksheets/' + uuid + '/" target="_blank">Public URL</a>',
                 layout: 'fit',
-                items: [this.cellPanel],
-            }],
+                items: this.cellPanel,
+            },
             buttons: [{
                 text: 'Close',
                 handler: function() {
