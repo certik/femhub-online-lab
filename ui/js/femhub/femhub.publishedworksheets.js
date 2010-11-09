@@ -117,6 +117,22 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                 forceFit:true,
             }),
             border: false,
+            listeners: {
+                rowdblclick: function(grid, row, evt) {
+                    var record = grid.getStore().getAt(row);
+
+                    var viewer = new FEMhub.WorksheetViewer({
+                        setup: {
+                            uuid: record.data.uuid,
+                            name: record.data.name,
+                            user: record.data.user,
+                        },
+                    });
+
+                    viewer.show();
+                },
+                scope: this,
+            },
         });
     },
 
