@@ -5,7 +5,7 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     defaultButtons: {
         view: {
             text: 'View',
-            handler: function() {
+            handler: function(row) {
                 var worksheet = this.getWorksheet();
 
                 if (worksheet === null) {
@@ -30,6 +30,23 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
         },
     },
 
+    defaultMenuItems: {
+        view: {
+            text: 'View',
+            handler: function(record) {
+                var viewer = new FEMhub.WorksheetViewer({
+                    setup: {
+                        uuid: record.data.uuid,
+                        name: record.data.name,
+                        user: record.data.user,
+                    },
+                });
+
+                viewer.show();
+            },
+        },
+    },
+
     constructor: function(config) {
         config = config || {};
 
@@ -47,6 +64,8 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             height: 400,
             layout: 'fit',
             items: this.grid,
+            buttons: ['view', 'close'],
+            menuItems: ['view'],
         }, config);
 
         if (!Ext.isDefined(config.x) && !Ext.isDefined(config.y)) {
@@ -56,31 +75,34 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             }));
         }
 
-        config.buttons = this.initButtons(config.buttons);
+        this.configureButtons(config);
+        this.configureMenuItems(config);
 
         FEMhub.PublishedWorksheets.superclass.constructor.call(this, config);
     },
 
-    initButtons: function(buttons) {
-        var result = [];
-
-        if (!Ext.isDefined(buttons)) {
-            buttons = ['view', 'close'];
-        }
-
-        Ext.each(buttons, function(button) {
+    configureButtons: function(config) {
+        Ext.each(config.buttons, function(button, i, buttons) {
             if (Ext.isString(button)) {
                 var config = this.defaultButtons[button];
 
                 if (Ext.isDefined(config)) {
-                    button = Ext.applyIf({scope: this}, config);
+                    buttons[i] = Ext.applyIf({scope: this}, config);
                 }
             }
-
-            result.push(button);
         }, this);
+    },
 
-        return result;
+    configureMenuItems: function(config) {
+        Ext.each(config.menuItems, function(item, i, menuItems) {
+            if (Ext.isString(item)) {
+                var config = this.defaultMenuItems[item];
+
+                if (Ext.isDefined(config)) {
+                    menuItems[i] = Ext.applyIf({scope: this}, config);
+                }
+            }
+        }, this);
     },
 
     initGrid: function() {
@@ -119,6 +141,8 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             border: false,
             listeners: {
                 rowdblclick: function(grid, row, evt) {
+                    evt.stopEvent();
+
                     var record = grid.getStore().getAt(row);
 
                     var viewer = new FEMhub.WorksheetViewer({
@@ -130,6 +154,19 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                     });
 
                     viewer.show();
+                },
+                rowcontextmenu: function(grid, row, evt) {
+                    evt.stopEvent();
+
+                    var record = grid.getStore().getAt(row);
+                    var menu = new Ext.menu.Menu();
+
+                    Ext.each(this.menuItems, function(item) {
+                        var handler = item.handler.createDelegate(this, [record], 0);
+                        menu.addMenuItem(Ext.applyIf({handler: handler}, item));
+                    }, this);
+
+                    menu.showAt(evt.getXY());
                 },
                 scope: this,
             },
