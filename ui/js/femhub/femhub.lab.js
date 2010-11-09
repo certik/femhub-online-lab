@@ -68,7 +68,7 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
             },
         });
 
-        login.show();
+        login.render(Ext.getBody());
     },
 
     afterLogin: function() {

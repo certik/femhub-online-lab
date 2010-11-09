@@ -14,8 +14,11 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                 afterrender: function(panel) {
                     FEMhub.Template.render('femhub/login.html', function(html) {
                         panel.body.update(html);
-                    });
+                        this.center();
+                        this.show();
+                    }, this);
                 },
+                scope: this,
             },
         });
 
