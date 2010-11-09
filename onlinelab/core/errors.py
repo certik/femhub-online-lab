@@ -22,7 +22,7 @@ class ErrorMixin(object):
 
         return template.generate(error_code=status_code, error_text=error_text)
 
-class ErrorHandler(tornado.web.RequestHandler, ErrorMixin):
+class ErrorHandler(ErrorMixin, tornado.web.RequestHandler):
     """Custom HTTP error handler (based on http://gist.github.com/398252). """
 
     def __init__(self, application, request, status_code):
