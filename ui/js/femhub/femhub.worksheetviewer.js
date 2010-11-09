@@ -28,11 +28,12 @@ FEMhub.WorksheetViewer = Ext.extend(FEMhub.Window, {
             resizable: true,
             width: 500,
             height: 400,
-            layout: 'vbox',
+            layout: 'fit',
             items: [{
-                title: "Permanent URL",
-                html: '<a href="/worksheets/' + uuid + '/">URL</a>',
-            }, this.cellPanel],
+                title: '<a href="/worksheets/' + uuid + '/">Public URL</a>',
+                layout: 'fit',
+                items: [this.cellPanel],
+            }],
             buttons: [{
                 text: 'Close',
                 handler: function() {
