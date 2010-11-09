@@ -24,14 +24,19 @@ class PublishedWorksheetHandler(RESTfulRequestHandler):
         html = pygments.formatters.HtmlFormatter(nobackground=True)
         css = html.get_style_defs(arg='.highlight')
 
-        w = Worksheet.objects.get(uuid=uuid)
-
-        if w.published is None:
+        try:
+            worksheet = Worksheet.objects.get(uuid=uuid)
+        except Worksheet.DoesNotExist:
+            raise tornado.web.HTTPError(404)
+        except Worksheet.MultipleObjectsReturned:
             raise tornado.web.HTTPError(500)
 
+        if worksheet.published is None:
+            raise tornado.web.HTTPError(401)
+
         try:
-            self.render('femhub/worksheet.html', debug=settings.debug,
-                extra_css=css, uuid=uuid, name=w.name, user=w.user.username)
+            self.render('femhub/worksheet.html', debug=settings.debug, extra_css=css,
+                uuid=uuid, name=worksheet.name, user=worksheet.user.username)
         except:
             raise tornado.web.HTTPError(500)
 
