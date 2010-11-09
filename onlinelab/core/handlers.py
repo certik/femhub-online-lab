@@ -892,9 +892,12 @@ class PublishedWorksheetsHandler(tornado.web.RequestHandler):
 
         html = pygments.formatters.HtmlFormatter(nobackground=True)
         css = html.get_style_defs(arg='.highlight')
+        w = Worksheet.objects.get(uuid=uuid)
+        if w.published is None:
+            raise tornado.web.HTTPError(500)
 
         try:
             self.render('femhub/worksheet.html', debug=settings.debug,
-                    extra_css=css, uuid=uuid)
+                    extra_css=css, uuid=uuid, name=w.name, user=w.user.username)
         except:
             raise tornado.web.HTTPError(500)

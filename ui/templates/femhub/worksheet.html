@@ -94,9 +94,8 @@
                     var viewer = new FEMhub.WorksheetViewer({
                         setup: {
                             uuid: "{{ uuid }}",
-                            // TODO: we don't know these here:
-                            //name: "some name",
-                            //user: "some user",
+                            name: "{{ name }}",
+                            user: "{{ user }}",
                         },
                     });
                     viewer.show();
