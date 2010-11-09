@@ -17,6 +17,7 @@ FEMhub.WorksheetViewer = Ext.extend(FEMhub.Window, {
 
         var name = config.setup.name;
         var user = config.setup.user;
+        var uuid = config.setup.uuid;
 
         config = Ext.apply({
             title: 'Preview of "' + name + '" by ' + user,
@@ -27,8 +28,11 @@ FEMhub.WorksheetViewer = Ext.extend(FEMhub.Window, {
             resizable: true,
             width: 500,
             height: 400,
-            layout: 'fit',
-            items: this.cellPanel,
+            layout: 'vbox',
+            items: [{
+                title: "Permanent URL",
+                html: '<a href="/worksheets/' + uuid + '/">URL</a>',
+            }, this.cellPanel],
             buttons: [{
                 text: 'Close',
                 handler: function() {
