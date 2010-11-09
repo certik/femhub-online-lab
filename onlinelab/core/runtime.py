@@ -196,6 +196,7 @@ def start(args):
         (r"/async/?", handlers.AsyncHandler),
         (r"/client/?", handlers.ClientHandler),
         (r"/service/?", handlers.ServiceHandler),
+        (r"/worksheets/?", handlers.PublishedWorksheetsHandler),
     ], **app_settings)
 
     server = tornado.httpserver.HTTPServer(application)
