@@ -230,6 +230,15 @@ body {
     display: block;
 }
 
+.femhub-field-help {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 16px;
+    background-image: url(/static/img/femhub/icons/16x16/help.png);
+    background-repeat: no-repeat;
+}
+
 .femhub-mesheditor-body {
     background-color: white;
     padding: 0 0px;
