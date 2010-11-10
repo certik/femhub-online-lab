@@ -67,11 +67,13 @@ class ClientHandler(WebHandler):
     __methods__ = [
         'RPC.hello',
         'RPC.Template.render',
+        'RPC.User.authenticate',
         'RPC.User.isAuthenticated',
         'RPC.User.login',
         'RPC.User.logout',
         'RPC.User.createAccount',
         'RPC.User.remindPassword',
+        'RPC.User.changePassword',
         'RPC.Core.getEngines',
         'RPC.Core.getUsers',
         'RPC.Core.getPublishedWorksheets',
@@ -119,6 +121,16 @@ class ClientHandler(WebHandler):
                 self.return_api_error('template-render-error')
             else:
                 self.return_api_result({'rendered': rendered})
+
+    @jsonrpc.authenticated
+    def RPC__User__authenticate(self, password):
+        """Verify a password provided by the logged-in user. """
+        user = auth.authenticate(username=self.user.username, password=password)
+
+        if user is not None:
+            self.return_api_result()
+        else:
+            self.return_api_error('invalid-password')
 
     def RPC__User__isAuthenticated(self):
         """Returns ``True`` if the current user is authenticated. """
@@ -190,6 +202,14 @@ class ClientHandler(WebHandler):
                 self.return_api_error('invalid-email')
             else:
                 self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__User__changePassword(self, password):
+        """Change current user's password. """
+        self.user.set_password(password)
+        self.user.save()
+
+        self.return_api_result()
 
     @jsonrpc.authenticated
     def RPC__Core__getEngines(self):
