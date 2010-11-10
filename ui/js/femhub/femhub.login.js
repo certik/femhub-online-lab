@@ -273,6 +273,7 @@ FEMhub.CreateAccount = Ext.extend(FEMhub.Window, {
                     id: 'femhub-create-password-retype',
                     fieldLabel: 'Re-type password',
                     inputType: 'password',
+                    vtype: 'password',
                     allowBlank: false,
                     blankText: "Confirm your password.",
                     minLength: 5,
@@ -281,6 +282,7 @@ FEMhub.CreateAccount = Ext.extend(FEMhub.Window, {
                     maxLengthText: "Password must be at most 128 characters long.",
                     helpText: "This must be exactly the same password you entered above. This in required " +
                               "just to make sure you didn't mistype your password.",
+                    relatedField: 'femhub-create-password',
                     listeners: {
                         specialkey: {
                             fn: function(obj, evt) {
@@ -357,40 +359,20 @@ FEMhub.CreateAccount = Ext.extend(FEMhub.Window, {
             password: password.getValue(),
         };
 
-        if (params.password != passwordRetype.getValue()) {
-            Ext.MessageBox.show({
-                title: 'Account creation failed',
-                msg: "Passwords don't match, please fix this.",
-                buttons: Ext.MessageBox.OK,
-                icon: Ext.MessageBox.ERROR,
-                fn: function(button) {
-                    Ext.getCmp('femhub-create-password-retype').setValue('');
-                },
-                scope: this,
-            });
-        } else {
-            FEMhub.RPC.User.createAccount(params, function(result) {
-                if (result.ok === true) {
-                    this.login.setUsername(params.username);
-                    this.closeAndReturn();
-                } else {
-                    if (result.reason === 'exists') {
-                        Ext.MessageBox.show({
-                            title: 'Account creation failed',
-                            msg: "'" + params.username + "' is already in use. Choose different username.",
-                            buttons: Ext.MessageBox.OK,
-                            icon: Ext.MessageBox.ERROR,
-                            fn: function(button) {
-                                Ext.getCmp('femhub-create-username').setValue('');
-                            },
-                            scope: this,
-                        });
-                    } else {
-                        this.clearFields();
-                    }
+        FEMhub.RPC.User.createAccount(params, {
+            okay: function(result) {
+                this.login.setUsername(params.username);
+                this.closeAndReturn();
+            },
+            fail: function(reason) {
+                if (reason === 'exists') {
+                    form.markInvalid({
+                        'femhub-create-username': "This username is already in use.",
+                    });
                 }
-            }, this);
-        }
+            },
+            scope: this,
+        });
     },
 
     closeAndReturn: function() {
