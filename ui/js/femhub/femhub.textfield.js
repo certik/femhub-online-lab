@@ -1,5 +1,6 @@
 
 FEMhub.TextField = Ext.extend(Ext.form.TextField, {
+    defaultHelpText: "No help available for this field.",
 
     constructor: function(config) {
         config = config || {};
@@ -43,7 +44,7 @@ FEMhub.TextField = Ext.extend(Ext.form.TextField, {
 
                     new Ext.ToolTip({
                         target: cmp.helpEl,
-                        html: cmp.helpText,
+                        html: cmp.helpText || cmp.defaultHelpText,
                         trackMouse: true,
                         dismissDelay: 0,
                         style: 'text-align: justify',
