@@ -4,12 +4,12 @@ Ext.apply(Ext.form.VTypes, {
         if (!field.relatedField) {
             return true;
         } else {
-            var relatedField;
+            var relatedField = field.relatedField;
 
-            if (Ext.isString(field.relatedField)) {
-                relatedField = Ext.getCmp(field.relatedField);
-            } else {
-                relatedField = field.relatedField;
+            if (Ext.isString(relatedField)) {
+                relatedField = Ext.getCmp(relatedField);
+            } else if (Ext.isFunction(relatedField)) {
+                relatedField = relatedField();
             }
 
             return value === relatedField.getValue();
