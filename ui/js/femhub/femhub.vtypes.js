@@ -17,5 +17,7 @@ Ext.apply(Ext.form.VTypes, {
     },
 
     passwordText: "Passwords don't match.",
+
+    emailText: "Enter a valid E-mail address, e.g. user@example.com",
 });
 
