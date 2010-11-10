@@ -66,12 +66,12 @@ FEMhub.Settings = Ext.extend(FEMhub.Window, {
                 anchor: '100%',
             },
             items: [{
-                setting: 'email',
-                fieldLabel: 'E-mail',
+                setting: 'password',
+                fieldLabel: 'Current password',
                 xtype: 'textfield',
-                vtype: 'email',
+                vtype: 'password',
+                inputType: 'password',
                 allowBlank: true,
-                maxLength: 70,
             }, {
                 setting: 'password',
                 fieldLabel: 'Choose password',
@@ -79,6 +79,7 @@ FEMhub.Settings = Ext.extend(FEMhub.Window, {
                 vtype: 'password',
                 inputType: 'password',
                 allowBlank: true,
+                minLength: 5,
                 maxLength: 128,
             }, {
                 fieldLabel: 'Re-type password',
@@ -86,6 +87,7 @@ FEMhub.Settings = Ext.extend(FEMhub.Window, {
                 vtype: 'password',
                 inputType: 'password',
                 allowBlank: true,
+                minLength: 5,
                 maxLength: 128,
             }],
         });

@@ -14,8 +14,22 @@ FEMhub.TextField = Ext.extend(Ext.form.TextField, {
         config.listeners = Ext.apply({
             specialkey: {
                 fn: function(cmp, evt) {
-                    if (cmp.nextField && evt.getKey() === evt.ENTER) {
-                        Ext.getCmp(cmp.nextField).focus();
+                    if (evt.getKey() === evt.ENTER) {
+                        if (cmp.onEnter) {
+                            cmp.onEnter();
+                        }
+
+                        if (cmp.nextField) {
+                            var nextField;
+
+                            if (Ext.isString(cmp.nextField)) {
+                                nextField = Ext.getCmp(cmp.nextField);
+                            } else {
+                                nextField = cmp.nextField;
+                            }
+
+                            nextField.focus();
+                        }
                     }
                 },
                 scope: this,

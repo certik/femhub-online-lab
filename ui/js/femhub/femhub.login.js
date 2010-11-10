@@ -207,94 +207,19 @@ FEMhub.CreateAccount = Ext.extend(FEMhub.Window, {
         this.login = login;
         config = config || {};
 
-        Ext.apply(config, {
+        this.form = this.initForm();
+
+        config = Ext.apply({
             title: 'Create accout',
             bodyStyle: 'background-color: white',
             padding: 10,
             width: 400,
             autoHeight: true,
             modal: true,
-            layout: 'form',
             closable: false,
             resizable: false,
-            items: [{
-                id: 'femhub-create-form',
-                xtype: 'form',
-                border: false,
-                labelAlign: 'top',
-                items: [{
-                    xtype: 'x-femhub-textfield',
-                    id: 'femhub-create-username',
-                    fieldLabel: 'Username',
-                    vtype: 'alphanum',
-                    allowBlank: false,
-                    blankText: "Choose your username.",
-                    minLength: 3,
-                    minLengthText: "Username must be at least 3 characters long.",
-                    maxLength: 30,
-                    maxLengthText: "Username must be at most 30 characters long.",
-                    helpText: "Your username must contain only alphanumeric characters and be " +
-                              "between 3 and 30 characters long. Note that your username will " +
-                              "publicly visible and you won't be allowed to change it later " +
-                              "so make sure you choose right.",
-                    nextField: 'femhub-create-email',
-                }, {
-                    xtype: 'x-femhub-textfield',
-                    id: 'femhub-create-email',
-                    fieldLabel: 'E-mail',
-                    vtype: 'email',
-                    allowBlank: false,
-                    blankText: "Enter your E-mail address.",
-                    maxLength: 70,
-                    maxLengthText: "E-mail address must be at most 70 characters long.",
-                    helpText: "Enter a valid E-mail address. We don't check this but we strongly " +
-                              "recommend that this E-mail is valid, because it may get useful, for " +
-                              "example if you forget you password. Note that we won't share your E-mail " +
-                              "address with anyone, unless you allow us explicitly to do so.",
-                    nextField: 'femhub-create-password',
-                }, {
-                    xtype: 'x-femhub-textfield',
-                    id: 'femhub-create-password',
-                    fieldLabel: 'Choose password',
-                    inputType: 'password',
-                    allowBlank: false,
-                    blankText: "Choose your password.",
-                    minLength: 5,
-                    minLengthText: "Password must be at least 5 characters long.",
-                    maxLength: 128,
-                    maxLengthText: "Password must be at most 128 characters long.",
-                    helpText: "Your password can contain any letters and must be between 5 and 128 " +
-                              "characters long. Although we don't check this, we recommend that you " +
-                              "choose a strong password (use lower and upper case letter, digits and/or " +
-                              "special characters) to protect your privacy.",
-                    nextField: 'femhub-create-password-retype',
-                }, {
-                    xtype: 'x-femhub-textfield',
-                    id: 'femhub-create-password-retype',
-                    fieldLabel: 'Re-type password',
-                    inputType: 'password',
-                    vtype: 'password',
-                    allowBlank: false,
-                    blankText: "Confirm your password.",
-                    minLength: 5,
-                    minLengthText: "Password must be at least 5 characters long.",
-                    maxLength: 128,
-                    maxLengthText: "Password must be at most 128 characters long.",
-                    helpText: "This must be exactly the same password you entered above. This in required " +
-                              "just to make sure you didn't mistype your password.",
-                    relatedField: 'femhub-create-password',
-                    listeners: {
-                        specialkey: {
-                            fn: function(obj, evt) {
-                                if (evt.getKey() == evt.ENTER) {
-                                    this.createAccount();
-                                }
-                            },
-                            scope: this,
-                        },
-                    },
-                }],
-            }],
+            layout: 'form',
+            items: this.form,
             buttonAlign: 'left',
             buttons: [{
                 iconCls: 'femhub-refresh-icon',
@@ -311,72 +236,126 @@ FEMhub.CreateAccount = Ext.extend(FEMhub.Window, {
             }, {
                 text: 'Cancel',
                 handler: function() {
-                    this.closeAndReturn();
+                    this.close();
                 },
                 scope: this,
             }],
-        });
+        }, config);
 
         FEMhub.CreateAccount.superclass.constructor.call(this, config);
     },
 
-    onShow: function() {
-        this.focusUsername();
+    initForm: function() {
+        this.username = new FEMhub.TextField({
+            fieldLabel: 'Username',
+            vtype: 'alphanum',
+            allowBlank: false,
+            blankText: "Choose your username.",
+            minLength: 3,
+            minLengthText: "Username must be at least 3 characters long.",
+            maxLength: 30,
+            maxLengthText: "Username must be at most 30 characters long.",
+            helpText: "Your username must contain only alphanumeric characters and be " +
+                      "between 3 and 30 characters long. Note that your username will " +
+                      "publicly visible and you won't be allowed to change it later " +
+                      "so make sure you choose right.",
+        });
+
+        this.email = new FEMhub.TextField({
+            fieldLabel: 'E-mail',
+            vtype: 'email',
+            allowBlank: false,
+            blankText: "Enter your E-mail address.",
+            maxLength: 70,
+            maxLengthText: "E-mail address must be at most 70 characters long.",
+            helpText: "Enter a valid E-mail address. We don't check this but we strongly " +
+                      "recommend that this E-mail is valid, because it may get useful, for " +
+                      "example if you forget you password. Note that we won't share your E-mail " +
+                      "address with anyone, unless you allow us explicitly to do so.",
+        });
+
+        this.password = new FEMhub.TextField({
+            fieldLabel: 'Choose password',
+            inputType: 'password',
+            allowBlank: false,
+            blankText: "Choose your password.",
+            minLength: 5,
+            minLengthText: "Password must be at least 5 characters long.",
+            maxLength: 128,
+            maxLengthText: "Password must be at most 128 characters long.",
+            helpText: "Your password can contain any letters and must be between 5 and 128 " +
+                      "characters long. Although we don't check this, we recommend that you " +
+                      "choose a strong password (use lower and upper case letter, digits and/or " +
+                      "special characters) to protect your privacy.",
+        });
+
+        this.retype = new FEMhub.TextField({
+            fieldLabel: 'Re-type password',
+            inputType: 'password',
+            vtype: 'password',
+            allowBlank: false,
+            blankText: "Confirm your password.",
+            minLength: 5,
+            minLengthText: "Password must be at least 5 characters long.",
+            maxLength: 128,
+            maxLengthText: "Password must be at most 128 characters long.",
+            helpText: "This must be exactly the same password you entered above. This in required " +
+                      "just to make sure you didn't mistype your password.",
+            relatedField: this.password,
+        });
+
+        this.username.nextField = this.email;
+        this.email.nextField = this.password;
+        this.password.nextField = this.retype;
+
+        this.retype.onEnter = this.createAccount.createDelegate(this);
+
+        this.fields = [
+            this.username,
+            this.email,
+            this.password,
+            this.retype,
+        ];
+
+        return new Ext.FormPanel({
+            border: false,
+            labelAlign: 'top',
+            items: this.fields,
+        });
     },
 
     focusUsername: function() {
-        Ext.getCmp('femhub-create-username').focus();
+        this.username.focus();
     },
 
     clearFields: function() {
-        var ids = ['femhub-create-username',
-                   'femhub-create-email',
-                   'femhub-create-password',
-                   'femhub-create-password-retype'];
-
-        Ext.each(ids, function(id) {
-            var el = Ext.getCmp(id);
-            el.setValue('');
-            el.clearInvalid();
+        Ext.each(this.fields, function(item) {
+            item.setValue('');
+            item.clearInvalid();
         });
     },
 
     createAccount: function() {
-        var form = Ext.getCmp('femhub-create-form').getForm();
+        var form = this.form.getForm();
 
-        if (!form.isValid()) {
-            return;
+        if (form.isValid()) {
+            FEMhub.RPC.User.createAccount({
+                username: this.username.getValue(),
+                password: this.password.getValue(),
+                email: this.email.getValue(),
+            }, {
+                okay: function(result) {
+                    this.login.setUsername(this.username.getValue());
+                    this.close();
+                },
+                fail: function(reason) {
+                    if (reason === 'exists') {
+                        this.username.markInvalid("This username is already in use.");
+                    }
+                },
+                scope: this,
+            });
         }
-
-        var username = Ext.getCmp('femhub-create-username');
-        var email = Ext.getCmp('femhub-create-email');
-        var password = Ext.getCmp('femhub-create-password');
-        var passwordRetype = Ext.getCmp('femhub-create-password-retype');
-
-        var params = {
-            username: username.getValue(),
-            email: email.getValue(),
-            password: password.getValue(),
-        };
-
-        FEMhub.RPC.User.createAccount(params, {
-            okay: function(result) {
-                this.login.setUsername(params.username);
-                this.closeAndReturn();
-            },
-            fail: function(reason) {
-                if (reason === 'exists') {
-                    form.markInvalid({
-                        'femhub-create-username': "This username is already in use.",
-                    });
-                }
-            },
-            scope: this,
-        });
-    },
-
-    closeAndReturn: function() {
-        this.close();
     },
 });
 
