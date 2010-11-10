@@ -269,3 +269,19 @@ body {
     margin-bottom: 0.2em;
 }
 
+.femhub-change-password-heading {
+    background-color: white;
+    padding: 5px 10px;
+    border-bottom: 1px solid #99bbe8;
+}
+
+.femhub-change-password-heading h1 {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.femhub-change-password-heading p {
+    margin-top: 5px;
+    text-align: justify;
+}
+
