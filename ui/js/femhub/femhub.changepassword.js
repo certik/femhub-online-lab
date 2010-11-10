@@ -8,9 +8,9 @@ FEMhub.ChangePassword = Ext.extend(FEMhub.Window, {
 
     passwordDefaults: {
         minLength: 5,
-        minLengthText: "Password must be at least 5 characters long.",
+        minLengthText: "At least 5 characters required.",
         maxLength: 128,
-        maxLengthText: "Password must be at most 128 characters long.",
+        maxLengthText: "At most 128 characters allowed.",
     },
 
     constructor: function(config) {
@@ -63,7 +63,7 @@ FEMhub.ChangePassword = Ext.extend(FEMhub.Window, {
             title: 'Change password',
             width: 400,
             autoHeight: true,
-            closable: false,
+            closable: true,
             resizable: false,
             layout: 'auto',
             items: [{
