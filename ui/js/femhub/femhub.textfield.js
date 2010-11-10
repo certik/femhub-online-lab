@@ -9,27 +9,29 @@ FEMhub.TextField = Ext.extend(Ext.form.TextField, {
             validationEvent: false,
             invalidClass: '',
             msgTarget: 'under',
-            anchor: '-20',
+            anchor: '-18',
         }, config);
 
         config.listeners = Ext.apply({
             specialkey: {
                 fn: function(cmp, evt) {
                     if (evt.getKey() === evt.ENTER) {
-                        if (cmp.onEnter) {
-                            cmp.onEnter();
-                        }
-
-                        if (cmp.nextField) {
-                            var nextField;
-
-                            if (Ext.isString(cmp.nextField)) {
-                                nextField = Ext.getCmp(cmp.nextField);
-                            } else {
-                                nextField = cmp.nextField;
+                        if (cmp.validate()) {
+                            if (cmp.onEnter) {
+                                cmp.onEnter();
                             }
 
-                            nextField.focus();
+                            if (cmp.nextField) {
+                                var nextField = cmp.nextField;
+
+                                if (Ext.isString(nextField)) {
+                                    nextField = Ext.getCmp(nextField);
+                                } else if (Ext.isFunction(nextField)) {
+                                    nextField = nextField();
+                                }
+
+                                nextField.focus();
+                            }
                         }
                     }
                 },
