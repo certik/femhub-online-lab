@@ -51,7 +51,11 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
         config = config || {};
 
         this.grid = this.initGrid();
-        this.fillGrid();
+
+        this.statusbar = new FEMhub.Statusbar({
+            defaultText: '',
+            busyText: '',
+        });
 
         config = Ext.apply({
             title: "Published worksheets",
@@ -66,6 +70,7 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
             items: this.grid,
             buttons: ['view', 'close'],
             menuItems: ['view'],
+            bbar: this.statusbar,
         }, config);
 
         if (!Ext.isDefined(config.x) && !Ext.isDefined(config.y)) {
@@ -174,11 +179,11 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     },
 
     fillGrid: function() {
+        var store = this.grid.getStore();
+        store.removeAll();
+
         FEMhub.RPC.Core.getPublishedWorksheets({}, {
             okay: function(result) {
-                var store = this.grid.getStore();
-                store.removeAll();
-
                 var record = Ext.data.Record.create([
                     'user', 'uuid', 'name', 'engine', 'created', 'published'
                 ]);
@@ -197,6 +202,14 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                 }, this);
             },
             scope: this,
+            status: {
+                start: function() {
+                    return this.statusbar.showBusy("Loading worksheet ...");
+                },
+                end: function(ok, id) {
+                    this.statusbar.clearBusy(id);
+                },
+            },
         });
     },
 
@@ -208,6 +221,10 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
         } else {
             return model.getSelected().data;
         }
+    },
+
+    onShow: function() {
+        this.fillGrid();
     },
 });
 
