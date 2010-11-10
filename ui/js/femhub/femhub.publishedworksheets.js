@@ -11,14 +11,11 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
                 if (worksheet === null) {
                     FEMhub.msg.warning(this, "Select a worksheet first and then click 'View'.");
                 } else {
-                    var viewer = new FEMhub.WorksheetViewer({
-                        setup: {
-                            uuid: worksheet.uuid,
-                            name: worksheet.name,
-                            user: worksheet.user,
-                        },
+                    this.showWorksheetViewer({
+                        uuid: worksheet.uuid,
+                        name: worksheet.name,
+                        user: worksheet.user,
                     });
-                    viewer.show();
                 }
             },
         },
@@ -34,15 +31,11 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
         view: {
             text: 'View',
             handler: function(record) {
-                var viewer = new FEMhub.WorksheetViewer({
-                    setup: {
-                        uuid: record.data.uuid,
-                        name: record.data.name,
-                        user: record.data.user,
-                    },
+                this.showWorksheetViewer({
+                    uuid: record.data.uuid,
+                    name: record.data.name,
+                    user: record.data.user,
                 });
-
-                viewer.show();
             },
         },
     },
@@ -150,15 +143,11 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
 
                     var record = grid.getStore().getAt(row);
 
-                    var viewer = new FEMhub.WorksheetViewer({
-                        setup: {
-                            uuid: record.data.uuid,
-                            name: record.data.name,
-                            user: record.data.user,
-                        },
+                    this.showWorksheetViewer({
+                        uuid: record.data.uuid,
+                        name: record.data.name,
+                        user: record.data.user,
                     });
-
-                    viewer.show();
                 },
                 rowcontextmenu: function(grid, row, evt) {
                     evt.stopEvent();
@@ -221,6 +210,16 @@ FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
         } else {
             return model.getSelected().data;
         }
+    },
+
+    showWorksheetViewer: function(config) {
+        var viewer = new FEMhub.WorksheetViewer({
+            setup: Ext.apply({
+                showInputControls: false,
+            }, config),
+        });
+
+        viewer.show();
     },
 
     onShow: function() {
