@@ -58,6 +58,8 @@ FEMhub.RPC.cors = function(config) {
 };
 
 FEMhub.RPC.init = function(ready, scope) {
+    var done = 0;
+
     Ext.each(FEMhub.urls, function(url, index) {
         FEMhub.RPC.ajax({
             url: url,
@@ -95,7 +97,7 @@ FEMhub.RPC.init = function(ready, scope) {
                     });
                 });
 
-                if (index == FEMhub.urls.length - 1) {
+                if (++done === FEMhub.urls.length) {
                     ready.call(scope || window);
                 }
             },
