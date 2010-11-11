@@ -706,5 +706,33 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             }
         }
     },
+
+    nextBracket: function() {
+        var index = this.getLocation();
+
+        if (index !== null) {
+            var input = this.getInput();
+
+            index = FEMhub.text.findAfter(input, index, '()[]{}');
+
+            if (index !== null) {
+                this.setSelection(index);
+            }
+        }
+    },
+
+    prevBracket: function() {
+        var index = this.getLocation();
+
+        if (index !== null) {
+            var input = this.getInput();
+
+            index = FEMhub.text.findBefore(input, index, '()[]{}');
+
+            if (index !== null) {
+                this.setSelection(index);
+            }
+        }
+    },
 });
 

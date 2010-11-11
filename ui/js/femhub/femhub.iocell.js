@@ -51,6 +51,16 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         this.el_textarea.dom.cols = cols;
     },
 
+    getLocation: function() {
+        var selection = this.getSelection();
+
+        if (selection.start === selection.end) {
+            return selection.start;
+        } else {
+            return null;
+        }
+    },
+
     getSelection: function() {
         var dom = this.el_textarea.dom;
 

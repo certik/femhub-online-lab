@@ -129,5 +129,37 @@ FEMhub.text = {
 
         return true;
     },
+
+    findBefore: function(text, index, pattern) {
+        var i;
+
+        while (--index >= 0) {
+            var chr = text[index];
+
+            for (i in pattern) {
+                if (chr === pattern[i]) {
+                    return index;
+                }
+            }
+        }
+
+        return null;
+    },
+
+    findAfter: function(text, index, pattern) {
+        var i;
+
+        while (++index < text.length) {
+            var chr = text[index];
+
+            for (i in pattern) {
+                if (chr === pattern[i]) {
+                    return index;
+                }
+            }
+        }
+
+        return null;
+    },
 };
 
