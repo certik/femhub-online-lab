@@ -100,3 +100,29 @@ FEMhub.util.getWindowXY = function(config) {
     return {x: x, y: y};
 };
 
+Array.prototype.contains = function(elt) {
+    for (var i in this) {
+        if (this[i] === elt) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+FEMhub.util.ignore = function(obj, ignores) {
+    var result = {}, key, i;
+
+    if (!Ext.isArray(ignores)) {
+        ignores = [ignores];
+    }
+
+    for (key in obj) {
+        if (!ignores.contains(key)) {
+            result[key] = obj[key];
+        }
+    }
+
+    return result;
+};
+
