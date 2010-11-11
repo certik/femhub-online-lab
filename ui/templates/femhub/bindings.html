@@ -1,24 +1,26 @@
 
-{% for spec in specs %}
-    {% if spec['bindings'] %}
-        <h2>{{ spec['description'] }}</h2>
+{% for group in groups %}
+    {% if group['bindings'] %}
+        <h2>{{ group['description'] }}</h2>
         <dl>
-        {% for binding in spec['bindings'] %}
+        {% for binding in group['bindings'] %}
+            {% for spec in binding['specs'] %}
             <dt>
-                {% if binding['shift'] %}
+                {% if spec['shift'] %}
                     <b>Shift</b>
                     +
                 {% end %}
-                {% if binding['ctrl'] %}
+                {% if spec['ctrl'] %}
                     <b>Ctrl</b>
                     +
                 {% end %}
-                {% if binding['alt'] %}
+                {% if spec['alt'] %}
                     <b>Alt</b>
                     +
                 {% end %}
-                <b>{{ binding['prettyKey'] }}</b>
+                <b>{{ spec['prettyKey'] }}</b>
             </dt>
+            {% end %}
             <dd>{{ binding['text'] }}</dd>
         {% end %}
         </dl>

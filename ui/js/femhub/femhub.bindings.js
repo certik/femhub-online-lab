@@ -128,9 +128,16 @@ FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
         var bindings = [];
 
         FEMhub.util.eachPair(this.bindings, function(action, data) {
+            var specs = [];
+
             Ext.each(data.specs, function(spec) {
-                bindings.push(Ext.apply(spec, {text: data.text}));
+                specs.push(Ext.copyTo({}, spec, 'prettyKey,shift,ctrl,alt'));
             }, this);
+
+            bindings.push({
+                text: data.text,
+                specs: specs,
+            });
         }, this);
 
         return bindings;
@@ -163,7 +170,7 @@ FEMhub.Mappings.Global = Ext.extend(FEMhub.Mapping, {
                     title: 'Key bindings',
                     template: 'femhub/bindings.html',
                     context: {
-                        specs: [{
+                        groups: [{
                             description: 'Local key bindings',
                             bindings: local,
                         }, {
