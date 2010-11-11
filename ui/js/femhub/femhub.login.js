@@ -52,7 +52,8 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                 id: 'femhub-login-username',
                 fieldLabel: 'Username',
                 xtype: 'textfield',
-                maxLength: 30,
+                autoCreate: FEMhub.util.ignore(
+                    Ext.form.TextField.prototype.defaultAutoCreate, 'autocomplete'),
                 width: 150,
                 listeners: {
                     specialkey: {
@@ -69,7 +70,8 @@ FEMhub.Login = Ext.extend(FEMhub.Window, {
                 fieldLabel: 'Password',
                 xtype: 'textfield',
                 inputType: 'password',
-                maxLength: 128,
+                autoCreate: FEMhub.util.ignore(
+                    Ext.form.TextField.prototype.defaultAutoCreate, 'autocomplete'),
                 width: 150,
                 listeners: {
                     specialkey: {
