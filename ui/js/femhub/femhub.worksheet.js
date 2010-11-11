@@ -921,13 +921,13 @@ FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
             specs: [
                 'DOWN      -shift -ctrl +alt',
             ],
-            text: 'Insert a text cell after the active cell',
+            text: 'Insert an input cell after the active cell',
         },
         insertTextCellBefore: {
             specs: [
                 'UP        +shift +ctrl +alt',
             ],
-            text: 'Insert an input cell before the active cell',
+            text: 'Insert a text cell before the active cell',
         },
         insertTextCellAfter: {
             specs: [
