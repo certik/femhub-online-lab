@@ -148,27 +148,35 @@ FEMhub.Mappings.Global = Ext.extend(FEMhub.Mapping, {
             ],
             text: 'Display help about available key bindings',
             handler: function(active, params, key, evt) {
-                var bindings = active.getBindings();
+                var local = active.getBindings();
 
-                if (bindings !== null) {
-                    bindings = bindings.getBindingsList();
-
-                    (new FEMhub.Help({
-                        title: 'Key bindings',
-                        template: 'femhub/bindings.html',
-                        context: {
-                            local: {
-                                description: 'Local key bindings',
-                                bindings: bindings,
-                            },
-                        },
-                    })).show();
+                if (local !== null) {
+                    local = local.getBindingsList();
+                } else {
+                    local = [];
                 }
+
+                var global = FEMhub.Bindings.Global;
+                global = global.getBindingsList();
+
+                (new FEMhub.Help({
+                    title: 'Key bindings',
+                    template: 'femhub/bindings.html',
+                    context: {
+                        specs: [{
+                            description: 'Local key bindings',
+                            bindings: local,
+                        }, {
+                            description: 'Global key bindings',
+                            bindings: global,
+                        }],
+                    },
+                })).show();
             },
         },
         windowClose: {
             specs: [
-                'Q +shift -ctrl +alt',
+                'Q         +shift -ctrl +alt',
             ],
             text: 'Close the active window',
             handler: function(active, params, key, evt) {
