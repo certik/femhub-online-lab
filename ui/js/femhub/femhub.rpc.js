@@ -222,11 +222,11 @@ FEMhub.RPC.call = function(url, method, params, handler, scope) {
 
                             var msg = errors[result.reason];
 
-                            if (!Ext.isDefined(msg)) {
-                                msg = Ext.util.Format.htmlEncode(result.reason);
+                            if (!msg && fail.handler) {
+                                fail.handler.call(fail.scope || scope, result.reason, result);
+                            } else {
+                                FEMhub.msg.error(title, msg || result.reason);
                             }
-
-                            FEMhub.msg.error(title, msg);
                         }
                     }
                 }
