@@ -90,6 +90,7 @@ class ClientHandler(WebHandler):
         'RPC.Worksheet.move',
         'RPC.Worksheet.publish',
         'RPC.Worksheet.fork',
+        'RPC.Worksheet.sync',
         'RPC.Worksheet.load',
         'RPC.Worksheet.save',
         'RPC.Docutils.importRST',
@@ -581,6 +582,46 @@ class ClientHandler(WebHandler):
             'uuid': worksheet.uuid,
             'name': worksheet.name,
         })
+
+    @jsonrpc.authenticated
+    def RPC__Worksheet__sync(self, uuid, force=False):
+        """Synchronize a worksheet with its origin. """
+        try:
+            worksheet = Worksheet.objects.get(uuid=uuid)
+        except Worksheet.DoesNotExist:
+            self.return_api_error('does-not-exist')
+            return
+
+        if worksheet.origin is None:
+            self.return_api_error('does-not-have-origin')
+            return
+
+        if not force and worksheet.modified > worksheet.created:
+            self.return_api_error('worksheet-was-modified')
+            return
+
+        Cell.objects.filter(worksheet=worksheet).delete()
+
+        order = []
+
+        for uuid in worksheet.origin.get_order():
+            try:
+                base = Cell.objects.get(uuid=uuid)
+            except Cell.DoesNotExist:
+                pass
+            else:
+                cell = Cell(user=self.user,
+                            type=base.type,
+                            parent=base.parent,
+                            content=base.content,
+                            worksheet=worksheet)
+                order.append(cell.uuid)
+                cell.save()
+
+        worksheet.set_order(order)
+        worksheet.save()
+
+        self.return_api_result()
 
     def allowWorksheetAccess(self, worksheet):
         """Returns ``True`` if current user is allowed to load this worksheet. """
