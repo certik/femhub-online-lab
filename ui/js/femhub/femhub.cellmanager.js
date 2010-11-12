@@ -279,7 +279,7 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
             });
         }
 
-        var first = this.getFirstCell();
+        var first = this.getFirstCell('input');
         evaluateCell.call(this, first);
     },
 
