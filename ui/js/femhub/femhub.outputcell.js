@@ -33,7 +33,7 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     getInputCell: function() {
-       return Ext.getCmp(this.id.splice(0, this.id.lastIndexOf('o'))) || null;
+       return Ext.getCmp(this.id.slice(0, this.id.indexOf('o'))) || null;
     },
 
     setupOutputCellObserver: function() {
@@ -63,19 +63,19 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
         this.setupOutputCellEvents();
     },
 
-    insertInputCellBefore: function() {
-        this.blurCell();
+    getBaseCellForInsertBefore: function() {
+        return this.getInputCell() || this;
+    },
 
-        var before = this.getInputCell();
+    getBaseCellForInsertAfter: function() {
+        var cell = this.getInputCell();
 
-        if (before === null) {
-            before = this;
+        if (cell === null) {
+            return this;
+        } else {
+            var cells = cell.getOutputCells();
+            return cells[cells.length-1];
         }
-
-        var cell = this.owner.newCell({ type: 'input', before: before });
-        cell.focusCell();
-
-        return cell;
     },
 
     backspace: function() {

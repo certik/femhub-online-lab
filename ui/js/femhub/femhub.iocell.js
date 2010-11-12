@@ -159,24 +159,6 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         this.el_content.applyStyles({'margin-left': width});
     },
 
-    insertInputCellBefore: function() {
-        this.blurCell();
-
-        var cell = this.owner.newCell({ type: 'input', before: this });
-        cell.focusCell();
-
-        return cell;
-    },
-
-    insertInputCellAfter: function() {
-        this.blurCell();
-
-        var cell = this.owner.newCell({ type: 'input', after: this });
-        cell.focusCell();
-
-        return cell;
-    },
-
     removeCell: function() {
         if (this.owner.moveForwardOnRemove) {
             if (this.isLastCell()) {

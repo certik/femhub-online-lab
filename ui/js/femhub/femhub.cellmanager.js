@@ -651,5 +651,29 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
             }
         });
     },
+
+    insertCellBefore: function(type, base) {
+        var cell = this.newCell({
+            type: type,
+            before: base,
+        });
+
+        base.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
+
+    insertCellAfter: function(type, base) {
+        var cell = this.newCell({
+            type: type,
+            after: base,
+        });
+
+        base.blurCell();
+        cell.focusCell();
+
+        return cell;
+    },
 });
 

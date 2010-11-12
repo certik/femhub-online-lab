@@ -197,14 +197,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         /* pass */
     },
 
-    insertTextCellBefore: function() {
-        return this.owner.newCell({ type: 'text', before: this });
-    },
-
-    insertTextCellAfter: function() {
-        return this.owner.newCell({ type: 'text', after: this });
-    },
-
     removeCell: function() {
         this.owner.statusSaved = false;
         this.destroy();
@@ -273,6 +265,34 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     handleNext: function(evt) {
         evt.stopEvent();
         this.owner.activateNextCell(this);
+    },
+
+    getBaseCellForInsertBefore: function() {
+        return this;
+    },
+
+    getBaseCellForInsertAfter: function() {
+        return this;
+    },
+
+    insertInputCellBefore: function() {
+        var base = this.getBaseCellForInsertBefore();
+        return this.owner.insertCellBefore('input', base);
+    },
+
+    insertInputCellAfter: function() {
+        var base = this.getBaseCellForInsertAfter();
+        return this.owner.insertCellAfter('input', base);
+    },
+
+    insertTextCellBefore: function() {
+        var base = this.getBaseCellForInsertBefore();
+        return this.owner.insertCellBefore('text', base);
+    },
+
+    insertTextCellAfter: function() {
+        var base = this.getBaseCellForInsertAfter();
+        return this.owner.insertCellAfter('text', base);
     },
 });
 

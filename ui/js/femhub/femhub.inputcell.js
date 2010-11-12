@@ -590,23 +590,14 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
     },
 
-    insertInputCellAfter: function() {
-        var after = this.getOutputCells();
+    getBaseCellForInsertAfter: function() {
+        var cells = this.getOutputCells();
 
-        if (!after.length) {
-            after = this;
+        if (cells.length) {
+            return cells[cells.length-1];
         } else {
-            after = after[after.length-1];
+            return this;
         }
-
-        var cell = this.owner.newCell({ type: 'input', after: after });
-
-        // XXX: this.transitionToCell(cell)
-
-        this.blurCell();
-        cell.focusCell();
-
-        return cell;
     },
 
     mergeCellBefore: function() {
