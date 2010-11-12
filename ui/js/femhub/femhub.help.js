@@ -29,7 +29,7 @@ FEMhub.Help = Ext.extend(FEMhub.Window, {
 
         var name = this.template || this.defaultTemplate;
 
-        FEMhub.Template.render(name, this.context, function(html) {
+        FEMhub.Template.render(name, this.context || {}, function(html) {
             this.body.update(html);
         }, this);
     },
