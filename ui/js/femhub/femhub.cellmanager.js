@@ -389,7 +389,7 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
             msg = "Engine is already running.";
             break;
         default:
-            msg = Ext.util.Format.htmlEncode(error);
+            msg = error;
         }
 
         FEMhub.msg.error("Engine error", msg);

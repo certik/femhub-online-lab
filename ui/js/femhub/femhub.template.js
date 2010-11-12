@@ -25,7 +25,7 @@ FEMhub.Template.render = function(name, context, handler, scope) {
                 msg = "'" + name + "' failed to render.";
                 break;
             default:
-                msg = Ext.util.Format.htmlEncode(reason);
+                msg = reason;
             }
 
             FEMhub.msg.error("Template rendering error", msg);

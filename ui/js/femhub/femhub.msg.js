@@ -19,6 +19,7 @@ FEMhub.msg.show = function(obj, msg, handler, scope, buttons, icon) {
         title = obj;
     }
 
+    msg = Ext.util.Format.htmlEncode(msg);
     buttons = buttons || Ext.MessageBox.OK;
 
     Ext.MessageBox.show({

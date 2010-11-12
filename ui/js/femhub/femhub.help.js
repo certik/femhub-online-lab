@@ -49,7 +49,7 @@ FEMhub.Help = Ext.extend(FEMhub.Window, {
                     msg = "'" + params.name + "' failed to render.";
                     break;
                 default:
-                    msg = Ext.util.Format.htmlEncode(result.reason);
+                    msg = result.reason;
                 }
 
                 FEMhub.msg.error("Engine error", msg);
