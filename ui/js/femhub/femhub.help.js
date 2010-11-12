@@ -27,33 +27,10 @@ FEMhub.Help = Ext.extend(FEMhub.Window, {
     onRender: function() {
         FEMhub.Help.superclass.onRender.apply(this, arguments);
 
-        var params = {
-            name: this.template || this.defaultTemplate,
-            context: this.context,
-        };
+        var name = this.template || this.defaultTemplate;
 
-        FEMhub.RPC.Template.render(params, function(result) {
-            if (result.ok === true) {
-                this.body.createChild({
-                    tag: 'div',
-                    html: result.rendered,
-                });
-            } else {
-                var msg;
-
-                switch(result.reason) {
-                case 'template-not-found':
-                    msg = "'" + params.name + "' template not found.";
-                    break;
-                case'template-render-error':
-                    msg = "'" + params.name + "' failed to render.";
-                    break;
-                default:
-                    msg = result.reason;
-                }
-
-                FEMhub.msg.error("Engine error", msg);
-            }
+        FEMhub.Template.render(name, this.context, function(html) {
+            this.body.update(html);
         }, this);
     },
 
