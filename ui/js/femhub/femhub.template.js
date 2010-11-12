@@ -14,21 +14,12 @@ FEMhub.Template.render = function(name, context, handler, scope) {
                 handler.call(scope || window, result.rendered);
             }
         },
-        fail: function(reason) {
-            var msg;
-
-            switch (reason) {
-            case 'template-not-found':
-                msg = "'" + name + "' template not found.";
-                break;
-            case 'template-render-error':
-                msg = "'" + name + "' failed to render.";
-                break;
-            default:
-                msg = reason;
-            }
-
-            FEMhub.msg.error("Template rendering error", msg);
+        fail: {
+            title: "Template rendering error",
+            errors: {
+                'template-not-found': "'" + name + "' template not found.",
+                'template-render-error': "'" + name + "' failed to render.",
+            },
         },
     });
 };
