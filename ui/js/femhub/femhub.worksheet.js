@@ -105,6 +105,78 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                         this.getCellManager().removeOutputCells();
                     },
                     scope: this,
+                }, '-', {
+                    text: 'Insert before',
+                    menu: [{
+                        text: 'Input cell',
+                        handler: function() {
+                            this.execCellAction('insertInputCellBefore', true);
+                        },
+                        scope: this,
+                    }, {
+                        text: 'Text cell',
+                        handler: function() {
+                            this.execCellAction('insertTextCellBefore', true);
+                        },
+                        scope: this,
+                    }],
+                }, {
+                    text: 'Insert after',
+                    menu: [{
+                        text: 'Input cell',
+                        handler: function() {
+                            this.execCellAction('insertInputCellAfter', true);
+                        },
+                        scope: this,
+                    }, {
+                        text: 'Text cell',
+                        handler: function() {
+                            this.execCellAction('insertTextCellAfter', true);
+                        },
+                        scope: this,
+                    }],
+                }, '-', {
+                    text: 'Merge above',
+                    handler: function() {
+                        this.execCellAction('mergeCellAbove', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Merge below',
+                    handler: function() {
+                        this.execCellAction('mergeCellBelow', true);
+                    },
+                    scope: this,
+                }, '-', {
+                    text: 'Remove',
+                    handler: function() {
+                        this.execCellAction('removeCell', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Clear',
+                    handler: function() {
+                        this.execCellAction('clearCell', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Wipe',
+                    handler: function() {
+                        this.execCellAction('wipeCell', true);
+                    },
+                    scope: this,
+                }, '-', {
+                    text: 'Evaluate',
+                    handler: function() {
+                        this.execCellAction('inplaceEvaluateCell', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Interrupt',
+                    handler: function() {
+                        this.execCellAction('interruptCell', true);
+                    },
+                    scope: this,
                 }],
             }, {
                 text: 'Engine',
