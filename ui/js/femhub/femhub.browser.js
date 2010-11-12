@@ -369,6 +369,13 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                         this.deleteWorksheet(record);
                     },
                     scope: this,
+                }, '-', {
+                    text: 'Sync',
+                    iconCls: 'femhub-sync-worksheet-icon',
+                    handler: function() {
+                        this.syncWorksheet(record);
+                    },
+                    scope: this,
                 }],
             });
 
@@ -564,6 +571,41 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 }
             },
             scope: this,
+        });
+    },
+
+    syncWorksheet: function(record, force) {
+        FEMhub.RPC.Worksheet.sync({uuid: record.id, force: force}, {
+            okay: function(result) {
+                FEMhub.msg.info(this, "Worksheet was synchronized successfully.");
+            },
+            fail: {
+                title: this,
+                errors: {
+                    'does-not-exist': "Worksheet doesn't exist.",
+                    'does-not-have-origin': "Worksheet wasn't forked.",
+                },
+                handler: function(reason) {
+                    if (reason === 'worksheet-was-modified') {
+                        Ext.MessageBox.show({
+                            title: "Worksheet synchronization",
+                            msg: "Worksheet was modified after it was forked. Do you want to continue?",
+                            buttons: Ext.MessageBox.YESNO,
+                            icon: Ext.MessageBox.QUESTION,
+                            fn: function(button) {
+                                if (button === 'yes') {
+                                    this.syncWorksheet(record, true);
+                                }
+                            },
+                            scope: this,
+                        });
+                    } else {
+                        FEMhub.msg.error(this, msg);
+                    }
+                },
+            },
+            scope: this,
+            status: this,
         });
     },
 
