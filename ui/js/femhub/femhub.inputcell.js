@@ -600,7 +600,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         }
     },
 
-    mergeCellBefore: function() {
+    mergeCellAbove: function() {
         var cell = this.getPrevCell('input');
 
         if (cell === null) {
@@ -633,7 +633,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         return true;
     },
 
-    mergeCellAfter: function() {
+    mergeCellBelow: function() {
         var cell = this.getNextCell('input');
 
         if (cell === null) {

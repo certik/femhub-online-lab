@@ -510,12 +510,35 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         return FEMhub.Bindings.Worksheet;
     },
 
-    execAction: function(action, params, key, evt) {
-        var method = 'action' + FEMhub.util.capitalizeFirst(action);
-        this[method].call(this, this.getCellManager(), evt);
+    execCellAction: function(action, active) {
+        var manager = this.getCellManager(), cell;
+
+        if (active) {
+            cell = manager.getActiveCell();
+        } else {
+            cell = manager.getFocusedCell();
+        }
+
+        if (cell !== null) {
+            if (action in this.actions) {
+                this.actions[action].call(this, cell);
+            } else if (action in cell) {
+                cell[action]();
+            }
+        }
     },
 
-    actionActivateCell: function(manager) {
+    execAction: function(action, params, key, evt) {
+        var method = 'action' + FEMhub.util.capitalizeFirst(action);
+
+        if (Ext.isDefined(this[method])) {
+            this[method].call(this, this.getCellManager(), params, evt);
+        } else {
+            this.execCellAction(action, params.active);
+        }
+    },
+
+    actionActivateCell: function(manager, params, evt) {
         var cell = manager.getActiveCell();
 
         if (cell === null) {
@@ -529,79 +552,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         cell.focusCell();
     },
 
-    actionActivateNextCell: function(manager) {
-        var cell = manager.getActiveCell();
-
-        if (cell !== null) {
-            manager.activateNextCell(cell);
-        }
-    },
-
-    actionActivatePrevCell: function(manager) {
-        var cell = manager.getActiveCell();
-
-        if (cell !== null) {
-            manager.activatePrevCell(cell);
-        }
-    },
-
-    actionHandlePrev: function(manager, evt) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.handlePrev) {
-            cell.handlePrev(evt);
-        }
-    },
-
-    actionHandleNext: function(manager, evt) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.handleNext) {
-            cell.handleNext(evt);
-        }
-    },
-
-    actionNextBracket: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.nextBracket) {
-            cell.nextBracket();
-        }
-    },
-
-    actionPrevBracket: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.prevBracket) {
-            cell.prevBracket();
-        }
-    },
-
-    actionWipeCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.wipeCell) {
-            cell.wipeCell();
-        }
-    },
-
-    actionClearCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.clearCell) {
-            cell.clearCell();
-        }
-    },
-
-    actionRemoveCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.removeCell) {
-            cell.removeCell();
-        }
-    },
-
-    actionQuitCell: function(manager) {
+    actionQuitCell: function(manager, params, evt) {
         var cell = manager.getFocusedCell();
 
         if (cell !== null && cell.blurCell) {
@@ -610,140 +561,45 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         }
     },
 
-    actionCollapseCell: function(manager) {
-        var cell = manager.getFocusedCell();
+    actionActivateNextCell: function(manager, params, evt) {
+        var cell = manager.getActiveCell();
 
-        if (cell !== null && cell.collapseCell) {
-            cell.collapseCell();
+        if (cell !== null) {
+            manager.activateNextCell(cell);
         }
     },
 
-    actionExpandCell: function(manager) {
-        var cell = manager.getFocusedCell();
+    actionActivatePrevCell: function(manager, params, evt) {
+        var cell = manager.getActiveCell();
 
-        if (cell !== null && cell.expandCell) {
-            cell.expandCell();
+        if (cell !== null) {
+            manager.activatePrevCell(cell);
         }
     },
 
-    actionSplitCellUpper: function(manager) {
+    actionHandlePrev: function(manager, params, evt) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null && cell.splitCellUpper) {
-            cell.splitCellUpper();
+        if (cell !== null && cell.handlePrev) {
+            cell.handlePrev(evt);
         }
     },
 
-    actionSplitCellLower: function(manager) {
+    actionHandleNext: function(manager, params, evt) {
         var cell = manager.getFocusedCell();
 
-        if (cell !== null && cell.splitCellLower) {
-            cell.splitCellLower();
+        if (cell !== null && cell.handleNext) {
+            cell.handleNext(evt);
         }
     },
 
-    actionMergeCellBefore: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.mergeCellBefore) {
-            cell.mergeCellBefore();
-        }
-    },
-
-    actionMergeCellAfter: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.mergeCellAfter) {
-            cell.mergeCellAfter();
-        }
-    },
-
-    actionNewline: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.newline) {
-            cell.newline();
-        }
-    },
-
-    actionBackspace: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.backspace) {
-            cell.backspace();
-        }
-    },
-
-    actionForwardEvaluateCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.evaluateCell) {
+    actions: {
+        forwardEvaluateCell: function(cell) {
             cell.evaluateCell({keepfocus: false});
-        }
-    },
-
-    actionInplaceEvaluateCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.evaluateCell) {
+        },
+        inplaceEvaluateCell: function(cell) {
             cell.evaluateCell({keepfocus: true});
-        }
-    },
-
-    actionInterruptCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.interruptCell) {
-            cell.interruptCell();
-        }
-    },
-
-    actionIntrospectCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.introspectCell) {
-            cell.introspectCell();
-        }
-    },
-
-    actionPreprocessCell: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.preprocessCell) {
-            cell.preprocessCell();
-        }
-    },
-
-    actionInsertInputCellBefore: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.insertInputCellBefore) {
-            cell.insertInputCellBefore();
-        }
-    },
-
-    actionInsertInputCellAfter: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.insertInputCellAfter) {
-            cell.insertInputCellAfter();
-        }
-    },
-
-    actionInsertTextCellBefore: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.insertTextCellBefore) {
-            cell.insertTextCellBefore();
-        }
-    },
-
-    actionInsertTextCellAfter: function(manager) {
-        var cell = manager.getFocusedCell();
-
-        if (cell !== null && cell.insertTextCellAfter) {
-            cell.insertTextCellAfter();
-        }
+        },
     },
 });
 
@@ -861,19 +717,19 @@ FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
             ],
             text: 'Split the active cell and locate cursor in the lower part',
         },
-        mergeCellAfter: {
-            specs: [
-                'DOWN      +shift -ctrl +alt',
-                'J         +shift -ctrl +alt',
-            ],
-            text: 'Merge the active cell with the following cell',
-        },
-        mergeCellBefore: {
+        mergeCellAbove: {
             specs: [
                 'UP        +shift -ctrl +alt',
                 'K         +shift -ctrl +alt',
             ],
             text: 'Merge the active cell with the preceeding cell',
+        },
+        mergeCellBelow: {
+            specs: [
+                'DOWN      +shift -ctrl +alt',
+                'J         +shift -ctrl +alt',
+            ],
+            text: 'Merge the active cell with the following cell',
         },
         activateCell: {
             specs: [
