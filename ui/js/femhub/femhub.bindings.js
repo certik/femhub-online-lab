@@ -74,6 +74,33 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
     },
 });
 
+FEMhub.Bindings.showHelp = function(active) {
+    var local = active.getBindings();
+
+    if (local !== null) {
+        local = local.getBindingsList();
+    } else {
+        local = [];
+    }
+
+    var global = FEMhub.Bindings.Global;
+    global = global.getBindingsList();
+
+    (new FEMhub.Help({
+        title: 'Key bindings',
+        template: 'femhub/bindings.html',
+        context: {
+            groups: [{
+                description: 'Local key bindings',
+                bindings: local,
+            }, {
+                description: 'Global key bindings',
+                bindings: global,
+            }],
+        },
+    })).show();
+};
+
 FEMhub.Mapping = Ext.extend(Ext.util.Observable, {
     global: false,
     bindings: {},
@@ -155,30 +182,7 @@ FEMhub.Mappings.Global = Ext.extend(FEMhub.Mapping, {
             ],
             text: 'Display help about available key bindings',
             handler: function(active, params, key, evt) {
-                var local = active.getBindings();
-
-                if (local !== null) {
-                    local = local.getBindingsList();
-                } else {
-                    local = [];
-                }
-
-                var global = FEMhub.Bindings.Global;
-                global = global.getBindingsList();
-
-                (new FEMhub.Help({
-                    title: 'Key bindings',
-                    template: 'femhub/bindings.html',
-                    context: {
-                        groups: [{
-                            description: 'Local key bindings',
-                            bindings: local,
-                        }, {
-                            description: 'Global key bindings',
-                            bindings: global,
-                        }],
-                    },
-                })).show();
+                FEMhub.Bindings.showHelp(active);
             },
         },
         windowClose: {

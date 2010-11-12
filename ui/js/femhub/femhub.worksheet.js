@@ -153,7 +153,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
                 menu: [{
                     text: 'Key bindings',
                     handler: function() {
-                        FEMhub.msg.NotImplementedError();
+                        FEMhub.Bindings.showHelp(this);
                     },
                     scope: this,
                 }],
