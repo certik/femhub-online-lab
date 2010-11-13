@@ -88,7 +88,21 @@ FEMhub.Bindings.showHelp = function(active) {
 
     (new FEMhub.Help({
         title: 'Key bindings',
-        template: 'femhub/bindings.html',
+        template: new Ext.XTemplate(
+            '<tpl for="groups">',
+            '    <tpl if="bindings.length">',
+            '        <h2>{description}</h2>',
+            '        <tpl for="bindings">',
+            '            <tpl for="specs"><dt>',
+            '                <tpl if="shift"><b>Shift</b>&nbsp;+</tpl>',
+            '                <tpl if="ctrl"><b>Ctrl</b>&nbsp;+</tpl>',
+            '                <tpl if="alt"><b>Alt</b>&nbsp;+</tpl>',
+            '                <b>{prettyKey}</b>',
+            '            </tpl></dt>',
+            '            <dd>{text}</dd>',
+            '        </tpl>',
+            '    </tpl>',
+            '</tpl>'),
         context: {
             groups: [{
                 description: 'Local key bindings',
