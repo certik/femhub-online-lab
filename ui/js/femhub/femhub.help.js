@@ -27,11 +27,15 @@ FEMhub.Help = Ext.extend(FEMhub.Window, {
     onRender: function() {
         FEMhub.Help.superclass.onRender.apply(this, arguments);
 
-        var name = this.template || this.defaultTemplate;
+        if (this.template instanceof Ext.Template) {
+            this.template.overwrite(this.body, this.context);
+        } else {
+            var name = this.template || this.defaultTemplate;
 
-        FEMhub.Template.render(name, this.context || {}, function(html) {
-            this.body.update(html);
-        }, this);
+            FEMhub.Template.render(name, this.context || {}, function(html) {
+                this.body.update(html);
+            }, this);
+        }
     },
 
     getBindings: function() {
