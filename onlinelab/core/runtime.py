@@ -193,7 +193,8 @@ def start(args):
     models.Route.objects.all().delete()
 
     application = tornado.web.Application([
-        (r"/", handlers.MainHandler),
+        (r"/", handlers.MainHandler, dict(debug=False)),
+        (r"/debug/?", handlers.MainHandler, dict(debug=True)),
         (r"/async/?", handlers.AsyncHandler),
         (r"/client/?", handlers.ClientHandler),
         (r"/service/?", handlers.ServiceHandler),

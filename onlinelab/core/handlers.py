@@ -29,14 +29,16 @@ class ParseError(Exception):
 class MainHandler(errors.ErrorMixin, tornado.web.RequestHandler):
     """Render default Online Lab user interface. """
 
-    def get(self):
+    def initialize(self, debug=False):
         settings = Settings.instance()
+        self.debug = debug or settings.debug
 
+    def get(self):
         html = pygments.formatters.HtmlFormatter(nobackground=True)
         css = html.get_style_defs(arg='.highlight')
 
         try:
-            self.render('femhub/desktop.html', debug=settings.debug, extra_css=css)
+            self.render('femhub/desktop.html', debug=self.debug, extra_css=css)
         except:
             raise tornado.web.HTTPError(500)
 
