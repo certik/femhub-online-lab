@@ -1,6 +1,6 @@
 
 FEMhub = {
-    version: [0, 0, 1],
+    version: '0.0.1-git',
     urls: ['/client/', '/async/'],
     cors: false,
     verbose: true,
