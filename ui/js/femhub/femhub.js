@@ -4,5 +4,11 @@ FEMhub = {
     urls: ['/client/', '/async/'],
     cors: false,
     verbose: true,
+
+    log: function(msg) {
+        if (console !== undefined) {
+            console.log(msg);
+        }
+    },
 };
 
