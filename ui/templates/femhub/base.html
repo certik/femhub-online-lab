@@ -9,6 +9,8 @@
         {% if debug %}
         <script type="text/javascript">
             if (console === undefined || console.firebug === undefined) {
+                window._console = window.console;
+
                 var firebug = document.createElement("script");
 
                 firebug.setAttribute("type", "text/javascript");
