@@ -6,6 +6,19 @@
         <title>{% block title %}FEMhub Online Lab{% end %}</title>
         <link rel="icon" type="image/ico" href="/static/img/femhub/favicon.ico"/>
 
+        {% if debug %}
+        <script type="text/javascript">
+            if (console === undefined || console.firebug === undefined) {
+                var firebug = document.createElement("script");
+
+                firebug.setAttribute("type", "text/javascript");
+                firebug.setAttribute("src", "/static/external/firebug/build/firebug-lite.js");
+
+                document.getElementsByTagName("head")[0].appendChild(firebug);
+            }
+        </script>
+        {% end %}
+
         <link href="{{ static_url('external/ext/css/ext-all.css') }}" rel="stylesheet" type="text/css" />
 
         {% if debug %}
