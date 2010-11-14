@@ -3,12 +3,15 @@
 import os
 import sys
 import uuid
+import shutil
 import signal
 import daemon
 import logging
 import lockfile
+import tempfile
 import textwrap
 import functools
+import subprocess
 
 try:
     import daemon.pidfile as pidlockfile
@@ -141,6 +144,69 @@ def init(args):
             dst = os.path.join(settings.templates_path, template_elem)
             src = os.path.join(template_ui_path, template_elem)
             os.symlink(src, dst)
+
+    print "Done."
+
+_package_spec = {
+    'firebug': {
+        'data': {
+            'url': 'http://getfirebug.com/releases/lite/latest/firebug-lite.tar.tgz',
+            'dst': 'firebug',
+        },
+        'cmds': [
+            "curl %(url)s | tar -xzC %(tmp)s",
+            "find %(tmp)s -type d -exec chmod +x '{}' \\;",
+            "mkdir %(dst)s/build",
+            "cp %(tmp)s/firebug-lite/build/firebug-lite.js %(dst)s/build",
+            "cp -r %(tmp)s/firebug-lite/skin %(dst)s",
+        ],
+    },
+}
+
+def install(packages, args):
+    """Install a new package into ``static/external``. """
+    if not packages:
+        print "No packages were specified for installation (use --package option)."
+        sys.exit(1)
+
+    dir = os.path.join(args.data_path, 'tmp')
+
+    if not os.path.exists(dir):
+        print "Creating %s" % dir
+        os.mkdir(dir)
+
+    external = os.path.join(args.static_path, 'external')
+
+    for package in packages:
+        if package not in _package_spec:
+            print "'%s' is not a known package" % package
+            continue
+
+        print ">>> Installing '%s' ..." % package
+
+        tmp = tempfile.mkdtemp(dir=dir)
+
+        try:
+            spec = _package_spec[package]
+            data = dict(spec['data'])
+
+            dst = data.get('dst')
+
+            if not dst:
+                dst = external
+            else:
+                dst = os.path.join(external, dst)
+
+                if not os.path.exists(dst):
+                    os.makedirs(dst)
+
+            data['tmp'] = tmp
+            data['dst'] = dst
+
+            for cmd in spec['cmds']:
+                subprocess.call(cmd % data, shell=True)
+        finally:
+            shutil.rmtree(tmp, True)
 
     print "Done."
 
