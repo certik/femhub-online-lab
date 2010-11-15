@@ -302,7 +302,12 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     },
                 },
                 { header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
-                { header: "Created", width: 100, sortable: true, dataIndex: 'created'},
+                { header: "Created", width: 100, sortable: true, dataIndex: 'created',
+                    renderer: function(value, metadata, record, rowIndex, colIndex, store) {
+                        var date = FEMhub.util.ago(new Date(record.data.created));
+                        return '<div title="' + value + '">' + date + '</div>';
+                    },
+                },
             ]),
             sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
             viewConfig: {
