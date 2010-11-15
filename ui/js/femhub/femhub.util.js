@@ -126,3 +126,43 @@ FEMhub.util.ignore = function(obj, ignores) {
     return result;
 };
 
+FEMhub.util.ago = function(date) {
+    var msec = date.getElapsed();
+
+    if (msec < 60000) {
+        return 'just now';
+    }
+
+    var minutes = Math.floor(msec/60000);
+
+    if (minutes < 60) {
+        if (minutes === 1) {
+            return '1 minute ago';
+        } else {
+            return minutes + ' minutes ago';
+        }
+    }
+
+    var hours = Math.floor(minutes/60);
+
+    if (hours < 24) {
+        if (hours === 1) {
+            return '1 hour ago';
+        } else {
+            return hours + ' hours ago';
+        }
+    }
+
+    var days = Math.floor(hours/24);
+
+    if (days < 8) {
+        if (days === 1) {
+            return '1 day ago';
+        } else {
+            return days + ' days ago';
+        }
+    }
+
+    return date.format('F d, Y');
+};
+
