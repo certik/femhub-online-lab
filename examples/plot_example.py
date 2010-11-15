@@ -29,7 +29,7 @@ l.set_zorder(20)
 """
 
 def evaluate(cmd):
-    out = s.evaluate(uuid, cmd)
+    out = s.RPC.Engine.evaluate(uuid, cmd)
     if out.get("traceback", False):
         print "Remote traceback:"
         print out["traceback"]
@@ -39,13 +39,13 @@ def evaluate(cmd):
 
 s = JSONRPCService("http://lab.femhub.org/async")
 uuid = uuid4().hex
-s.init(uuid)
+s.RPC.Engine.init(uuid)
 try:
     evaluate("from pylab import plot")
     evaluate(mpl_script)
     out = evaluate("show()")
 finally:
-    s.kill(uuid)
+    s.RPC.Engine.kill(uuid)
 data = out["plots"][0]["data"]
 d = b64decode(data)
 open(filename, "w").write(d)
