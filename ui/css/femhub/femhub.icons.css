@@ -136,15 +136,11 @@
 }
 
 .femhub-record-published-icon {
-    background-image: url(/static/img/femhub/icons/page_green.png) !important;
-    background-repeat: no-repeat !important;
-    background-position: left center !important;
+    background-image: url(/static/img/femhub/icons/emoticon_smile.png) !important;
 }
 
 .femhub-record-unpublished-icon {
-    background-image: url(/static/img/femhub/icons/page.png) !important;
-    background-repeat: no-repeat !important;
-    background-position: left center !important;
+    background-image: url(/static/img/femhub/icons/emoticon_unhappy.png) !important;
 }
 
 .femhub-ok-icon {

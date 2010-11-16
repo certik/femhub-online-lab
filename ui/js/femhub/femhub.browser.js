@@ -280,31 +280,56 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     },
 
     initWorksheetsGrid: function() {
-        this.worksheetsGrid = new Ext.grid.GridPanel({
+        this.grid = this.worksheetsGrid = new Ext.grid.GridPanel({
             ds: new Ext.data.Store({
-                reader: new Ext.data.ArrayReader({}, [
-                    { name: 'title' },
-                    { name: 'engine' },
-                    { name: 'created' },
-                    { name: 'published' },
+                reader: new Ext.data.ArrayReader({
+                    idIndex: 0,
+                }, [
+                    {name: 'uuid'},
+                    {name: 'name'},
+                    {name: 'created'},
+                    {name: 'modified'},
+                    {name: 'published'},
+                    {name: 'description'},
+                    {name: 'engine'},
+                    {name: 'origin'},
                 ]),
             }),
             cm: new Ext.grid.ColumnModel([
                 new Ext.grid.RowNumberer(),
-                { header: "Title", width: 200, sortable: true, dataIndex: 'title',
+                { header: "Title", width: 200, sortable: true, dataIndex: 'name',
                     renderer: function(value, metadata, record, rowIndex, colIndex, store) {
-                        if (record.data.published) {
-                            metadata.css = 'femhub-record-published-icon';
+                        var cls = 'femhub-rec-name ';
+
+                        if (record.data.published !== null) {
+                            cls += 'femhub-record-published-icon';
                         } else {
-                            metadata.css = 'femhub-record-unpublished-icon';
+                            cls += 'femhub-record-unpublished-icon';
                         }
-                        return '<div style="margin-left: 12px">' + value + '</div>';
+
+                        var html = '<div class="' + cls + '">' + value + '</a></div>';
+
+                        var origin = record.data.origin;
+
+                        if (origin !== null) {
+                            var url = '/worksheets/' + origin.uuid + '/';
+                            var path = origin.user + '/.../' + origin.name;
+                            var title = [origin.user].concat(origin.path, [origin.name]).join('/');
+
+                            html += '<div class="femhub-rec-fork">Forked from <a href="' + url + '" target="_blank" title="' + title + '">' + path + '</a></div>';
+                        }
+
+                        return html;
                     },
                 },
-                { header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
+                { header: "Engine", width: 70, sortable: true, dataIndex: 'engine',
+                    renderer: function(value, metadata, record, rowIndex, colIndex, store) {
+                        return '<div title="' + value.uuid + '">' + value.name + '</div>';
+                    },
+                },
                 { header: "Created", width: 100, sortable: true, dataIndex: 'created',
                     renderer: function(value, metadata, record, rowIndex, colIndex, store) {
-                        var date = FEMhub.util.ago(new Date(record.data.created));
+                        var date = FEMhub.util.ago(new Date(value));
                         return '<div title="' + value + '">' + date + '</div>';
                     },
                 },
@@ -322,8 +347,8 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             var record = grid.getStore().getAt(row);
 
             this.openWorksheet({
-                uuid: record.id,
-                name: record.data.title,
+                uuid: record.data.uuid,
+                name: record.data.name,
             });
         }, this);
 
@@ -338,8 +363,8 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                         text: 'Open without output cells',
                         handler: function() {
                             this.openWorksheet({
-                                uuid: record.id,
-                                name: record.data.title,
+                                uuid: record.data.uuid,
+                                name: record.data.name,
                                 loadOutputCells: false,
                             });
                         },
@@ -347,8 +372,8 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     }],
                     handler: function() {
                         this.openWorksheet({
-                            uuid: record.id,
-                            name: record.data.title,
+                            uuid: record.data.uuid,
+                            name: record.data.name,
                         });
                     },
                     scope: this,
@@ -357,7 +382,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     iconCls: 'femhub-export-worksheet-icon',
                     // TODO: add sub-menu and other targets
                     handler: function() {
-                        this.exportAsRST(record.id);
+                        this.exportAsRST(record.data.uuid);
                     },
                     scope: this,
                 }, '-', {
@@ -440,9 +465,9 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     addFolder: function(node) {
         node = this.getCurrentNode(node);
 
-        Ext.MessageBox.prompt('Add folder', 'Enter folder name:', function(button, title) {
+        Ext.MessageBox.prompt('Add folder', 'Enter folder name:', function(button, name) {
             if (button === 'ok') {
-                if (FEMhub.util.isValidName(title) === false) {
+                if (FEMhub.util.isValidName(name) === false) {
                     Ext.MessageBox.show({
                         title: 'Add folder',
                         msg: "Invalid folder name.",
@@ -450,11 +475,11 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
-                    FEMhub.RPC.Folder.create({uuid: node.id, name: title}, function(result) {
+                    FEMhub.RPC.Folder.create({uuid: node.id, name: name}, function(result) {
                         if (result.ok === true) {
                             node.appendChild(new Ext.tree.TreeNode({
                                 id: result.uuid,
-                                text: title,
+                                text: name,
                                 cls: 'femhub-folder',
                             }));
 
@@ -479,9 +504,9 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 icon: Ext.MessageBox.ERROR,
             });
         } else {
-            Ext.MessageBox.prompt('Rename folder', 'Enter new folder name:', function(button, title) {
+            Ext.MessageBox.prompt('Rename folder', 'Enter new folder name:', function(button, name) {
                 if (button === 'ok') {
-                    if (FEMhub.util.isValidName(title) === false) {
+                    if (FEMhub.util.isValidName(name) === false) {
                         Ext.MessageBox.show({
                             title: 'Rename folder',
                             msg: "Invalid folder name.",
@@ -489,9 +514,9 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                             icon: Ext.MessageBox.ERROR,
                         });
                     } else {
-                        FEMhub.RPC.Folder.rename({uuid: node.id, name: title}, function(result) {
+                        FEMhub.RPC.Folder.rename({uuid: node.id, name: name}, function(result) {
                             if (result.ok === true) {
-                                node.setText(title);
+                                node.setText(name);
                             } else {
                                 FEMhub.log("Can't rename folder");
                             }
@@ -535,19 +560,19 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     },
 
     renameWorksheet: function(record) {
-        Ext.MessageBox.prompt('Rename worksheet', 'Enter new worksheet name:', function(button, title) {
+        Ext.MessageBox.prompt('Rename worksheet', 'Enter new worksheet name:', function(button, name) {
             if (button === 'ok') {
-                if (FEMhub.util.isValidName(title) === false) {
+                if (FEMhub.util.isValidName(name) === false) {
                     Ext.MessageBox.show({
                         title: 'Rename worksheet',
-                        msg: "'" + title + "' is not a valid worksheet name.",
+                        msg: "'" + name + "' is not a valid worksheet name.",
                         buttons: Ext.MessageBox.OK,
                         icon: Ext.MessageBox.ERROR,
                     });
                 } else {
-                    FEMhub.RPC.Worksheet.rename({uuid: record.id, name: title}, function(result) {
+                    FEMhub.RPC.Worksheet.rename({uuid: record.data.uuid, name: name}, function(result) {
                         if (result.ok === true) {
-                            record.set('title', title);
+                            record.set('name', name);
                             record.commit();
                         } else {
                             FEMhub.log("Can't rename worksheet");
@@ -555,7 +580,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     });
                 }
             }
-        }, this, false, record.get('title'));
+        }, this, false, record.get('name'));
     },
 
     deleteWorksheet: function(record) {
@@ -566,7 +591,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             icon: Ext.MessageBox.QUESTION,
             fn: function(button) {
                 if (button === 'yes') {
-                    FEMhub.RPC.Worksheet.remove({uuid: record.id}, function(result) {
+                    FEMhub.RPC.Worksheet.remove({uuid: record.data.uuid}, function(result) {
                         if (result.ok === true) {
                             this.worksheetsGrid.getStore().remove(record);
                         } else {
@@ -580,7 +605,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     },
 
     syncWorksheet: function(record, force) {
-        FEMhub.RPC.Worksheet.sync({uuid: record.id, force: force}, {
+        FEMhub.RPC.Worksheet.sync({uuid: record.data.uuid, force: force}, {
             okay: function(result) {
                 FEMhub.msg.info(this, "Worksheet was synchronized successfully.");
             },
@@ -627,26 +652,27 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
         node = this.getCurrentNode(node);
 
         FEMhub.RPC.Folder.getWorksheets({uuid: node.id}, {
-            handler: function(result) {
-                if (result.ok === true) {
-                    var store = this.worksheetsGrid.getStore();
-                    store.removeAll();
+            okay: function(result) {
+                var store = this.grid.getStore();
+                var record = store.recordType;
 
-                    var record = Ext.data.Record.create([
-                        'title', 'engine', 'created', 'published'
-                    ]);
+                store.removeAll();
 
-                    Ext.each(result.worksheets, function(worksheet) {
-                        store.add(new record({
-                            title: worksheet.name,
-                            engine: worksheet.engine.name,
-                            created: worksheet.created,
-                            published: worksheet.published,
-                        }, worksheet.uuid));
-                    }, this);
-                } else {
-                    FEMhub.log("Failed to get worksheets");
-                }
+                Ext.each(result.worksheets, function(worksheet) {
+                    store.add(new record({
+                        uuid: worksheet.uuid,
+                        name: worksheet.name,
+                        created: worksheet.created,
+                        modified: worksheet.modified,
+                        published: worksheet.published,
+                        description: worksheet.description,
+                        engine: worksheet.engine,
+                        origin: worksheet.origin,
+                    }));
+                }, this);
+            },
+            fail: function(reason) {
+                FEMhub.log("Failed to get worksheets");
             },
             scope: this,
             status: this,

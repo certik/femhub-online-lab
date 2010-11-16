@@ -285,3 +285,20 @@ body {
     text-align: justify;
 }
 
+.femhub-rec-name {
+    padding-left: 18px;
+    line-height: 16px;
+    vertical-align: middle;
+    background-repeat: no-repeat !important;
+    background-position: left center !important;
+}
+
+.femhub-rec-fork {
+    padding-left: 18px;
+    line-height: 16px;
+    vertical-align: middle;
+    background-repeat: no-repeat !important;
+    background-position: left center !important;
+    background-image: url(/static/img/femhub/icons/16x16/forked.png) !important;
+}
+
