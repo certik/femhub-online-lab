@@ -332,7 +332,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 },
                 { header: "Created", width: 100, sortable: true, dataIndex: 'created',
                     renderer: function(value, metadata, record, rowIndex, colIndex, store) {
-                        var date = FEMhub.util.ago(new Date(value));
+                        var date = FEMhub.util.ago(Date.parseDate(value, 'Y-m-d H:i:s'));
                         return '<div title="' + value + '">' + date + '</div>';
                     },
                 },
