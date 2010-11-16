@@ -361,7 +361,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             var context = new Ext.menu.Menu({
                 items: [{
                     text: 'Open',
-                    iconCls: 'femhub-edit-worksheet-icon',
+                    iconCls: 'femhub-open-worksheet-icon',
                     menu: [{
                         text: 'Open without output cells',
                         handler: function() {
@@ -393,6 +393,13 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                     iconCls: 'femhub-rename-icon',
                     handler: function() {
                         this.renameWorksheet(record);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Describe',
+                    iconCls: 'femhub-edit-worksheet-icon',
+                    handler: function() {
+                        this.describeWorksheet(record);
                     },
                     scope: this,
                 }, {
@@ -584,6 +591,36 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 }
             }
         }, this, false, record.get('name'));
+    },
+
+    describeWorksheet: function(record) {
+        Ext.MessageBox.show({
+            title: 'Describe worksheet',
+            msg: 'Enter worksheet description:',
+            buttons: Ext.MessageBox.OKCANCEL,
+            fn: function(button, description) {
+                if (button === 'ok') {
+                    FEMhub.RPC.Worksheet.describe({
+                        uuid: record.data.uuid,
+                        description: description,
+                    }, {
+                        okay: function(result) {
+                            record.set('description', description);
+                            record.commit();
+                        },
+                        fail: {
+                            'does-not-exist': "Worksheet doesn't exist",
+                        },
+                        scope: this,
+                        status: this,
+                    });
+                }
+            },
+            scope: this,
+            multiline: true,
+            width: 500,
+            value: record.get('description'),
+        });
     },
 
     deleteWorksheet: function(record) {

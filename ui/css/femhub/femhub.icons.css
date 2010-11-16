@@ -111,6 +111,10 @@
     background-image: url(/static/img/femhub/icons/page_attach.png) !important;
 }
 
+.femhub-open-worksheet-icon {
+    background-image: url(/static/img/femhub/icons/page_gear.png) !important;
+}
+
 .femhub-edit-worksheet-icon {
     background-image: url(/static/img/femhub/icons/page_edit.png) !important;
 }
