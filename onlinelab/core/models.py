@@ -46,6 +46,16 @@ class Folder(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
+    def get_path(self):
+        """Get full path to this folder in array form. """
+        path, folder = [], self
+
+        while folder is not None:
+            path.insert(0, folder.name)
+            folder = folder.parent
+
+        return path
+
 class Worksheet(models.Model):
     uuid = UUIDField()
     user = models.ForeignKey(User)

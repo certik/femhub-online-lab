@@ -430,17 +430,28 @@ class ClientHandler(WebHandler):
             worksheets = []
 
             for worksheet in Worksheet.objects.filter(user=self.user, folder=folder):
+                if worksheet.origin is None:
+                    origin = None
+                else:
+                    origin = {
+                        'uuid': worksheet.origin.uuid,
+                        'name': worksheet.origin.name,
+                        'path': worksheet.origin.folder.get_path(),
+                        'user': worksheet.origin.user.username,
+                    }
+
                 worksheets.append({
                     'uuid': worksheet.uuid,
                     'name': worksheet.name,
-                    'description': worksheet.description,
                     'created': jsonrpc.datetime(worksheet.created),
                     'modified': jsonrpc.datetime(worksheet.modified),
                     'published': jsonrpc.datetime(worksheet.published),
+                    'description': worksheet.description,
                     'engine': {
                         'uuid': worksheet.engine.uuid,
                         'name': worksheet.engine.name,
                     },
+                    'origin': origin,
                 })
 
             self.return_api_result({'worksheets': worksheets})
