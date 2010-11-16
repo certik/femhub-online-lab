@@ -299,15 +299,18 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 new Ext.grid.RowNumberer(),
                 { header: "Title", width: 200, sortable: true, dataIndex: 'name',
                     renderer: function(value, metadata, record, rowIndex, colIndex, store) {
-                        var cls = 'femhub-rec-name ';
+                        var cls = 'femhub-rec-name ', text;
 
                         if (record.data.published !== null) {
                             cls += 'femhub-record-published-icon';
+                            text = '';
                         } else {
                             cls += 'femhub-record-unpublished-icon';
+                            text = "This worksheet wasn't published yet. Click &quot;Publish&quot; " +
+                                   "to make it available to other users.";
                         }
 
-                        var html = '<div class="' + cls + '">' + value + '</a></div>';
+                        var html = '<div class="' + cls + '" title="' + text + '"><a>' + value + '</a></div>';
 
                         var origin = record.data.origin;
 
