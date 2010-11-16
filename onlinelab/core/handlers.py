@@ -89,6 +89,7 @@ class ClientHandler(WebHandler):
         'RPC.Worksheet.create',
         'RPC.Worksheet.remove',
         'RPC.Worksheet.rename',
+        'RPC.Worksheet.describe',
         'RPC.Worksheet.move',
         'RPC.Worksheet.publish',
         'RPC.Worksheet.fork',
@@ -498,6 +499,19 @@ class ClientHandler(WebHandler):
             self.return_api_error('does-not-exist')
         else:
             worksheet.name = name
+            worksheet.save()
+
+            self.return_api_result()
+
+    @jsonrpc.authenticated
+    def RPC__Worksheet__describe(self, uuid, description):
+        """Assign a new description to a worksheet pointed by the given ``uuid``.  """
+        try:
+            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+        except Worksheet.DoesNotExist:
+            self.return_api_error('does-not-exist')
+        else:
+            worksheet.description = description
             worksheet.save()
 
             self.return_api_result()
