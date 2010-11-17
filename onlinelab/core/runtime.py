@@ -81,6 +81,13 @@ def init(args):
     DATABASE_PORT      = ''
 
     SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+    INSTALLED_APPS = (
+        'django.contrib.auth',
+        'django.contrib.sessions',
+        'django.contrib.contenttypes',
+        'onlinelab.core',
+    )
     '''
 
     if not os.path.exists(args.home):
@@ -97,14 +104,7 @@ def init(args):
         with open(config_file, 'w') as conf:
             conf.write(textwrap.dedent(config_text))
 
-    INSTALLED_APPS = (
-        'django.contrib.auth',
-        'django.contrib.sessions',
-        'django.contrib.contenttypes',
-        'onlinelab.core',
-    )
-
-    settings = configure(args, installed_apps=INSTALLED_APPS)
+    settings = configure(args)
     call_command('syncdb', interactive=False)
 
     from models import Engine
