@@ -29,6 +29,18 @@ def path(string):
     else:
         return None
 
+def existing_path(string):
+    """Make sure that an absolute path exists. """
+    if string is not None:
+        string = path(string)
+
+        if os.path.exists(string):
+            return string
+        else:
+            raise ValueError("'%s' does not exist" % string)
+    else:
+        return None
+
 def boolean(string):
     """Convert a string to a boolean value. """
     string = string.lower()
@@ -267,7 +279,7 @@ class OnlineLab(object):
         'ui-path': (
             ('--ui-path',), {
                 'required': True,
-                'type': path,
+                'type': existing_path,
             },
         ),
         'logs-path': (
