@@ -15,10 +15,17 @@ def sys_path_hack(args):
     if os.path.isdir(module_dir):
         args.python_path.insert(0, os.path.abspath(module_top))
 
+def expand(path):
+    """Expand ~ construct and shell variables. """
+    if path is not None:
+        return os.path.expandvars(os.path.expanduser(path))
+    else:
+        return None
+
 def path(string):
     """Convert a string to an absolute path. """
     if string is not None:
-        return os.path.abspath(string)
+        return os.path.abspath(expand(string))
     else:
         return None
 
@@ -38,8 +45,7 @@ class PathAction(argparse.Action):
     """Handle colon-separated, relative paths. """
 
     def __call__(self, parser, namespace, values, option_string=None):
-        values = values.split(os.path.pathsep)
-        values = map(os.path.abspath, values)
+        values = map(path, values.split(os.path.pathsep))
 
         paths = getattr(namespace, self.dest)
         paths.extend(values)
