@@ -49,10 +49,18 @@ FEMhub.Bindings = Ext.extend(Ext.util.Observable, {
         return active;
     },
 
-    handler: function(binding, action, data, spec, key, evt) {
+    handler: function(bindings, action, data, spec, key, evt) {
         var active = this.getActive();
 
-        if (binding.global || (active !== null && active.getBindings() == binding)) {
+        function getActiveBindings() {
+            try {
+                return active.getBindings();
+            } catch (err) {
+                return null;
+            }
+        }
+
+        if (bindings.global || (active !== null && getActiveBindings() === bindings)) {
             var params = data.params || {};
 
             if (spec.stop === true) {
