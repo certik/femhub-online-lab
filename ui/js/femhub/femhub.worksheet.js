@@ -17,7 +17,6 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
             managerConfig: config.conf,
             listeners: {
                 cellmanagerready: function(panel, manager) {
-                    manager.initEngine();
                     manager.loadCells();
                 },
                 scope: this,

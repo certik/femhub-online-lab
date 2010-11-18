@@ -500,53 +500,71 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
     },
 
     evaluateCode: function(obj) {
-        if (Ext.isString(obj)) {
-            var source = obj;
-
-            FEMhub.RPC.Engine.evaluate({
-                uuid: this.uuid,
-                source: source,
+        if (!this.isInitialized) {
+            this.initEngine({
+                handler: function() {
+                    this.evaluateCode(obj);
+                },
+                scope: this,
             });
         } else {
-            FEMhub.RPC.Engine.evaluate({
+            if (Ext.isString(obj)) {
+                var source = obj;
+
+                FEMhub.RPC.Engine.evaluate({
+                    uuid: this.uuid,
+                    source: source,
+                });
+            } else {
+                FEMhub.RPC.Engine.evaluate({
+                    uuid: this.uuid,
+                    source: obj.source,
+                    cellid: obj.cellid,
+                }, {
+                    okay: obj.okay,
+                    fail: obj.fail,
+                    scope: obj.scope,
+                    status: {
+                        start: function() {
+                            return this.fireEvent('evaluatestart', this);
+                        },
+                        end: function(ok, ret) {
+                            this.fireEvent('evaluateend', this, ok, ret);
+                        },
+                        scope: this,
+                    },
+                });
+            }
+        }
+    },
+
+    completeCode: function(obj) {
+        if (!this.isInitialized) {
+            this.initEngine({
+                handler: function() {
+                    this.completeCode(obj);
+                },
+                scope: this,
+            });
+        } else {
+            FEMhub.RPC.Engine.complete({
                 uuid: this.uuid,
                 source: obj.source,
-                cellid: obj.cellid,
             }, {
                 okay: obj.okay,
                 fail: obj.fail,
                 scope: obj.scope,
                 status: {
                     start: function() {
-                        return this.fireEvent('evaluatestart', this);
+                        return this.fireEvent('completestart', this);
                     },
                     end: function(ok, ret) {
-                        this.fireEvent('evaluateend', this, ok, ret);
+                        this.fireEvent('completeend', this, ok, ret);
                     },
                     scope: this,
                 },
             });
         }
-    },
-
-    completeCode: function(obj) {
-        FEMhub.RPC.Engine.complete({
-            uuid: this.uuid,
-            source: obj.source,
-        }, {
-            okay: obj.okay,
-            fail: obj.fail,
-            scope: obj.scope,
-            status: {
-                start: function() {
-                    return this.fireEvent('completestart', this);
-                },
-                end: function(ok, ret) {
-                    this.fireEvent('completeend', this, ok, ret);
-                },
-                scope: this,
-            },
-        });
     },
 
     destroy: function() {
