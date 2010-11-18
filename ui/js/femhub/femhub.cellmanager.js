@@ -419,6 +419,10 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                             });
 
                             cell.setText(data.content);
+
+                            if (data.collapsed) {
+                                cell.collapseCell();
+                            }
                         }
                     }, this);
 
@@ -454,6 +458,7 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                 uuid: cell.id,
                 content: cell.getText(),
                 type: cell.ctype,
+                collapsed: cell.collapsed,
             });
         }, this);
 

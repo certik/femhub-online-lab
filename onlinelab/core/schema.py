@@ -39,3 +39,7 @@ def transform(name, data, schema):
         if method is not None:
             method(data)
 
+def transform_0_onlinelab_core_models_Cell(data):
+    """0 -> 1: add field 'collapsed' to 'Cell' model. """
+    data['collapsed'] = False
+

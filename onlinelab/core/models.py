@@ -5,7 +5,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
-SCHEMA = 0
+SCHEMA = 1
 
 MAX_UUID = 32
 MAX_NAME = 200
@@ -88,4 +88,5 @@ class Cell(models.Model):
     parent = models.ForeignKey('self', null=True, default=None)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    collapsed = models.BooleanField(default=False)
 

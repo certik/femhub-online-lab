@@ -676,6 +676,7 @@ class ClientHandler(WebHandler):
                         'uuid': cell.uuid,
                         'type': cell.type,
                         'content': cell.content,
+                        'collapsed': cell.collapsed,
                     }
 
             for uuid in worksheet.get_order():
@@ -698,6 +699,7 @@ class ClientHandler(WebHandler):
                 uuid = data['uuid']
                 type = data['type']
                 content = data['content']
+                collapsed = data['collapsed']
 
                 try:
                     cell = Cell.objects.get(user=self.user, uuid=uuid)
@@ -705,11 +707,13 @@ class ClientHandler(WebHandler):
                     cell = Cell(uuid=uuid,
                                 user=self.user,
                                 worksheet=worksheet,
+                                type=type,
                                 content=content,
-                                type=type)
+                                collapsed=collapsed)
                 else:
-                    cell.content = content
                     cell.type = type
+                    cell.content = content
+                    cell.collapsed = collapsed
 
                 order.append(uuid)
                 cell.save()
