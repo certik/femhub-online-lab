@@ -213,7 +213,7 @@ FEMhub.CreateAccount = Ext.extend(FEMhub.Window, {
         this.form = this.initForm();
 
         config = Ext.apply({
-            title: 'Create accout',
+            title: 'Create account',
             bodyStyle: 'background-color: white',
             padding: 10,
             width: 400,
