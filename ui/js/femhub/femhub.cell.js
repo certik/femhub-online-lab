@@ -82,7 +82,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     focusCell: function() {
         var active = this.owner.activeCell;
 
-        if (active && active.focused) {
+        if (active && active !== this && active.focused) {
             active.blurCell();
         }
 
