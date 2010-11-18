@@ -202,19 +202,6 @@
  * COLLAPSED CELLS
  */
 
-.femhub-cell-expander {
-    width: 100%;
-    height: 4px;
-    z-index: 0;
-    position: absolute;
-    left: 0;
-    top: 0;
-    display: none;
-    border: none;
-    color: white;
-    overflow: hidden;
-}
-
 .femhub-cell-collapsed {
     height: 5px !important;
     border-bottom: 1px dashed #bfbfbf;

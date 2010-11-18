@@ -5,7 +5,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     saved: false,
     focused: false,
     collapsed: false,
-    hiddenEl: null,
 
     constructor: function(config) {
         if (Ext.isDefined(config.setup)) {
@@ -18,12 +17,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         }
 
         FEMhub.Cell.superclass.constructor.apply(this, arguments);
-    },
-
-    initComponent: function() {
-        FEMhub.Cell.superclass.initComponent.call(this);
-
-        this.addEvents('collapsing', 'collapsed', 'expanding', 'expanded');
     },
 
     setupCellObserver: function() {
@@ -46,14 +39,36 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_bracket = this.el.createChild({
             tag: 'div',
             cls: 'femhub-cell-bracket',
-            children: {
-                tag: 'div',
-                cls: 'femhub-cell-triangle',
-            },
+        });
+
+        this.el_triangle = this.el_bracket.createChild({
+            tag: 'div',
+            cls: 'femhub-cell-triangle',
         });
 
         this.setupCellObserver();
         this.setupCellEvents();
+    },
+
+    afterRender: function() {
+        FEMhub.Cell.superclass.afterRender.apply(this);
+
+        var initialText = this.initialText;
+
+        if (Ext.isDefined(initialText)) {
+            delete this.initialText;
+            this.setText(initialText);
+        }
+
+        var startCollapsed = this.startCollapsed;
+
+        if (Ext.isDefined(startCollapsed)) {
+            delete this.startCollapsed;
+
+            if (startCollapsed === true) {
+                this.collapseCell();
+            }
+        }
     },
 
     onFocusCell: function() {
@@ -65,12 +80,17 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     focusCell: function() {
+        var active = this.owner.activeCell;
+
+        if (active && active.focused) {
+            active.blurCell();
+        }
+
         this.owner.activeCell = this;
         this.focused = true;
 
         if (this.collapsed) {
             this.el.addClass('femhub-focus');
-            this.el_expander.focus();
         } else {
             this.onFocusCell();
         }
@@ -81,7 +101,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
         if (this.collapsed) {
             this.el.removeClass('femhub-focus');
-            this.el_expander.blur();
         } else {
             this.onBlurCell();
         }
@@ -111,22 +130,34 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         return this.owner.getPrevCell(this.id, type);
     },
 
-    collapseCell: function() {
-        this.fireEvent('collapsing', this);
-
+    onCollapseCell: function() {
         var children = Ext.query('*', this.el.dom);
-        this.hiddenEl = [];
 
         Ext.each(children, function(child) {
-            var el = Ext.get(child);
+            child = Ext.get(child);
 
-            if (el.isVisible()) {
-                this.hiddenEl.push(el);
-                el.hide();
+            if (child !== this.el_triangle) {
+                child.hide();
             }
         }, this);
+    },
 
-        this.el.on('click', this.expandCell, this, { stopEvent: true });
+    onExpandCell: function() {
+        var children = Ext.query('*', this.el.dom);
+
+        Ext.each(children, function(child) {
+            child = Ext.get(child);
+
+            if (child !== this.el_triangle) {
+                child.show();
+            }
+        }, this);
+    },
+
+    collapseCell: function() {
+        this.onCollapseCell();
+
+        this.el.on('click', this.expandCell, this, {stopEvent: true});
 
         this.el_expand_triangle = this.el.createChild({
             tag: 'div',
@@ -137,12 +168,10 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         this.el.addClass('femhub-enabled');
         this.collapsed = true;
 
-        this.fireEvent('collapsed', this);
+        this.focusCell();
     },
 
     expandCell: function() {
-        this.fireEvent('expanding', this);
-
         this.el.un('click', this.expandCell, this);
         this.el_expand_triangle.remove();
 
@@ -150,13 +179,8 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         this.el.removeClass('femhub-enabled');
         this.collapsed = false;
 
-        Ext.each(this.hiddenEl, function(el) {
-            el.show();
-        }, this);
-
-        this.hiddenEl = null;
-
-        this.fireEvent('expanded', this);
+        this.onExpandCell();
+        this.focusCell();
     },
 
     nextCell: function(type) {

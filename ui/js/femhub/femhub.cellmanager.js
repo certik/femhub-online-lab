@@ -415,14 +415,10 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
                                 setup: {
                                     id: data.uuid,
                                     saved: true,
+                                    initialText: data.content,
+                                    startCollapsed: data.collapsed,
                                 },
                             });
-
-                            cell.setText(data.content);
-
-                            if (data.collapsed) {
-                                cell.collapseCell();
-                            }
                         }
                     }, this);
 

@@ -2,6 +2,7 @@
 FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     ctype: 'io',
     labelPrefix: null,
+    labelVisible: false,
 
     initComponent: function() {
         FEMhub.IOCell.superclass.initComponent.call(this);
@@ -9,14 +10,15 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     },
 
     showLabel: function() {
+        this.labelVisible = true;
+
         if (!this.collapsed) {
             this.el_label.show();
-        } else {
-            this.hiddenEl.push(this.el_label);
         }
     },
 
     hideLabel: function() {
+        this.labelVisible = false;
         this.el_label.hide();
     },
 
@@ -98,34 +100,13 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
     },
 
     setupIOCellEvents: function() {
-        this.el_expander.on('focus', this.focusCell, this);
-        this.el_expander.on('blur', this.blurCell, this);
-
-        this.on('collapsed', function() {
-            this.el_expander.show();
-            this.focusCell();
-        }, this);
-
-        this.on('expanding', function() {
-            this.el_expander.hide();
-        }, this);
-
-        this.on('expanded', function() {
-            this.focusCell();
-        }, this);
+        /* pass */
     },
 
     onRender: function() {
         FEMhub.IOCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-io');
-
-        this.el_expander = this.el.createChild({
-            tag: 'textarea',
-            cls: 'femhub-cell-expander',
-        });
-
-        this.el_expander.dom.setAttribute('readOnly', 'readonly');
 
         this.el_label = this.el.createChild({
             tag: 'div',
@@ -152,6 +133,14 @@ FEMhub.IOCell = Ext.extend(FEMhub.Cell, {
         FEMhub.IOCell.superclass.onBlurCell.apply(this, arguments);
         this.el_textarea.removeClass('femhub-focus');
         this.el_textarea.blur();
+    },
+
+    onExpandCell: function() {
+        FEMhub.IOCell.superclass.onExpandCell.apply(this);
+
+        if (!this.labelVisible) {
+            this.el_label.hide();
+        }
     },
 
     autosize: function() {
