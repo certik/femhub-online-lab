@@ -5,13 +5,22 @@ FEMhub.MeshEditor = Ext.extend(FEMhub.Window, {
 
         Ext.apply(config, {
             title: "Mesh Editor",
-            layout: 'fit',
+            layout: 'vbox',
+            layoutConfig: {
+                align: "stretch",
+                pack: "start",
+                },
             width: 885,
             height: 595,
             iconCls: 'femhub-mesheditor-icon',
             bodyCssClass: 'femhub-mesheditor-body',
             closable: true,
             onEsc: Ext.emptyFn,
+            items: [{
+                    "title": "Beta Version",
+                    "html": '<object type="application/x-shockwave-flash" data="/static/external/MeshEditor.swf" width="100%" height="100%"><param name="flashvars" value="output_cell=0&nodes=&elements=& boundaries=&curves=&var_name=m" /><p>Alternative ContentXX</p></object>',
+                    flex: 1,
+                }],
             buttons: [{
                 text: 'Close',
                 handler: function() {
@@ -22,20 +31,6 @@ FEMhub.MeshEditor = Ext.extend(FEMhub.Window, {
         });
 
         FEMhub.MeshEditor.superclass.constructor.call(this, config);
-    },
-
-    onRender: function() {
-        FEMhub.MeshEditor.superclass.onRender.apply(this, arguments);
-
-        FEMhub.RPC.Template.render({ name: 'femhub/mesheditor.html' }, function(result) {
-            if (result.ok === true) {
-                this.body.createChild({
-                    tag: 'div',
-                    html: result.rendered,
-                    style: 'width: 100%; height: 100%',
-                });
-            }
-        }, this);
     },
 });
 
