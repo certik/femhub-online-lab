@@ -345,3 +345,110 @@ def status(args):
     """Display information about a core server. """
     raise NotImplementedError("'status' is not implemented yet")
 
+def purge(args, settings):
+    """Remove all contents from the database. """
+    from django.db.models import get_apps, get_models
+
+    for app in get_apps():
+        print ">>> Entering %s" % app.__name__
+
+        for model in get_models(app):
+            print "--- Purging %s" % model.__name__
+            model.objects.all().delete()
+
+    print "Done."
+
+def dump(args, settings):
+    """Dump contents of the database to a file. """
+    from django.db.models import get_apps, get_models
+    from cPickle import dumps
+    from models import SCHEMA
+
+    if not args.path:
+        path = settings.data_path
+    else:
+        path = args.path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    for app in get_apps():
+        print ">>> Entering %s" % app.__name__
+
+        for model in get_models(app):
+            print "--- Dumping %s" % model.__name__
+
+            app_name = app.__name__.replace('.', '_')
+            model_name = model.__name__
+
+            file_name = '%s_%s-%d.ols' % (app_name, model_name, SCHEMA)
+            file_path = os.path.join(path, file_name)
+
+            with open(file_path, 'w') as serial:
+                for data in model.objects.all().values():
+                    serial.write(dumps(data) + '\n\n')
+
+            if args.purge:
+                print "--- Purging %s" % model.__name__
+                model.objects.all().delete()
+
+    print "Done."
+
+def load(args, settings):
+    """Load contents of the database from a file. """
+    from django.db import IntegrityError
+    from cPickle import loads
+    from schema import transform
+
+    if not args.path:
+        path = settings.data_path
+    else:
+        path = args.path
+
+    load_data = []
+
+    for file in os.listdir(path):
+        if not file.endswith('.ols'):
+            continue
+
+        file_name, _ = os.path.splitext(file)
+        file_path = os.path.join(path, file)
+
+        name, schema = file_name.rsplit('-', 1)
+        app_name, model_name = name.rsplit('_', 1)
+        app_name = app_name.replace('_', '.')
+
+        module = __import__(app_name, fromlist=model_name)
+        model = getattr(module, model_name)
+        schema = int(schema)
+
+        print ">>> Loading %s from %s" % (model_name, app_name)
+
+        with open(file_path, 'r') as serial:
+            lines = ''
+
+            for line in serial.readlines():
+                if line != '\n':
+                    lines += line
+                    continue
+
+                data, lines = loads(lines), ''
+                transform(name, data, schema)
+
+                if not args.dry_run:
+                    try:
+                        model.objects.create(**data)
+                    except IntegrityError:
+                        print "E: Integrity error raised when processing %s (did you run 'purge' first?)" % model_name
+                        sys.exit(1)
+
+        print '--- Stored %d objects' % len(model.objects.all())
+
+        if args.purge:
+            print "--- Removing %s" % file_path
+
+            if not args.dry_run:
+                os.unlink(file_path)
+
+    print "Done."
+

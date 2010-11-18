@@ -5,6 +5,8 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
+SCHEMA = 0
+
 MAX_UUID = 32
 MAX_NAME = 200
 
