@@ -1,13 +1,22 @@
 {% extends femhub.html %}
 
 {% block runtime %}
+
+{% import os %}
+{% set static = settings.static_path %}
+{% set external = 'external' %}
+{% set mesheditor = 'MeshEditor.swf' %}
+{% set path = os.path.join(static, external, mesheditor) %}
+
 FEMhub.Lab.run({
     init: function() {
         Ext.QuickTips.init();
     },
     modules: [
         FEMhub.Modules.Browser,
+        {% if os.path.exists(path) %}
         FEMhub.Modules.MeshEditor,
+        {% end %}
         FEMhub.Modules.Settings,
         FEMhub.Modules.Help,
         FEMhub.Modules.Logout,
