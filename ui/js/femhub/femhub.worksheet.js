@@ -372,7 +372,7 @@ FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
         this.name = title;
 
         if (title) {
-            title = 'Worksheet - ' + title;
+            title = 'Worksheet - ' + FEMhub.htmlEncode(title);
         } else {
             title = 'Worksheet';
         }

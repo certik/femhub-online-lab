@@ -306,9 +306,12 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                             text = '';
                         } else {
                             cls += 'femhub-record-unpublished-icon';
-                            text = "This worksheet wasn't published yet. Click &quot;Publish&quot; " +
+                            text = "This worksheet wasn't published yet. Click \"Publish\" " +
                                    "to make it available to other users.";
                         }
+
+                        text = FEMhub.htmlEncode(text);
+                        value = FEMhub.htmlEncode(value);
 
                         var html = '<div class="' + cls + '" title="' + text + '"><a>' + value + '</a></div>';
 
@@ -319,6 +322,9 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                             var path = origin.user + '/.../' + origin.name;
                             var title = [origin.user].concat(origin.path, [origin.name]).join('/');
 
+                            path = FEMhub.htmlEncode(path);
+                            title = FEMhub.htmlEncode(title);
+
                             html += '<div class="femhub-rec-fork">Forked from <a href="' + url + '" target="_blank" title="' + title + '">' + path + '</a></div>';
                         }
 
@@ -327,7 +333,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 },
                 { header: "Engine", width: 70, sortable: true, dataIndex: 'engine',
                     renderer: function(value, metadata, record, rowIndex, colIndex, store) {
-                        return '<div title="' + value.uuid + '">' + value.name + '</div>';
+                        return '<div title="' + value.uuid + '">' + FEMhub.htmlEncode(value.name) + '</div>';
                     },
                 },
                 { header: "Created", width: 100, sortable: true, dataIndex: 'created',
@@ -437,7 +443,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             Ext.each(folders, function(folder) {
                 var subNode = new Ext.tree.TreeNode({
                     id: folder.uuid,
-                    text: folder.name,
+                    text: FEMhub.htmlEncode(folder.name),
                     cls: 'femhub-folder',
                 });
 

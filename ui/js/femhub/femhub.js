@@ -14,5 +14,13 @@ FEMhub = {
             }
         }
     },
+
+    htmlEncode: function(value) {
+        return Ext.util.Format.htmlEncode(value);
+    },
+
+    htmlDecode: function(value) {
+        return Ext.util.Format.htmlDecode(value);
+    },
 };
 
