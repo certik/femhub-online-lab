@@ -39,3 +39,6 @@ if [ -f "$CONFIG_DIR_BACKUP/onlinelab/core-home/onlinelab.db" ]; then
 else
     echo "No old database found, nothing copied."
 fi
+
+# Create symbolic link for the Mesh Editor
+ln -s $SPKG_LOCAL/share/mesheditorflex/MeshEditor.swf $SPKG_LOCAL/share/onlinelab/core-home/static/external/MeshEditor.swf
