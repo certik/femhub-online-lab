@@ -234,59 +234,28 @@ class ClientHandler(WebHandler):
         self.return_api_result({'engines': engines})
 
     @jsonrpc.authenticated
-    def RPC__Core__getUsers(self, worksheets=False):
+    def RPC__Core__getUsers(self):
         """Return a list of all registered users. """
         users = []
 
         for user in User.objects.all():
-            data = {
+            users.append({
                 'username': user.username,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'email': user.email,
-            }
-
-            if worksheets:
-                user_worksheets = []
-
-                for worksheet in Worksheet.objects.filter(user=user, published__isnull=False):
-                    user_worksheets.append({
-                        'uuid': worksheet.uuid,
-                        'name': worksheet.name,
-                        'description': worksheet.description,
-                        'created': jsonrpc.datetime(worksheet.created),
-                        'modified': jsonrpc.datetime(worksheet.modified),
-                        'published': jsonrpc.datetime(worksheet.published),
-                        'engine': {
-                            'uuid': worksheet.engine.uuid,
-                            'name': worksheet.engine.name,
-                        },
-                    })
-
-                data['worksheets'] = user_worksheets
-
-            users.append(data)
+            })
 
         self.return_api_result({'users': users})
 
     def RPC__Core__getPublishedWorksheets(self):
-        """
-        Return a list of all published worksheets by users.
-
-        This does not require any authentication, because all this information
-        is public. This method does not (under any circumstances) return any
-        private data (like emails and so on). It only returns users with
-        published worksheets.
-
-        Otherwise it is very similar to RPC.Core.getUsers().
-        """
+        """Return a list of all published worksheets by users. """
         users = []
 
         for user in User.objects.all():
             user_worksheets = []
 
-            for worksheet in Worksheet.objects.filter(user=user,
-                    published__isnull=False):
+            for worksheet in Worksheet.objects.filter(user=user, published__isnull=False):
                 user_worksheets.append({
                     'uuid': worksheet.uuid,
                     'name': worksheet.name,
@@ -312,6 +281,7 @@ class ClientHandler(WebHandler):
         # Sort users according to the number of published worksheets
         users.sort(key=lambda user: len(user["worksheets"]), reverse=True)
 
+        # XXX: this API doesn't make sense: published worksheets -> users
         self.return_api_result({'users': users})
 
     @jsonrpc.authenticated
