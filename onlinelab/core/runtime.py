@@ -59,6 +59,12 @@ def _setup_logging(args):
 
             logger.addHandler(channel)
 
+        actions = logging.getLogger('actions')
+        actions.propagate = False
+
+        handler = logging.handlers.RotatingFileHandler(args.log_actions)
+        actions.addHandler(handler)
+
 def init(args):
     """Initialize a new core server. """
     from django.core.management import call_command

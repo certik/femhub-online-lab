@@ -13,6 +13,7 @@ options = [
     ('log_level', 'str'),
     ('log_max_size', 'int'),
     ('log_num_backups', 'int'),
+    ('log_actions', 'path'),
     ('auth', 'bool'),
     ('cross_site', 'bool'),
     ('allowed_origins', 'list'),
@@ -32,6 +33,7 @@ defaults = {
     'log_level': 'info',
     'log_max_size': 10*1000*1000,      # store 10 MB in a log file
     'log_num_backups': 10,             # keep 10 log files at most
+    'log_actions': "%(logs_path)s/actions.log",
     'auth': True,
     'cross_site': False,
     'allowed_origins': [],
