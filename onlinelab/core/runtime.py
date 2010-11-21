@@ -65,6 +65,14 @@ def _setup_logging(args):
         handler = logging.handlers.RotatingFileHandler(args.log_actions)
         actions.addHandler(handler)
 
+def _iter_logger_streams():
+    """Iterate over open file streams of all loggers. """
+    loggers = [logging.getLogger(), logging.getLogger('actions')]
+
+    for logger in loggers:
+        for file in logger.handlers:
+            yield file.stream
+
 def init(args):
     """Initialize a new core server. """
     from django.core.management import call_command
@@ -227,15 +235,13 @@ def start(args):
             logging.error("Server already running. Quitting.")
             sys.exit(1)
 
-        logger = logging.getLogger()
-
         stdout = sys.stdout
         stderr = sys.stderr
 
         context = daemon.DaemonContext(
             working_directory=args.home,
             pidfile=pidlockfile.TimeoutPIDLockFile(args.pid_file, 1),
-            files_preserve=[ file.stream for file in logger.handlers ],
+            files_preserve=list(_iter_logger_streams()),
             stdout=stdout,
             stderr=stderr,
             umask=022)
