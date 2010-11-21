@@ -49,6 +49,7 @@ For example, in Ubuntu Lucid issue::
     $ sudo apt-get install python-psutil
     $ sudo apt-get install python-pycurl
     $ sudo apt-get install python-docutils
+    $ sudo apt-get install python-pygments
 
 to get those packages installed. Note that Tornado didn't manage to get
 into software package management systems yet (e.g. apt-get or portage),
