@@ -263,8 +263,7 @@ def start(args):
     }
 
     import models
-    import handlers
-    import restful
+    from handlers import main, async, client, service, restful
 
     # Before proceeding further lets clear routing table, because
     # services may be out of order or their capabilities changed,
@@ -273,11 +272,11 @@ def start(args):
     models.Route.objects.all().delete()
 
     application = tornado.web.Application([
-        (r"/", handlers.MainHandler, dict(debug=False)),
-        (r"/debug/?", handlers.MainHandler, dict(debug=True)),
-        (r"/async/?", handlers.AsyncHandler),
-        (r"/client/?", handlers.ClientHandler),
-        (r"/service/?", handlers.ServiceHandler),
+        (r"/", main.MainHandler, dict(debug=False)),
+        (r"/debug/?", main.MainHandler, dict(debug=True)),
+        (r"/async/?", async.AsyncHandler),
+        (r"/client/?", client.ClientHandler),
+        (r"/service/?", service.ServiceHandler),
         (r"/worksheets/([0-9a-f]+)/?", restful.PublishedWorksheetHandler),
     ], **app_settings)
 

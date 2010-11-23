@@ -1,101 +1,18 @@
-"""HTTP request handlers for Online Lab core. """
+"""Implementation of ``ClientHandler``. """
 
-import logging
 import smtplib
-import functools
-import traceback
 
 from datetime import datetime
 
-import docutils.core
-import pygments.formatters
+from base import WebHandler
 
-import tornado.web
-import tornado.escape
+from ..auth import authenticate
+from ..models import User, Engine, Folder, Worksheet, Cell
 
-import auth
-import cors
-import errors
-import services
-
-from ..utils import jsonrpc
-from ..utils import Settings
-from ..utils import extensions
-
-from models import User, Engine, Folder, Worksheet, Cell
+from ...utils import jsonrpc
 
 class ParseError(Exception):
     """Raised when '{{{' or '}}}' is misplaced. """
-
-class MainHandler(errors.ErrorMixin, tornado.web.RequestHandler):
-    """Render default Online Lab user interface. """
-
-    def initialize(self, debug=False):
-        self._settings = Settings.instance()
-        self.debug = debug or self._settings.debug
-
-    def get(self):
-        html = pygments.formatters.HtmlFormatter(nobackground=True)
-        css = html.get_style_defs(arg='.highlight')
-
-        try:
-            self.render('femhub/desktop.html', debug=self.debug,
-                extra_css=css, settings=self._settings)
-        except:
-            logging.error("error rendering 'femhub/desktop.html'")
-            logging.error('\n' + traceback.format_exc())
-            raise tornado.web.HTTPError(500)
-
-class WebHandler(auth.DjangoMixin, cors.CORSMixin, jsonrpc.APIRequestHandler):
-    """Base class for user <-> core APIs (client/async). """
-
-    def initialize(self):
-        """Setup internal configuration of this handler. """
-        self.config = settings = Settings.instance()
-
-        if not settings.cross_site:
-            self.cross_site = False
-        else:
-            self.cross_site = True
-
-            if settings.allow_all_origins:
-                self.allowed_origins = True
-            else:
-                self.allowed_origins = settings.allowed_origins
-
-    def prepare(self):
-        """Prepare this handler for handling CORS requests. """
-        self.prepare_for_cors()
-
-    def logger(self, action=None, args=None, **kwargs):
-        """Log user actions for further analysis and refinement. """
-        actions = logging.getLogger('actions')
-
-        data = {
-            'datetime': str(datetime.now()),
-            'username': self.user.username,
-            'action': action or self.method,
-        }
-
-        data.update(self.params)
-        data.update(args or {})
-        data.update(kwargs)
-
-        for key, value in dict(data).iteritems():
-            if 'password' in key:
-                del data[key]
-
-        actions.info(tornado.escape.json_encode(data))
-
-    def return_api_result(self, result=None, args=None, **kwargs):
-        """Return higher-level JSON-RPC result response and log it. """
-        super(WebHandler, self).return_api_result(result)
-        self.logger(self.method, args, ok=True, **kwargs)
-
-    def return_api_error(self, error=None, args=None, **kwargs):
-        """Return higher-level JSON-RPC error response and log it. """
-        super(WebHandler, self).return_api_error(error)
-        self.logger(self.method, args, ok=False, error=error, **kwargs)
 
 class ClientHandler(WebHandler):
     """Handle JSON-RPC method calls from the user interface. """
@@ -163,7 +80,7 @@ class ClientHandler(WebHandler):
     @jsonrpc.authenticated
     def RPC__User__authenticate(self, password):
         """Verify a password provided by the logged-in user. """
-        user = auth.authenticate(username=self.user.username, password=password)
+        user = authenticate(username=self.user.username, password=password)
 
         if user is not None:
             self.return_api_result()
@@ -183,7 +100,7 @@ class ClientHandler(WebHandler):
             self.return_api_error('username')
             return
 
-        user = auth.authenticate(username=username, password=password)
+        user = authenticate(username=username, password=password)
 
         if self.config.auth and username == 'lab':
             user = None
@@ -873,93 +790,4 @@ class ClientHandler(WebHandler):
         """Transform RST source code to HTML with Online Lab CSS. """
         parts = docutils.core.publish_parts(rst, writer_name='html')
         self.return_api_result({'html': parts['fragment']})
-
-class AsyncHandler(WebHandler):
-    """Handle message routing between clients and services. """
-
-    __methods__ = [
-        'RPC.Engine.init',
-        'RPC.Engine.kill',
-        'RPC.Engine.stat',
-        'RPC.Engine.complete',
-        'RPC.Engine.evaluate',
-        'RPC.Engine.interrupt']
-
-    def initialize(self):
-        super(AsyncHandler, self).initialize()
-        self.manager = services.ServiceManager().instance()
-
-    def forward(self, uuid, method, params):
-        """Forward a method call to the assigned service. """
-        try:
-            service = self.manager.get_service(uuid)
-        except services.NotAssignedYet:
-            if method == 'init':
-                try:
-                    service = self.manager.bind(uuid)
-                except services.NoServicesAvailable:
-                    self.return_api_error('no-services-available')
-                    return
-            else:
-                self.return_api_error('service-disconnected')
-                return
-
-        okay = functools.partial(self.on_forward_okay, uuid)
-        fail = functools.partial(self.on_forward_fail, uuid)
-
-        proxy = jsonrpc.JSONRPCProxy(service.url, 'engine')
-        proxy.call(method, params, okay, fail)
-
-    def on_forward_okay(self, uuid, result):
-        """Gets executed when remote call succeeded. """
-        self.return_result(result)
-        self.logger(self.method, ok=True)
-
-    def on_forward_fail(self, uuid, error, http_code):
-        """Gets executed when remote call failed. """
-        self.manager.unbind(uuid)
-
-        if http_code == 599:
-            self.return_api_error('service-disconnected')
-        else:
-            self.return_internal_error()
-            self.logger(self.method, ok=False, error=error)
-
-    def RPC__Engine__init(self, uuid):
-        """Forward 'init' method call to the assigned service. """
-        self.forward(uuid, 'init', {'uuid': uuid})
-
-    def RPC__Engine__kill(self, uuid):
-        """Forward 'kill' method call to the assigned service. """
-        self.forward(uuid, 'kill', {'uuid': uuid})
-        self.manager.unbind(uuid)
-
-    def RPC__Engine__stat(self, uuid):
-        """Forward 'stat' method call to the assigned service. """
-        self.forward(uuid, 'stat', {'uuid': uuid})
-
-    def RPC__Engine__complete(self, uuid, source):
-        """Forward 'complete' method call to the assigned service. """
-        self.forward(uuid, 'complete', {'uuid': uuid, 'source': source})
-
-    def RPC__Engine__evaluate(self, uuid, source, cellid=None):
-        """Forward 'evaluate' method call to the assigned service. """
-        self.forward(uuid, 'evaluate', {'uuid': uuid, 'source': source, 'cellid': cellid})
-
-    def RPC__Engine__interrupt(self, uuid, cellid=None):
-        """Forward 'interrupt' method call to the assigned service. """
-        self.forward(uuid, 'interrupt', {'uuid': uuid, 'cellid': cellid})
-
-class ServiceHandler(jsonrpc.APIRequestHandler):
-    """Handle communication from Online Lab services. """
-
-    __methods__ = ['register']
-
-    def initialize(self):
-        self.manager = services.ServiceManager().instance()
-
-    def register(self, url, uuid, provider, description):
-        """Process registration request from a service. """
-        self.manager.add_service(url, uuid, provider, description)
-        self.return_result()
 

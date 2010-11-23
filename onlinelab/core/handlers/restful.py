@@ -1,3 +1,4 @@
+"""Implementation of RESTful handlers. """
 
 import logging
 
@@ -6,13 +7,12 @@ import tornado.web
 import docutils.core
 import pygments.formatters
 
-import errors
+from ..errors import ErrorMixin
+from ..models import User, Engine, Folder, Worksheet, Cell
 
-from ..utils import Settings
+from ...utils.settings import Settings
 
-from models import User, Engine, Folder, Worksheet, Cell
-
-class RESTfulRequestHandler(errors.ErrorMixin, tornado.web.RequestHandler):
+class RESTfulRequestHandler(ErrorMixin, tornado.web.RequestHandler):
     """Base class for all RESTful request handlers. """
 
 class PublishedWorksheetHandler(RESTfulRequestHandler):
