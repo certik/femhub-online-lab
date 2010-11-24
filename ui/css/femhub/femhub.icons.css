@@ -31,6 +31,10 @@
     background-image: url(/static/img/femhub/icons/64x64/mesheditor2.png) !important;
 }
 
+.femhub-electrostatics-launcher-icon {
+    background-image: url(/static/img/femhub/icons/64x64/electrostatics.png) !important;
+}
+
 .femhub-help-icon {
     background-image: url(/static/img/femhub/icons/16x16/help.png) !important;
 }

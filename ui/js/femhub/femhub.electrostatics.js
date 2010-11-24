@@ -33,7 +33,7 @@ FEMhub.Electrostatics = Ext.extend(FEMhub.Window, {
 FEMhub.Modules.Electrostatics = Ext.extend(FEMhub.Module, {
     launcher: {
         text: 'Electrostatics',
-        icon: 'femhub-mesheditor-launcher-icon',
+        icon: 'femhub-electrostatics-launcher-icon',
     },
     winCls: FEMhub.Electrostatics,
 });
