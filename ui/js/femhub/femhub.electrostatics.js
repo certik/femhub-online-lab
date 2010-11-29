@@ -4,6 +4,10 @@ FEMhub.Electrostatics = Ext.extend(FEMhub.Window, {
         config = config || {};
 
         this.toolbar = this.initToolbar();
+        this.statusbar = new FEMhub.Statusbar({
+            busyText: '',
+            defaultText: '',
+        });
         this.uuid = 0;
 
         Ext.apply(config, {
@@ -16,6 +20,7 @@ FEMhub.Electrostatics = Ext.extend(FEMhub.Window, {
             closable: true,
             onEsc: Ext.emptyFn,
             tbar: this.toolbar,
+            bbar: this.statusbar,
             items: [{
                     "title": "Beta Version",
                     "html": '<div id="electrostatics_div"></div>',
@@ -139,12 +144,10 @@ main()";
                     scope: this,
                     status: {
                         start: function() {
-                            //return this.fireEvent('initstart', this);
-                            FEMhub.log("initstart");
+                            this._id = this.statusbar.showBusy({text: "Initializing the engine"});
                         },
                         end: function(ok, ret) {
-                            FEMhub.log("initend, ok: " + ok + " ret: " + ret);
-                            //this.fireEvent('initend', this, ok, ret);
+                            this.statusbar.clearBusy(this._id);
                         },
                     },
                 });
@@ -169,12 +172,10 @@ main()";
                 scope: this,
                 status: {
                     start: function() {
-                        //return this.fireEvent('evaluatestart', this);
-                        FEMhub.log("evaluatestart");
+                        this._id = this.statusbar.showBusy({text: "Calculating"});
                     },
                     end: function(ok, ret) {
-                        FEMhub.log("evaluateend, ok: " + ok + " ret: " + ret);
-                        //this.fireEvent('evaluateend', this, ok, ret);
+                        this.statusbar.clearBusy(this._id);
                     },
                     scope: this,
                 },
