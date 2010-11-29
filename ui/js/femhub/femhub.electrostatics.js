@@ -8,7 +8,7 @@ FEMhub.Electrostatics = Ext.extend(FEMhub.Window, {
             layout: 'fit',
             width: 885,
             height: 595,
-            iconCls: 'femhub-mesheditor-icon',
+            iconCls: 'femhub-electrostatics-icon',
             bodyCssClass: 'femhub-mesheditor-body',
             closable: true,
             onEsc: Ext.emptyFn,
