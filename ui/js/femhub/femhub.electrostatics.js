@@ -4,6 +4,58 @@ FEMhub.Electrostatics = Ext.extend(FEMhub.Window, {
         config = config || {};
 
         this.toolbar = this.initToolbar();
+
+        Ext.apply(config, {
+            title: "Electrostatics",
+            layout: 'fit',
+            width: 885,
+            height: 595,
+            iconCls: 'femhub-electrostatics-icon',
+            bodyCssClass: 'femhub-mesheditor-body',
+            closable: true,
+            onEsc: Ext.emptyFn,
+            tbar: this.toolbar,
+            items: [{
+                    "title": "Beta Version",
+                    "html": '<div id="electrostatics_div"></div>',
+                    flex: 1,
+                }],
+            buttons: [{
+                text: 'Close',
+                handler: function() {
+                    this.close();
+                },
+                scope: this,
+            }],
+        });
+
+        FEMhub.Electrostatics.superclass.constructor.call(this, config);
+    },
+
+    initToolbar: function() {
+        return new Ext.Toolbar({
+            enableOverflow: true,
+            items: [{
+                xtype: 'button',
+                cls: 'x-btn-text-icon',
+                text: 'Run',
+                iconCls: 'femhub-add-worksheet-icon',
+                handler: function() {
+                    this.run();
+                },
+                scope: this,
+            }, {
+                xtype: 'textfield',
+                name: "BC",
+                value: '5',
+            }],
+        });
+    },
+
+    run: function() {
+        BC = this.toolbar.items.items["1"]
+        BC_value = BC.getValue()
+        FEMhub.log(BC_value);
         this.sourcecode = "\
 from hermes2d.modules.electrostatics import Electrostatics\n\
 from hermes2d.hermes2d import Linearizer\n\
@@ -61,7 +113,7 @@ def main():\n\
     e.set_permittivity_array([4, 3.1, 5])\n\
     e.set_charge_density_array([4, 3.1, 5])\n\
     e.set_boundary_markers_value([1, 3])\n\
-    e.set_boundary_values([1, 5])\n\
+    e.set_boundary_values([1, " + BC_value + "])\n\
     e.set_boundary_markers_derivative([2, 4])\n\
     e.set_boundary_derivatives([1, 5])\n\
     r, sln = e.calculate()\n\
@@ -71,50 +123,6 @@ def main():\n\
 \n\
 main()";
 
-        Ext.apply(config, {
-            title: "Electrostatics",
-            layout: 'fit',
-            width: 885,
-            height: 595,
-            iconCls: 'femhub-electrostatics-icon',
-            bodyCssClass: 'femhub-mesheditor-body',
-            closable: true,
-            onEsc: Ext.emptyFn,
-            tbar: this.toolbar,
-            items: [{
-                    "title": "Beta Version",
-                    "html": '<div id="electrostatics_div"></div>',
-                    flex: 1,
-                }],
-            buttons: [{
-                text: 'Close',
-                handler: function() {
-                    this.close();
-                },
-                scope: this,
-            }],
-        });
-
-        FEMhub.Electrostatics.superclass.constructor.call(this, config);
-    },
-
-    initToolbar: function() {
-        return new Ext.Toolbar({
-            enableOverflow: true,
-            items: [{
-                xtype: 'button',
-                cls: 'x-btn-text-icon',
-                text: 'Run',
-                iconCls: 'femhub-add-worksheet-icon',
-                handler: function() {
-                    this.run();
-                },
-                scope: this,
-            }],
-        });
-    },
-
-    run: function() {
             uuid = FEMhub.util.rfc.UUID();
             FEMhub.log("uuid:" + uuid);
             FEMhub.RPC.Engine.init({uuid: uuid}, {
