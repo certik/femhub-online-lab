@@ -9,9 +9,11 @@ FEMhub = {
         if (console !== undefined) {
             console.log(msg);
 
+            /*
             if (_console !== undefined) {
                 _console.log(msg);
             }
+            */
         }
     },
 
