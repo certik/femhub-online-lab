@@ -4,6 +4,7 @@ FEMhub.Electrostatics = Ext.extend(FEMhub.Window, {
         config = config || {};
 
         this.toolbar = this.initToolbar();
+        this.uuid = 0;
 
         Ext.apply(config, {
             title: "Electrostatics",
@@ -123,28 +124,34 @@ def main():\n\
 \n\
 main()";
 
-            uuid = FEMhub.util.rfc.UUID();
-            FEMhub.log("uuid:" + uuid);
-            FEMhub.RPC.Engine.init({uuid: uuid}, {
-                okay: function(result) {
-                    FEMhub.log("Engine Initialized");
-                    this.run2_evaluate(uuid);
-                },
-                fail: function(reason, result) {
-                    FEMhub.log("Engine Failed to Initialize");
-                },
-                scope: this,
-                status: {
-                    start: function() {
-                        //return this.fireEvent('initstart', this);
-                        FEMhub.log("initstart");
+            if (this.uuid == 0) {
+                // we need to initialize a new engine
+                this.uuid = FEMhub.util.rfc.UUID();
+                FEMhub.log("UUID created:" + this.uuid);
+                FEMhub.RPC.Engine.init({uuid: this.uuid}, {
+                    okay: function(result) {
+                        FEMhub.log("Engine Initialized");
+                        this.run2_evaluate(this.uuid);
                     },
-                    end: function(ok, ret) {
-                        FEMhub.log("initend, ok: " + ok + " ret: " + ret);
-                        //this.fireEvent('initend', this, ok, ret);
+                    fail: function(reason, result) {
+                        FEMhub.log("Engine Failed to Initialize");
                     },
-                },
-            });
+                    scope: this,
+                    status: {
+                        start: function() {
+                            //return this.fireEvent('initstart', this);
+                            FEMhub.log("initstart");
+                        },
+                        end: function(ok, ret) {
+                            FEMhub.log("initend, ok: " + ok + " ret: " + ret);
+                            //this.fireEvent('initend', this, ok, ret);
+                        },
+                    },
+                });
+            } else {
+                // We reuse a running engine
+                this.run2_evaluate(this.uuid);
+            }
     },
 
     run2_evaluate: function(uuid) {
