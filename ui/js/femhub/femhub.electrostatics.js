@@ -190,7 +190,7 @@ main()";
             } else {
                 data = result.plots[0].data;
                 d = Ext.get("electrostatics_div")
-                d.insertFirst({"html": "Solution:<br/><img src=\"data:image/png;base64," + data + "\"/>"})
+                d.update("Solution:<br/><img src=\"data:image/png;base64," + data + "\"/>")
             }
     },
 
