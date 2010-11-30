@@ -43,7 +43,10 @@ class WebHandler(DjangoMixin, CORSMixin, APIRequestHandler):
             'action': action or self.method,
         }
 
-        data.update(self.params)
+        if isinstance(self.params, dict):
+            data.update(self.params)
+        else:
+            data.update({"params": self.params})
         data.update(args or {})
         data.update(kwargs)
 
