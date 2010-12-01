@@ -115,13 +115,13 @@ def main():\n\
     e.set_mesh_str(mesh)\n\
     e.set_initial_mesh_refinement(2)\n\
     e.set_initial_poly_degree(4)\n\
-    e.set_material_markers([8, 2])\n\
-    e.set_permittivity_array([4, 3.1])\n\
-    e.set_charge_density_array([4, 3.1])\n\
-    e.set_boundary_markers_value([1, 3])\n\
-    e.set_boundary_values([1, " + BC_value + "])\n\
-    e.set_boundary_markers_derivative([2, 4])\n\
-    e.set_boundary_derivatives([1, 5])\n\
+    e.set_material_markers([0])\n\
+    e.set_permittivity_array([1])\n\
+    e.set_charge_density_array([1])\n\
+    e.set_boundary_markers_value([4])\n\
+    e.set_boundary_values([" + BC_value + "])\n\
+    e.set_boundary_markers_derivative([1, 2, 3])\n\
+    e.set_boundary_derivatives([0, 0, 0])\n\
     r, sln = e.calculate()\n\
     assert r is True\n\
     fig = plot_sln_mayavi(sln, offscreen=True)\n\
