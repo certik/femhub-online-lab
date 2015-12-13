@@ -1,5 +1,7 @@
 
 FEMhub.Button = Ext.extend(Ext.Button, {
+    showArrow: false,
+
     getMenuClass: function() {
         if (this.showArrow === false) {
             return '';

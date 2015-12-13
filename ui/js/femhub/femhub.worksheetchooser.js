@@ -1,5 +1,5 @@
 
-FEMhub.WorksheetChooser = Ext.extend(Ext.Window, {
+FEMhub.WorksheetChooser = Ext.extend(FEMhub.Window, {
 
     constructor: function(config) {
         config = config || {};
@@ -58,7 +58,7 @@ FEMhub.WorksheetChooser = Ext.extend(Ext.Window, {
             animate: true,
             border: false,
             listeners: {
-                'checkchange': function(node, checked) {
+                checkchange: function(node, checked) {
                     if (checked) {
                         node.getUI().addClass('femhub-chosen');
                     } else {
@@ -87,12 +87,12 @@ FEMhub.WorksheetChooser = Ext.extend(Ext.Window, {
 
             Ext.each(worksheets, function(worksheet) {
                 if (!this.exclude || worksheet.uuid != this.uuid) {
-                    var checked = this.checked.indexOf(worksheet.uuid) != -1;
+                    var cls, checked = this.checked.indexOf(worksheet.uuid) != -1;
 
                     if (checked) {
-                        var cls = 'femhub-worksheet femhub-chosen';
+                        cls = 'femhub-worksheet femhub-chosen';
                     } else {
-                        var cls = 'femhub-worksheet';
+                        cls = 'femhub-worksheet';
                     }
 
                     var nbNode = new Ext.tree.TreeNode({

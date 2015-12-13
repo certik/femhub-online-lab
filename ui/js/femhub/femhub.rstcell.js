@@ -14,18 +14,13 @@ FEMhub.RSTCell = Ext.extend(FEMhub.TextCell, {
         /* pass */
     },
 
-    setupRSTCellKeyMap: function() {
-        /* pass */
-    },
-
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.RSTCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-rst');
 
         this.setupRSTCellObserver();
         this.setupRSTCellEvents();
-        this.setupRSTCellKeyMap();
     },
 
     setContent: function(content) {

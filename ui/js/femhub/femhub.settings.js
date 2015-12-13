@@ -1,5 +1,5 @@
 
-FEMhub.Settings = Ext.extend(Ext.Window, {
+FEMhub.Settings = Ext.extend(FEMhub.Window, {
     tabsPanel: null,
 
     constructor: function(config) {
@@ -17,12 +17,14 @@ FEMhub.Settings = Ext.extend(Ext.Window, {
             items: this.tabsPanel,
             buttons: [{
                 text: 'Apply',
+                disabled: true,
                 handler: function() {
                     this.saveSettings();
                 },
                 scope: this,
             }, '-', {
                 text: 'Save',
+                disabled: true,
                 handler: function() {
                     this.saveSettings();
                     this.close();
@@ -57,39 +59,7 @@ FEMhub.Settings = Ext.extend(Ext.Window, {
         FEMhub.Settings.superclass.constructor.call(this, config);
     },
 
-    initSettings: function() {
-        this.userSettings = new Ext.FormPanel({
-            padding: 10,
-            border: false,
-            labelWidth: 150,
-            defaults: {
-                anchor: '100%',
-            },
-            items: [{
-                setting: 'email',
-                fieldLabel: 'E-mail',
-                xtype: 'textfield',
-                vtype: 'email',
-                allowBlank: true,
-                maxLength: 70,
-            }, {
-                setting: 'password',
-                fieldLabel: 'Choose password',
-                xtype: 'textfield',
-                vtype: 'password',
-                inputType: 'password',
-                allowBlank: true,
-                maxLength: 128,
-            }, {
-                fieldLabel: 'Re-type password',
-                xtype: 'textfield',
-                vtype: 'password',
-                inputType: 'password',
-                allowBlank: true,
-                maxLength: 128,
-            }],
-        });
-    },
+    initSettings: Ext.emptyFn,
 
     initTabsPanel: function() {
         this.tabsPanel = new Ext.TabPanel({
@@ -97,7 +67,15 @@ FEMhub.Settings = Ext.extend(Ext.Window, {
             border: false,
             items:[{
                 title: 'User settings',
-                items: this.userSettings,
+                padding: 10,
+                items: {
+                    xtype: 'button',
+                    text: 'Change password',
+                    handler: function() {
+                        (new FEMhub.ChangePassword()).show();
+                    },
+                    scope: this,
+                },
             }],
         });
     },

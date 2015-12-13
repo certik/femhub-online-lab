@@ -2,7 +2,6 @@
 
 import logging
 import smtplib
-import httplib
 import functools
 
 from datetime import datetime
@@ -14,43 +13,72 @@ import tornado.web
 import tornado.escape
 
 import auth
+import cors
+import errors
 import services
 
 from ..utils import jsonrpc
 from ..utils import Settings
+from ..utils import extensions
 
 from models import User, Engine, Folder, Worksheet, Cell
 
 class ParseError(Exception):
     """Raised when '{{{' or '}}}' is misplaced. """
 
-class MainHandler(tornado.web.RequestHandler):
+class MainHandler(errors.ErrorMixin, tornado.web.RequestHandler):
     """Render default Online Lab user interface. """
 
-    def get(self):
+    def initialize(self, debug=False):
         settings = Settings.instance()
+        self.debug = debug or settings.debug
 
+    def get(self):
         html = pygments.formatters.HtmlFormatter(nobackground=True)
         css = html.get_style_defs(arg='.highlight')
 
         try:
-            self.render('femhub/femhub.html', debug=settings.debug, extra_css=css)
+            self.render('femhub/desktop.html', debug=self.debug, extra_css=css)
         except:
             raise tornado.web.HTTPError(500)
 
-class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
+class WebHandler(auth.DjangoMixin, cors.CORSMixin, jsonrpc.APIRequestHandler):
+    """Base class for user <-> core APIs (client/async). """
+
+    def initialize(self):
+        """Setup internal configuration of this handler. """
+        self.config = settings = Settings.instance()
+
+        if not settings.cross_site:
+            self.cross_site = False
+        else:
+            self.cross_site = True
+
+            if settings.allow_all_origins:
+                self.allowed_origins = True
+            else:
+                self.allowed_origins = settings.allowed_origins
+
+    def prepare(self):
+        """Prepare this handler for handling CORS requests. """
+        self.prepare_for_cors()
+
+class ClientHandler(WebHandler):
     """Handle JSON-RPC method calls from the user interface. """
 
     __methods__ = [
         'RPC.hello',
         'RPC.Template.render',
+        'RPC.User.authenticate',
         'RPC.User.isAuthenticated',
         'RPC.User.login',
         'RPC.User.logout',
         'RPC.User.createAccount',
         'RPC.User.remindPassword',
+        'RPC.User.changePassword',
         'RPC.Core.getEngines',
         'RPC.Core.getUsers',
+        'RPC.Core.getPublishedWorksheets',
         'RPC.Folder.getRoot',
         'RPC.Folder.create',
         'RPC.Folder.remove',
@@ -64,47 +92,48 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         'RPC.Worksheet.move',
         'RPC.Worksheet.publish',
         'RPC.Worksheet.fork',
+        'RPC.Worksheet.sync',
         'RPC.Worksheet.load',
         'RPC.Worksheet.save',
-        'RPC.Docutils.import',
-        'RPC.Docutils.export',
+        'RPC.Docutils.importRST',
+        'RPC.Docutils.exportRST',
         'RPC.Docutils.render',
     ]
-
-    def return_api_result(self, result=None):
-        """Return higher-level JSON-RPC result response. """
-        if result is None:
-            result = {}
-
-        result['ok'] = True
-
-        self.return_result(result)
-
-    def return_api_error(self, reason=None):
-        """Return higher-level JSON-RPC error response. """
-        self.return_result({'ok': False, 'reason': reason})
 
     def RPC__hello(self):
         """Politely reply to a greeting from a client. """
         self.return_api_result({'message': 'Hi, this Online Lab!'})
 
-    @jsonrpc.authenticated
     def RPC__Template__render(self, name, context=None):
         """Render a template in the given context. """
         try:
             template = self.settings['template_loader'].load(name)
         except IOError:
-            self.return_api_error("Template not found")
+            self.return_api_error('template-not-found')
         else:
-            if context is None:
+            if context is not  None:
+                context = dict(context)
+            else:
                 context = {}
+
+            context['static_url'] = self.static_url
 
             try:
                 rendered = template.generate(**context)
             except:
-                self.return_api_error("Template rendering error")
+                self.return_api_error('template-render-error')
             else:
                 self.return_api_result({'rendered': rendered})
+
+    @jsonrpc.authenticated
+    def RPC__User__authenticate(self, password):
+        """Verify a password provided by the logged-in user. """
+        user = auth.authenticate(username=self.user.username, password=password)
+
+        if user is not None:
+            self.return_api_result()
+        else:
+            self.return_api_error('invalid-password')
 
     def RPC__User__isAuthenticated(self):
         """Returns ``True`` if the current user is authenticated. """
@@ -113,13 +142,19 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
 
     def RPC__User__login(self, username, password, remember=True):
         """Log in a user to the system using a username and password. """
+        try:
+            User.objects.get(username=username)
+        except User.DoesNotExist:
+            self.return_api_error('username')
+            return
+
         user = auth.authenticate(username=username, password=password)
 
-        if Settings.instance().auth and username == 'lab':
+        if self.config.auth and username == 'lab':
             user = None
 
         if user is None:
-            self.return_api_error('credentials')
+            self.return_api_error('password')
             return
 
         if not user.is_active:
@@ -172,6 +207,14 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 self.return_api_result()
 
     @jsonrpc.authenticated
+    def RPC__User__changePassword(self, password):
+        """Change current user's password. """
+        self.user.set_password(password)
+        self.user.save()
+
+        self.return_api_result()
+
+    @jsonrpc.authenticated
     def RPC__Core__getEngines(self):
         """Return a list of all available engines. """
         engines = []
@@ -218,6 +261,51 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                 data['worksheets'] = user_worksheets
 
             users.append(data)
+
+        self.return_api_result({'users': users})
+
+    def RPC__Core__getPublishedWorksheets(self):
+        """
+        Return a list of all published worksheets by users.
+
+        This does not require any authentication, because all this information
+        is public. This method does not (under any circumstances) return any
+        private data (like emails and so on). It only returns users with
+        published worksheets.
+
+        Otherwise it is very similar to RPC.Core.getUsers().
+        """
+        users = []
+
+        for user in User.objects.all():
+            user_worksheets = []
+
+            for worksheet in Worksheet.objects.filter(user=user,
+                    published__isnull=False):
+                user_worksheets.append({
+                    'uuid': worksheet.uuid,
+                    'name': worksheet.name,
+                    'description': worksheet.description,
+                    'created': jsonrpc.datetime(worksheet.created),
+                    'modified': jsonrpc.datetime(worksheet.modified),
+                    'published': jsonrpc.datetime(worksheet.published),
+                    'engine': {
+                        'uuid': worksheet.engine.uuid,
+                        'name': worksheet.engine.name,
+                    },
+                })
+
+            if len(user_worksheets) > 0:
+                data = {
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'worksheets': user_worksheets,
+                }
+                users.append(data)
+
+        # Sort users according to the number of published worksheets
+        users.sort(key=lambda user: len(user["worksheets"]), reverse=True)
 
         self.return_api_result({'users': users})
 
@@ -498,16 +586,66 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         })
 
     @jsonrpc.authenticated
+    def RPC__Worksheet__sync(self, uuid, force=False):
+        """Synchronize a worksheet with its origin. """
+        try:
+            worksheet = Worksheet.objects.get(uuid=uuid)
+        except Worksheet.DoesNotExist:
+            self.return_api_error('does-not-exist')
+            return
+
+        if worksheet.origin is None:
+            self.return_api_error('does-not-have-origin')
+            return
+
+        if not force and worksheet.modified > worksheet.created:
+            self.return_api_error('worksheet-was-modified')
+            return
+
+        Cell.objects.filter(worksheet=worksheet).delete()
+
+        order = []
+
+        for uuid in worksheet.origin.get_order():
+            try:
+                base = Cell.objects.get(uuid=uuid)
+            except Cell.DoesNotExist:
+                pass
+            else:
+                cell = Cell(user=self.user,
+                            type=base.type,
+                            parent=base.parent,
+                            content=base.content,
+                            worksheet=worksheet)
+                order.append(cell.uuid)
+                cell.save()
+
+        worksheet.set_order(order)
+        worksheet.save()
+
+        self.return_api_result()
+
+    def allowWorksheetAccess(self, worksheet):
+        """Returns ``True`` if current user is allowed to load this worksheet. """
+        if worksheet.published is not None:
+            return True
+        else:
+            return self.user.is_authenticated() and worksheet.user == self.user
+
     def RPC__Worksheet__load(self, uuid, type=None):
         """Load cells (in order) associated with a worksheet. """
         try:
-            worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
+            worksheet = Worksheet.objects.get(uuid=uuid)
         except Worksheet.DoesNotExist:
             self.return_api_error('does-not-exist')
         else:
+            if not self.allowWorksheetAccess(worksheet):
+                self.return_api_error('permission-denied')
+                return
+
             data, cells = {}, []
 
-            for cell in Cell.objects.filter(user=self.user, worksheet=worksheet):
+            for cell in Cell.objects.filter(worksheet=worksheet):
                 if type is None or cell.type == type:
                     data[cell.uuid] = {
                         'uuid': cell.uuid,
@@ -630,7 +768,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         return result
 
     @jsonrpc.authenticated
-    def RPC__Docutils__import(self, name, rst, engine_uuid, folder_uuid):
+    def RPC__Docutils__importRST(self, name, rst, engine_uuid, folder_uuid):
         """Import worksheet contents from a document with Cell-RST syntax. """
         try:
             if folder_uuid is not None:
@@ -666,7 +804,7 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
                     self.return_api_result({'uuid': worksheet.uuid, 'count': len(cells)})
 
     @jsonrpc.authenticated
-    def RPC__Docutils__export(self, uuid):
+    def RPC__Docutils__exportRST(self, uuid):
         """Export worksheet contents to a document with Cell-RST syntax. """
         try:
             worksheet = Worksheet.objects.get(user=self.user, uuid=uuid)
@@ -700,12 +838,19 @@ class ClientHandler(auth.DjangoMixin, jsonrpc.AsyncJSONRPCRequestHandler):
         parts = docutils.core.publish_parts(rst, writer_name='html')
         self.return_api_result({'html': parts['fragment']})
 
-class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
+class AsyncHandler(WebHandler):
     """Handle message routing between clients and services. """
 
-    __methods__ = ['init', 'kill', 'stat', 'complete', 'evaluate', 'interrupt']
+    __methods__ = [
+        'RPC.Engine.init',
+        'RPC.Engine.kill',
+        'RPC.Engine.stat',
+        'RPC.Engine.complete',
+        'RPC.Engine.evaluate',
+        'RPC.Engine.interrupt']
 
     def initialize(self):
+        super(AsyncHandler, self).initialize()
         self.manager = services.ServiceManager().instance()
 
     def forward(self, uuid, method, params):
@@ -717,10 +862,10 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
                 try:
                     service = self.manager.bind(uuid)
                 except services.NoServicesAvailable:
-                    self.return_error(1, "No services are currently available")
+                    self.return_api_error('no-services-available')
                     return
             else:
-                self.return_error(2, "Service disconnected or not assigned yet")
+                self.return_api_error('service-disconnected')
                 return
 
         okay = functools.partial(self.on_forward_okay, uuid)
@@ -731,41 +876,43 @@ class AsyncHandler(jsonrpc.AsyncJSONRPCRequestHandler):
 
     def on_forward_okay(self, uuid, result):
         """Gets executed when remote call succeeded. """
-        if self.method == 'kill':
-            self.manager.unbind(uuid)
-
         self.return_result(result)
 
     def on_forward_fail(self, uuid, error, http_code):
         """Gets executed when remote call failed. """
         self.manager.unbind(uuid)
-        self.return_result(error)
 
-    def init(self, uuid):
+        if http_code == 599:
+            self.return_api_error('service-disconnected')
+        else:
+            self.return_internal_error()
+
+    def RPC__Engine__init(self, uuid):
         """Forward 'init' method call to the assigned service. """
         self.forward(uuid, 'init', {'uuid': uuid})
 
-    def kill(self, uuid):
+    def RPC__Engine__kill(self, uuid):
         """Forward 'kill' method call to the assigned service. """
         self.forward(uuid, 'kill', {'uuid': uuid})
+        self.manager.unbind(uuid)
 
-    def stat(self, uuid):
+    def RPC__Engine__stat(self, uuid):
         """Forward 'stat' method call to the assigned service. """
         self.forward(uuid, 'stat', {'uuid': uuid})
 
-    def complete(self, uuid, source):
+    def RPC__Engine__complete(self, uuid, source):
         """Forward 'complete' method call to the assigned service. """
         self.forward(uuid, 'complete', {'uuid': uuid, 'source': source})
 
-    def evaluate(self, uuid, source, cellid=None):
+    def RPC__Engine__evaluate(self, uuid, source, cellid=None):
         """Forward 'evaluate' method call to the assigned service. """
         self.forward(uuid, 'evaluate', {'uuid': uuid, 'source': source, 'cellid': cellid})
 
-    def interrupt(self, uuid, cellid=None):
+    def RPC__Engine__interrupt(self, uuid, cellid=None):
         """Forward 'interrupt' method call to the assigned service. """
         self.forward(uuid, 'interrupt', {'uuid': uuid, 'cellid': cellid})
 
-class ServiceHandler(jsonrpc.AsyncJSONRPCRequestHandler):
+class ServiceHandler(jsonrpc.APIRequestHandler):
     """Handle communication from Online Lab services. """
 
     __methods__ = ['register']
@@ -777,27 +924,4 @@ class ServiceHandler(jsonrpc.AsyncJSONRPCRequestHandler):
         """Process registration request from a service. """
         self.manager.add_service(url, uuid, provider, description)
         self.return_result()
-
-class ErrorHandler(tornado.web.RequestHandler):
-    """Custom HTTP error handler (based on http://gist.github.com/398252). """
-
-    def __init__(self, application, request, status_code):
-        tornado.web.RequestHandler.__init__(self, application, request)
-        self.set_status(status_code)
-
-    def get_error_html(self, status_code, **kwargs):
-        name = 'femhub/%d.html' % status_code
-
-        try:
-            template = self.settings['template_loader'].load(name)
-        except IOError:
-            template = self.settings['template_loader'].load('femhub/error.html')
-
-        return template.generate(error_code=status_code,
-            error_text=httplib.responses[status_code])
-
-    def prepare(self):
-        raise tornado.web.HTTPError(self._status_code)
-
-tornado.web.ErrorHandler = ErrorHandler
 

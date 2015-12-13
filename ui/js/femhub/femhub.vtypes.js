@@ -1,12 +1,23 @@
 
 Ext.apply(Ext.form.VTypes, {
     password: function(value, field) {
-        var hasSpecial = value.match(/[0-9!@#\$%\^&\*\(\)\-_=\+]+/i);
-        var hasLength = (value.length >= 5);
+        if (!field.relatedField) {
+            return true;
+        } else {
+            var relatedField = field.relatedField;
 
-        return hasSpecial && hasLength;
+            if (Ext.isString(relatedField)) {
+                relatedField = Ext.getCmp(relatedField);
+            } else if (Ext.isFunction(relatedField)) {
+                relatedField = relatedField();
+            }
+
+            return value === relatedField.getValue();
+        }
     },
 
-    passwordText: 'Passwords must be at least 5 characters, containing either a number, or a valid special character (!@#$%^&*()-_=+)',
+    passwordText: "Passwords don't match.",
+
+    emailText: "Enter a valid E-mail address, e.g. user@example.com",
 });
 

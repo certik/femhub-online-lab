@@ -18,7 +18,7 @@ FEMhub.TaskBar = Ext.extend(Ext.BoxComponent, {
         this.buttons = [];
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.TaskBar.superclass.onRender.apply(this, arguments);
 
         this.wrapper = this.el.createChild({
@@ -93,7 +93,6 @@ FEMhub.TaskBar = Ext.extend(Ext.BoxComponent, {
 
     autoSize: function() {
         var count = this.buttons.length;
-        var ow = this.el.dom.offsetWidth;
         var aw = this.el.dom.clientWidth;
 
         if (!this.resizeButtons || count < 1 || !aw) { // !aw for display:none
@@ -117,7 +116,6 @@ FEMhub.TaskBar = Ext.extend(Ext.BoxComponent, {
 
     autoScroll: function() {
         var count = this.buttons.length;
-        var ow = this.el.dom.offsetWidth;
         var tw = this.el.dom.clientWidth;
 
         var wrap = this.wrapper;
@@ -272,7 +270,7 @@ FEMhub.TaskBar = Ext.extend(Ext.BoxComponent, {
 
     updateScrollButtons: function() {
         var pos = this.getScrollPos();
-        this.scrollLeft[pos == 0 ? 'addClass': 'removeClass']('femhub-disabled');
+        this.scrollLeft[pos === 0 ? 'addClass': 'removeClass']('femhub-disabled');
         this.scrollRight[pos >= (this.getScrollWidth()-this.getScrollArea()) ? 'addClass': 'removeClass']('femhub-disabled');
     },
 

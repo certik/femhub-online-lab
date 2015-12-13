@@ -1,31 +1,32 @@
 
 FEMhub.CellPanel = Ext.extend(Ext.BoxComponent, {
-    cellsManager: null,
+    cellManager: null,
 
     constructor: function(config) {
+        config = config || {};
+
+        this.addEvents(['cellmanagerready']);
+
+        this.cellManager = new FEMhub.CellManager(config.managerConfig);
         FEMhub.CellPanel.superclass.constructor.call(this, config);
     },
 
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.CellPanel.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cells');
+        this.cellManager.setRoot(this.el);
 
-        this.cellsManager = new FEMhub.CellManager(
-            Ext.applyIf({ root: this.el }, this.conf)
-        );
-
-        this.cellsManager.initEngine();
-        this.cellsManager.loadCells();
+        this.fireEvent('cellmanagerready', this, this.cellManager);
     },
 
     beforeDestroy: function() {
-        this.cellsManager.destroy();
+        this.cellManager.destroy();
         FEMhub.CellPanel.superclass.beforeDestroy.call(this);
     },
 
-    getCellsManager: function() {
-        return this.cellsManager;
+    getCellManager: function() {
+        return this.cellManager;
     },
 });
 

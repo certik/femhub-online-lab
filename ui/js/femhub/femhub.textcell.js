@@ -2,7 +2,7 @@
 FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
     ctype: 'text',
     content: null,
-    contentEmpty: "Click here to edit contents",
+    contentEmpty: "Click here (with right mouse button) to edit contents",
 
     initComponent: function() {
         FEMhub.TextCell.superclass.initComponent.call(this);
@@ -28,11 +28,7 @@ FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
         }, this);
     },
 
-    setupTextCellKeyMap: function() {
-        /* pass */
-    },
-
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.TextCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-text');
@@ -45,7 +41,6 @@ FEMhub.TextCell = Ext.extend(FEMhub.Cell, {
 
         this.setupTextCellObserver();
         this.setupTextCellEvents();
-        this.setupTextCellKeyMap();
     },
 
     setContent: function(content) {

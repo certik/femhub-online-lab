@@ -1,5 +1,5 @@
 
-FEMhub.TextViewer = Ext.extend(Ext.Window, {
+FEMhub.TextViewer = Ext.extend(FEMhub.Window, {
 
     constructor: function(config) {
         config = config || {};

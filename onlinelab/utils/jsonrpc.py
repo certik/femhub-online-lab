@@ -7,7 +7,9 @@ import functools
 
 import tornado.web
 import tornado.escape
-import tornado.httpclient
+
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httputil import HTTPHeaders
 
 import extensions
 
@@ -17,13 +19,6 @@ def datetime(obj):
         return obj.strftime("%Y-%m-%d %H:%M:%S")
     else:
         return None
-
-def unicode_encode_dict(d):
-    p = {}
-    for k in d:
-        k = unicode.encode(k)
-        p[k] = d[k]
-    return p
 
 class JSONRPCError(Exception):
     """Base class for JSON-RPC errors. """
@@ -70,7 +65,7 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
         except IOError:
             logging.warning("JSON-RPC: warning: connection was closed")
         else:
-            logging.info("JSON-RPC: method call ended successfully")
+            logging.info("JSON-RPC: '%s' method call ended successfully" % self.method)
 
     def return_error(self, code, message, data=None):
         """Return properly formatted JSON-RPC error response. """
@@ -135,10 +130,25 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 
         self.return_result({'procs': procs})
 
+    def is_json_content_type(self):
+        """Check if Content-Type header is available and set properly. """
+        content_type = self.request.headers.get('Content-Type')
+
+        if content_type is None or not content_type.startswith('application/json'):
+            logging.warning("JSON-RPC: error: invalid Content-Type: %s" % content_type)
+            self.set_status(400)
+            self.finish()
+            return False
+
+        return True
+
     @tornado.web.asynchronous
     def post(self):
         """Receive and process JSON-RPC requests. """
         logging.info("JSON-RPC: received RPC method call")
+
+        if not self.is_json_content_type():
+            return
 
         try:
             try:
@@ -171,9 +181,8 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 
                 if type(self.params) == dict:
                     try:
-                        params = unicode_encode_dict(self.params)
-                        func(**params)
-                    except TypeError, exc:
+                        func(**dict([ (str(k), v) for k, v in self.params.items() ]))
+                    except (UnicodeError, TypeError), exc:
                         raise InvalidParams(exc.args[0])
                     else:
                         return
@@ -196,15 +205,17 @@ class AsyncJSONRPCRequestHandler(extensions.ExtRequestHandler):
 class JSONRPCProxy(object):
     """Simple proxy for making JSON-RPC requests. """
 
-    def __init__(self, url, rpc=None):
+    def __init__(self, url, rpc=None, log_errors=True):
         if rpc is not None:
             self.url = urlparse.urljoin(url, rpc)
         else:
             self.url = url
 
+        self.log_errors = log_errors
+
     def call(self, method, params, okay=None, fail=None):
         """Make an asynchronous JSON-RPC method call. """
-        http_client = tornado.httpclient.AsyncHTTPClient()
+        client = AsyncHTTPClient()
 
         body = tornado.escape.json_encode({
             'jsonrpc': '2.0',
@@ -215,16 +226,22 @@ class JSONRPCProxy(object):
 
         logging.info("JSON-RPC: call '%s' method on %s" % (method, self.url))
 
-        http_request = tornado.httpclient.HTTPRequest(self.url, method='POST', body=body, request_timeout=0)
-        http_client.fetch(http_request, functools.partial(self._on_response_handler, okay, fail))
+        headers = HTTPHeaders({'Content-Type': 'application/json'})
+        request = HTTPRequest(self.url, method='POST', body=body,
+            headers=headers, request_timeout=0)
+
+        client.fetch(request, functools.partial(self._on_response_handler, okay, fail))
 
     def _on_response_handler(self, okay, fail, response):
         """Parse and process response from a JSON-RPC server. """
         error = None
 
         try:
-            if response.code != 200:
-                raise JSONRPCError("got %s HTTP response code" % response.code)
+            if response.code != 200 and self.log_errors:
+                logging.error("JSON-RPC: got %s HTTP response code" % response.code)
+
+            if response.body is None:
+                raise JSONRPCError("communication failed")
 
             try:
                 data = tornado.escape.json_decode(response.body)
@@ -239,8 +256,26 @@ class JSONRPCProxy(object):
                 if okay is not None:
                     okay(data.get('result', None))
         except JSONRPCError, exc:
-            logging.error("JSON-RPC: error: %s" % exc.data)
+            if self.log_errors:
+                logging.error("JSON-RPC: error: %s" % exc.data)
 
             if fail is not None:
                 fail(error, http_code=response.code)
+
+class APIRequestHandler(AsyncJSONRPCRequestHandler):
+    """JSON-RPC handler extended with API helper functions. """
+
+    def return_api_result(self, result=None):
+        """Return higher-level JSON-RPC result response. """
+        if result is None:
+            result = {}
+
+        result['ok'] = True
+
+        self.return_result(result)
+
+    def return_api_error(self, reason=None):
+        """Return higher-level JSON-RPC error response. """
+        logging.warning("JSON-RPC: API error: %s" % (reason or "<undefined>"))
+        self.return_result({'ok': False, 'reason': reason})
 

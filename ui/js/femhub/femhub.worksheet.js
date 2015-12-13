@@ -1,5 +1,5 @@
 
-FEMhub.Worksheet = Ext.extend(Ext.Window, {
+FEMhub.Worksheet = Ext.extend(FEMhub.Window, {
     imports: [],
 
     constructor: function(config) {
@@ -9,25 +9,228 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
             config.conf.name = 'untitled';
         }
 
-        this.cells = new FEMhub.CellPanel({ conf: config.conf });
+        this.menubar = this.initMenubar();
+        this.toolbar = this.initToolbar();
+        this.statusbar = this.initStatusbar();
+
+        this.cells = new FEMhub.CellPanel({
+            managerConfig: config.conf,
+            listeners: {
+                cellmanagerready: function(panel, manager) {
+                    manager.initEngine();
+                    manager.loadCells();
+                },
+                scope: this,
+            },
+        });
+
+        var manager = this.getCellManager();
+
+        function start(manager, text, evt) {
+            var id = this.statusbar.showBusy({text: text});
+
+            manager.on(evt, function(manager, ok, ret) {
+                try {
+                    this.statusbar.clearBusy(id);
+                } catch (err) {};
+            }, this, {single: true});
+        }
+
+        manager.on({
+            loadstart: start.partial(this, ["Loading worksheet", 'loadend'], 1),
+            savestart: start.partial(this, ["Saving worksheet", 'saveend'], 1),
+            initstart: start.partial(this, ["Initializing engine", 'initend'], 1),
+            killstart: start.partial(this, ["Terminating engine", 'killend'], 1),
+            statstart: start.partial(this, ["Gathering statistics", 'statend'], 1),
+            completestart: start.partial(this, ["Completing", 'completeend'], 1),
+            evaluatestart: start.partial(this, ["Evaluating", 'evaluateend'], 1),
+            interruptstart: start.partial(this, ["Interrupting", 'interruptend'], 1),
+            scope: this,
+        });
 
         Ext.applyIf(config, {
             title: config.conf.name,
             iconCls: 'femhub-worksheet-icon',
             layout: 'fit',
-            tbar: this.initToolbar(),
-            items: this.cells,
+            tbar: this.menubar,
+            bbar: this.statusbar,
+            items: {
+                layout: 'fit',
+                border: false,
+                tbar: this.toolbar,
+                items: this.cells,
+            },
         });
 
         FEMhub.Worksheet.superclass.constructor.call(this, config);
     },
 
-    getCellsManager: function() {
-        return this.cells.getCellsManager();
+    getCellManager: function() {
+        return this.cells.getCellManager();
     },
 
     getUUID: function() {
-        return this.getCellsManager().getUUID();
+        return this.getCellManager().getUUID();
+    },
+
+    initStatusbar: function() {
+        return new FEMhub.Statusbar({
+            busyText: '',
+            defaultText: '',
+        });
+    },
+
+    initMenubar: function() {
+        return new FEMhub.Menubar({
+            items: [{
+                text: 'Worksheet',
+                menu: [{
+                    text: 'Save',
+                    handler: function() {
+                        this.getCellManager().saveCells();
+                    },
+                    scope: this,
+                }, {
+                    text: 'Close',
+                    handler: function() {
+                        this.close();
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'Cell',
+                menu: [{
+                    text: 'Remove all output',
+                    handler: function() {
+                        this.getCellManager().removeOutputCells();
+                    },
+                    scope: this,
+                }, '-', {
+                    text: 'Insert before',
+                    menu: [{
+                        text: 'Input cell',
+                        handler: function() {
+                            this.execCellAction('insertInputCellBefore', true);
+                        },
+                        scope: this,
+                    }, {
+                        text: 'Text cell',
+                        handler: function() {
+                            this.execCellAction('insertTextCellBefore', true);
+                        },
+                        scope: this,
+                    }],
+                }, {
+                    text: 'Insert after',
+                    menu: [{
+                        text: 'Input cell',
+                        handler: function() {
+                            this.execCellAction('insertInputCellAfter', true);
+                        },
+                        scope: this,
+                    }, {
+                        text: 'Text cell',
+                        handler: function() {
+                            this.execCellAction('insertTextCellAfter', true);
+                        },
+                        scope: this,
+                    }],
+                }, '-', {
+                    text: 'Merge above',
+                    handler: function() {
+                        this.execCellAction('mergeCellAbove', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Merge below',
+                    handler: function() {
+                        this.execCellAction('mergeCellBelow', true);
+                    },
+                    scope: this,
+                }, '-', {
+                    text: 'Remove',
+                    handler: function() {
+                        this.execCellAction('removeCell', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Clear',
+                    handler: function() {
+                        this.execCellAction('clearCell', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Wipe',
+                    handler: function() {
+                        this.execCellAction('wipeCell', true);
+                    },
+                    scope: this,
+                }, '-', {
+                    text: 'Evaluate',
+                    handler: function() {
+                        this.execCellAction('inplaceEvaluateCell', true);
+                    },
+                    scope: this,
+                }, {
+                    text: 'Interrupt',
+                    handler: function() {
+                        this.execCellAction('interruptCell', true);
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'Engine',
+                menu: [{
+                    text: 'Interrupt',
+                    handler: function() {
+                        this.getCellManager().interruptEngine();
+                    },
+                    scope: this,
+                }, {
+                    text: 'Restart',
+                    handler: function() {
+                        var manager = this.getCellManager();
+
+                        manager.killEngine({
+                            force: true,
+                            handler: function() {
+                                manager.initEngine();
+                            },
+                            scope: this,
+                        });
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'View',
+                menu: [{
+                    text: 'Toolbar',
+                    checked: true,
+                    checkHandler: function(item, checked) {
+                        this.toolbar.setVisible(checked);
+                        this.doLayout();
+                    },
+                    scope: this,
+                }, {
+                    text: 'Status',
+                    checked: true,
+                    checkHandler: function(item, checked) {
+                        this.statusbar.setVisible(checked);
+                        this.doLayout();
+                    },
+                    scope: this,
+                }],
+            }, {
+                text: 'Help',
+                menu: [{
+                    text: 'Key bindings',
+                    handler: function() {
+                        FEMhub.Bindings.showHelp(this);
+                    },
+                    scope: this,
+                }],
+            }],
+        });
     },
 
     initToolbar: function() {
@@ -100,7 +303,7 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 tooltip: "Increase cells' font size.",
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().increaseFontSize();
+                    this.getCellManager().increaseFontSize();
                 },
                 scope: this,
             }, {
@@ -109,7 +312,7 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 tooltip: "Decrease cells' font size.",
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().decreaseFontSize();
+                    this.getCellManager().decreaseFontSize();
                 },
                 scope: this,
             }, '-', {
@@ -119,7 +322,7 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 tooltip: 'Refresh the user interface.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().justifyCells();
+                    this.getCellManager().justifyCells();
                 },
                 scope: this,
             }, {
@@ -139,7 +342,7 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 tooltip: 'Save changes to this worksheet.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().saveCells();
+                    this.getCellManager().saveCells();
                 },
                 scope: this,
             }, {
@@ -148,7 +351,7 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 tooltip: 'Save changes and close this window.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().saveCells(this.close, this);
+                    this.getCellManager().saveCells(this.close, this);
                 },
                 scope: this,
             }, '-', {
@@ -158,7 +361,7 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 tooltip: 'Interrupt currently evaluating cell.',
                 tabIndex: -1,
                 handler: function() {
-                    this.getCellsManager().interruptEngine();
+                    this.getCellManager().interruptEngine();
                 },
                 scope: this,
             }],
@@ -178,10 +381,19 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
     },
 
     close: function() {
-        var manager = this.getCellsManager();
+        var manager = this.getCellManager();
+
+        function doClose() {
+            manager.killEngine({
+                handler: function() {
+                    FEMhub.Worksheet.superclass.close.call(this);
+                },
+                scope: this,
+            });
+        }
 
         if (manager.isSaved()) {
-            FEMhub.Worksheet.superclass.close.call(this);
+            doClose.call(this);
         } else {
             Ext.MessageBox.show({
                 title: 'Save changes?',
@@ -192,9 +404,11 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                         case 'yes':
                             manager.saveCells();
                         case 'no':
-                            FEMhub.Worksheet.superclass.close.call(this);
+                            doClose.call(this);
                             break;
                         case 'cancel':
+                            break;
+                        default:
                             break;
                     }
                 },
@@ -204,14 +418,14 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
         }
     },
 
-    importCells: function(text) {
-        var cells = this.getCellsManager();
+    importCells: function(source) {
+        var cells = this.getCellManager();
 
         var TEXT = 0;
         var INPUT = 1;
         var OUTPUT = 2;
 
-        var lines = text.split('\n');
+        var lines = source.split('\n');
         var state = TEXT;
 
         var text = [];
@@ -267,6 +481,8 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 } else {
                     output.push(line);
                 }
+                break;
+            default:
                 break;
             }
         }
@@ -341,16 +557,14 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
                 if (result.ok === true) {
                     if (Ext.isDefined(result.cells)) {
                         Ext.each(result.cells, function(cell) {
-                            var manager = this.getCellsManager();
+                            var manager = this.getCellManager();
                             manager.evaluateCode(cell.content);
                         }, this);
                     }
-                } else {
-                    /* pass */
                 }
 
                 if (++index == this.imports.length && evalCells) {
-                    this.getCellsManager().evaluateCells();
+                    this.getCellManager().evaluateCells();
                 }
             }, this);
         }, this);
@@ -360,10 +574,295 @@ FEMhub.Worksheet = Ext.extend(Ext.Window, {
         if (this.imports.length) {
             this.evaluateImports(true);
         } else {
-            this.getCellsManager().evaluateCells();
+            this.getCellManager().evaluateCells();
         }
+    },
+
+    getBindings: function() {
+        return FEMhub.Bindings.Worksheet;
+    },
+
+    execCellAction: function(action, active) {
+        var manager = this.getCellManager(), cell;
+
+        if (active) {
+            cell = manager.getActiveCell();
+        } else {
+            cell = manager.getFocusedCell();
+        }
+
+        if (cell !== null) {
+            if (action in this.actions) {
+                this.actions[action].call(this, cell);
+            } else if (action in cell) {
+                cell[action]();
+            }
+        }
+    },
+
+    execAction: function(action, params, key, evt) {
+        var method = 'action' + FEMhub.util.capitalizeFirst(action);
+
+        if (Ext.isDefined(this[method])) {
+            this[method].call(this, this.getCellManager(), params, evt);
+        } else {
+            this.execCellAction(action, params.active);
+        }
+    },
+
+    actionActivateCell: function(manager, params, evt) {
+        var cell = manager.getActiveCell();
+
+        if (cell === null) {
+            cell = manager.getFirstCell();
+
+            if (cell === null) {
+                return;
+            }
+        }
+
+        cell.focusCell();
+    },
+
+    actionQuitCell: function(manager, params, evt) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.blurCell) {
+            cell.blurCell();
+            window.focus();
+        }
+    },
+
+    actionActivateNextCell: function(manager, params, evt) {
+        var cell = manager.getActiveCell();
+
+        if (cell !== null) {
+            manager.activateNextCell(cell);
+        }
+    },
+
+    actionActivatePrevCell: function(manager, params, evt) {
+        var cell = manager.getActiveCell();
+
+        if (cell !== null) {
+            manager.activatePrevCell(cell);
+        }
+    },
+
+    actionHandlePrev: function(manager, params, evt) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.handlePrev) {
+            cell.handlePrev(evt);
+        }
+    },
+
+    actionHandleNext: function(manager, params, evt) {
+        var cell = manager.getFocusedCell();
+
+        if (cell !== null && cell.handleNext) {
+            cell.handleNext(evt);
+        }
+    },
+
+    actions: {
+        forwardEvaluateCell: function(cell) {
+            cell.evaluateCell({keepfocus: false});
+        },
+        inplaceEvaluateCell: function(cell) {
+            cell.evaluateCell({keepfocus: true});
+        },
     },
 });
 
 Ext.reg('x-femhub-worksheet', FEMhub.Worksheet);
+
+FEMhub.Mappings.Worksheet = Ext.extend(FEMhub.Mapping, {
+    bindings: {
+        handlePrev: {
+            specs: [
+                'UP        -shift -ctrl -alt nostop',
+            ],
+            text: 'Move cursor to the previous line or cell',
+        },
+        handleNext: {
+            specs: [
+                'DOWN      -shift -ctrl -alt nostop',
+            ],
+            text: 'Move cursor to the following line or cell',
+        },
+        introspectCell: {
+            specs: [
+                'TAB       -shift -ctrl -alt',
+                'T         -shift -ctrl +alt',
+                'SPACE     -shift +ctrl -alt',
+            ],
+            text: 'Introspect contents of the active cell',
+        },
+        activateNextCell: {
+            specs: [
+                'DOWN      -shift +ctrl -alt',
+                'J         -shift -ctrl +alt',
+            ],
+            text: 'Move focus to the following cell',
+        },
+        activatePrevCell: {
+            specs: [
+                'UP        -shift +ctrl -alt',
+                'K         -shift -ctrl +alt',
+            ],
+            text: 'Move focus to the preceeding cell',
+        },
+        collapseCell: {
+            specs: [
+                'LEFT      -shift -ctrl +alt',
+                'H         -shift -ctrl +alt',
+            ],
+            text: 'Collapse the active cell',
+        },
+        expandCell: {
+            specs: [
+                'RIGHT     -shift -ctrl +alt',
+                'L         -shift -ctrl +alt',
+            ],
+            text: 'Expand the active cell',
+        },
+        newline: {
+            specs: [
+                'ENTER     -shift -ctrl -alt',
+            ],
+            text: 'Intelligently insert a newline',
+        },
+        backspace: {
+            specs: [
+                'BACKSPACE -shift -ctrl -alt',
+            ],
+            text: 'Intelligently remove the previous character',
+        },
+        forwardEvaluateCell: {
+            specs: [
+                'ENTER     +shift -ctrl -alt',
+                'E         -shift -ctrl +alt',
+            ],
+            text: 'Evaluate the active cell and move focus to the following cell',
+        },
+        inplaceEvaluateCell: {
+            specs: [
+                'ENTER     -shift +ctrl -alt',
+                'E         +shift -ctrl +alt',
+            ],
+            text: 'Evaluate the active cell and keep focus in-place',
+        },
+        interruptCell: {
+            specs: [
+                'I         -shift -ctrl +alt',
+            ],
+            text: 'Interrupt evaluation of the active cell',
+        },
+        wipeCell: {
+            specs: [
+                'W         -shift -ctrl +alt',
+            ],
+            text: 'Remove contents of the active cell keeping its related cells',
+        },
+        clearCell: {
+            specs: [
+                'C         -shift -ctrl +alt',
+            ],
+            text: 'Remove contents of the active cells and its related cells',
+        },
+        removeCell: {
+            specs: [
+                'R         -shift -ctrl +alt',
+            ],
+            text: 'Remove the active cell and all cells related with it',
+        },
+        splitCellUpper: {
+            specs: [
+                'S         +shift -ctrl +alt',
+            ],
+            text: 'Split the active cell and locate cursor in the upper part',
+        },
+        splitCellLower: {
+            specs: [
+                'S         -shift -ctrl +alt',
+            ],
+            text: 'Split the active cell and locate cursor in the lower part',
+        },
+        mergeCellAbove: {
+            specs: [
+                'UP        +shift -ctrl +alt',
+                'K         +shift -ctrl +alt',
+            ],
+            text: 'Merge the active cell with the preceeding cell',
+        },
+        mergeCellBelow: {
+            specs: [
+                'DOWN      +shift -ctrl +alt',
+                'J         +shift -ctrl +alt',
+            ],
+            text: 'Merge the active cell with the following cell',
+        },
+        activateCell: {
+            specs: [
+                'A         -shift -ctrl +alt',
+            ],
+            text: 'Focus the last active cell',
+        },
+        quitCell: {
+            specs: [
+                'Q         -shift -ctrl +alt',
+            ],
+            text: 'Deactive the currently active cell',
+        },
+        nextBracket: {
+            specs: [
+                ']         -shift -ctrl +alt',
+            ],
+            text: 'Move cursor to the next bracket in source code',
+        },
+        prevBracket: {
+            specs: [
+                '[         -shift -ctrl +alt',
+            ],
+            text: 'Move cursor to the previous bracket in source code',
+        },
+        preprocessCell: {
+            specs: [
+                'P         -shift -ctrl +alt',
+            ],
+            text: 'Fix indentation and cleanup the active cell',
+        },
+        previousInput: {
+            specs: [
+                '.         -shift -ctrl +alt',
+            ],
+            text: 'Copy previous input to the active cell',
+        },
+        insertInputCellBefore: {
+            specs: [
+                'UP        -shift -ctrl +alt',
+            ],
+            text: 'Insert an input cell before the active cell',
+        },
+        insertInputCellAfter: {
+            specs: [
+                'DOWN      -shift -ctrl +alt',
+            ],
+            text: 'Insert an input cell after the active cell',
+        },
+        insertTextCellBefore: {
+            specs: [
+                'UP        +shift +ctrl +alt',
+            ],
+            text: 'Insert a text cell before the active cell',
+        },
+        insertTextCellAfter: {
+            specs: [
+                'DOWN      +shift +ctrl +alt',
+            ],
+            text: 'Insert a text cell after the active cell',
+        },
+    },
+});
 

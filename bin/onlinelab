@@ -125,6 +125,13 @@ class Core(Module):
         import onlinelab.core.runtime
         onlinelab.core.runtime.init(args)
 
+    def install(self, args):
+        """Install a package in core server. """
+        import onlinelab.core.runtime
+        packages = args.packages
+        settings = self._configure(args)
+        onlinelab.core.runtime.install(packages, settings)
+
     def start(self, args):
         """Start an existing core server. """
         import onlinelab.core.runtime
@@ -298,13 +305,42 @@ class OnlineLab(object):
                 'action': ConfigureAction,
             },
         ),
+        'engine-timeout': (
+            ('--engine-timeout',), {
+                'type': int,
+            },
+        ),
+        'cross-site': (
+            ('--cross-site',), {
+                'action': ConfigureAction,
+            },
+        ),
+        'allow-origin': (
+            ('--allow-origin',), {
+                'action': 'append',
+                'dest': 'allowed_origins',
+            },
+        ),
+        'allow-all-origins': (
+            ('--allow-all-origins',), {
+                'action': ConfigureAction,
+            },
+        ),
+        'package': (
+            ('--package',), {
+                'action': 'append',
+                'dest': 'packages',
+            },
+        ),
     }
 
     modules = {
         'core': {
             'init': ['ui-path'],
+            'install': ['package'],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
-                'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path', 'auth'],
+                'log-num-backups', 'logs-path', 'data-path', 'static-path', 'templates-path',
+                'auth', 'cross-site', 'allow-origin', 'allow-all-origins'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],
@@ -313,7 +349,7 @@ class OnlineLab(object):
             'init': [],
             'start': ['port', 'daemon', 'pid-file', 'log-file', 'log-level', 'log-max-size',
                 'log-num-backups', 'logs-path', 'data-path', 'core-url', 'service-url',
-                'provider', 'description', 'setuid'],
+                'provider', 'description', 'setuid', 'engine-timeout'],
             'stop': ['port', 'pid-file', 'log-file', 'log-level'],
             'restart': [],
             'status': [],

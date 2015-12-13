@@ -2,7 +2,9 @@
 
 import os
 import re
+import sys
 import time
+import fcntl
 import signal
 import shutil
 import logging
@@ -11,11 +13,15 @@ import functools
 import subprocess
 import collections
 
+from StringIO import StringIO
+
 import psutil
 import pyinotify
 
 import tornado.ioloop
-import tornado.httpclient
+
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httputil import HTTPHeaders
 
 import utilities
 
@@ -28,8 +34,6 @@ class ProcessManager(object):
     """Start and manage system processes for engines. """
 
     _re = re.compile("^.*?port=(?P<port>\d+), pid=(?P<pid>\d+)")
-
-    _timeout = 20 # XXX: put this into config file
 
     _inotify_mask = pyinotify.IN_CREATE \
                   | pyinotify.IN_MODIFY \
@@ -220,8 +224,8 @@ class ProcessManager(object):
         # will tell us this by sending a single line of well formatted output
         # (containing port numer and PID) via a pipe.
 
-        proc = subprocess.Popen(command, preexec_fn=preexec_fn,
-            cwd=cwd, env=env, close_fds=True, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(command, preexec_fn=preexec_fn, cwd=cwd, env=env,
+            close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # File descriptor of the pipe (fd) is our connector the process, so
         # we will monitor this descriptor to see the change in status of the
@@ -230,10 +234,12 @@ class ProcessManager(object):
         fd = proc.stdout.fileno()
         params = uuid, proc, uid, gid, cwd, okay, fail
 
-        timeout = functools.partial(self._on_run_timeout, uuid, params, fd)
-        tm = self.ioloop.add_timeout(time.time() + self._timeout, timeout)
+        deadline = time.time() + self.settings.engine_timeout
 
-        handler = functools.partial(self._on_run_handler, params, tm)
+        handler = functools.partial(self._on_run_timeout, proc)
+        timeout = self.ioloop.add_timeout(deadline, handler)
+
+        handler = functools.partial(self._on_run_handler, params, timeout)
         self.ioloop.add_handler(fd, handler, self.ioloop.READ | self.ioloop.ERROR)
 
     def cleanup(self, uuid, cwd, uid, gid):
@@ -242,10 +248,8 @@ class ProcessManager(object):
         del self.processes[uuid]
         shutil.rmtree(cwd)
 
-    def _on_run_timeout(self, (uuid, proc, uid, gid, cwd, okay, fail), fd):
+    def _on_run_timeout(self, proc):
         """Hard deadline on engine's process startup (start or die). """
-        self.ioloop.remove_handler(fd)
-
         # The process is running but takes too much time to start, e.g.
         # a deadlock occurred or whatever else. We don't know, so what
         # we can do is to remove process entry, kill the process and
@@ -253,22 +257,28 @@ class ProcessManager(object):
         # this handler shouldn't be executed at all, unless e.g. we
         # are running out of memory.
 
-        self.cleanup(uuid, cwd, uid, gid)
-
-        proc.kill()
-        proc.poll()
-
-        fail('timeout')
+        proc.kill() # only kill, rest will be done in _on_run_handler
 
     def _on_run_handler(self, (uuid, proc, uid, gid, cwd, okay, fail), tm, fd, events):
         """Startup handler that gets executed on pipe write or error. """
-        self.ioloop.remove_timeout(tm)
+        timeout = False
+
+        try:
+            self.ioloop.remove_timeout(tm)
+        except ValueError:
+            timeout = True
+
         self.ioloop.remove_handler(fd)
 
-        if events & self.ioloop.ERROR:
-            logging.error("Newly created process died expectingly")
+        if timeout or events & self.ioloop.ERROR:
             self.cleanup(uuid, cwd, uid, gid)
-            fail('died')
+
+            if timeout:
+                logging.error("Newly created process was starting too long")
+                fail('engine-timeout')
+            else:
+                logging.error("Newly created process died expectingly")
+                fail('engine-died')
         else:
             # Connection was established, so lets get first output line
             # and check if it contains valid data (socket port numer and
@@ -283,8 +293,10 @@ class ProcessManager(object):
 
                 self.processes[uuid] = process
 
-                handler = functools.partial(self._on_disconnect, uuid, cwd, uid, gid)
-                self.ioloop.add_handler(fd, handler, self.ioloop.ERROR)
+                # XXX: move this to EngineProcess
+
+                # handler = functools.partial(self._on_disconnect, uuid, cwd, uid, gid)
+                # self.ioloop.add_handler(fd, handler, self.ioloop.ERROR)
 
                 logging.info("Started new child process (pid=%s)" % process.pid)
 
@@ -300,7 +312,7 @@ class ProcessManager(object):
                 proc.kill()
                 proc.poll()
 
-                fail('invalid-output')
+                fail('engine-error')
 
     def _on_disconnect(self, uuid, cwd, uid, gid, fd, events):
         """Handler that gets executed when a process dies. """
@@ -336,23 +348,23 @@ class ProcessManager(object):
         """Initialize new engine (start a process). """
         if uuid in self.processes:
             if self.processes[uuid] is None:
-                fail('starting')
+                fail('engine-starting')
             else:
-                fail('running')
+                fail('engine-running')
         else:
             self._run(uuid, args, okay, fail)
 
     def _get_process(self, uuid, fail):
         if uuid not in self.processes:
-            fail('no-such-process')
+            fail('engine-not-running')
         else:
             process = self.processes[uuid]
 
             if process is None:
-                fail('starting')
+                fail('engine-starting')
             elif process is False:
                 del self.processes[uuid]
-                fail('died')
+                fail('engine-died')
             else:
                 return process
 
@@ -416,6 +428,79 @@ class EngineProcess(object):
         self.queue = collections.deque()
         self.url = "http://localhost:%s" % port
         self.files = []
+
+        self.out = StringIO()
+        self.err = StringIO()
+
+        stdout = proc.stdout.fileno()
+        stderr = proc.stderr.fileno()
+
+        self._set_nonblocking(stdout)
+        self._set_nonblocking(stderr)
+
+        ioloop = tornado.ioloop.IOLoop.instance()
+
+        ioloop.add_handler(stdout, self._on_stdout, ioloop.READ | ioloop.ERROR)
+        ioloop.add_handler(stderr, self._on_stderr, ioloop.READ | ioloop.ERROR)
+
+    def __del__(self):
+        """Delete this engine's instance. """
+        logging.info("%s deleted" % self.uuid)
+
+    def _set_nonblocking(self, fd, nonblocking=True):
+        """Set non-blocking property on a file descriptor. """
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+
+        if nonblocking:
+            fl |=   os.O_NONBLOCK
+        else:
+            fl &= (~os.O_NONBLOCK) & 0xFFFFFFFF
+
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl)
+
+    def _reset_io(self):
+        """Close and recreate local ``stdout`` and ``stderr``. """
+        self.out.close()
+        self.out = StringIO()
+
+        self.err.close()
+        self.err = StringIO()
+
+    def _read_stdout(self):
+        """Transfer ``stdout`` from a PIPE to a string buffer. """
+        while True:
+            try:
+                line = self.proc.stdout.readline()
+                self.out.write(line)
+            except IOError:
+                break
+
+    def _read_stderr(self):
+        """Transfer ``stderr`` from a PIPE to a string buffer. """
+        while True:
+            try:
+                line = self.proc.stderr.readline()
+                self.err.write(line)
+            except IOError:
+                break
+
+    def _on_stdout(self, fd, events):
+        """Monitor engine's ``stdout``. """
+        ioloop = tornado.ioloop.IOLoop.instance()
+
+        if events & ioloop.ERROR:
+            ioloop.remove_handler(fd)
+        else:
+            self._read_stdout()
+
+    def _on_stderr(self, fd, events):
+        """Monitor engine's ``stderr``. """
+        ioloop = tornado.ioloop.IOLoop.instance()
+
+        if events & ioloop.ERROR:
+            ioloop.remove_handler(fd)
+        else:
+            self._read_stderr()
 
     @property
     def pid(self):
@@ -484,36 +569,33 @@ class EngineProcess(object):
             okay('not-evaluating')
             return
 
-        if args.get('all', False):
-            self.queue.clear()
+        try:
+            cellid = args['cellid']
+        except KeyError:
+            pass
         else:
-            try:
-                cellid = args['cellid']
-            except KeyError:
-                pass
-            else:
-                _args, _, _ = self.evaluating
+            _args, _, _ = self.evaluating
 
-                if cellid != _args.cellid:
-                    for i, (_args, _okay, _) in enumerate(self.queue):
-                        if cellid == _args.cellid:
-                            del self.queue[i]
-                            okay('interrupted')
+            if cellid != _args.cellid:
+                for i, (_args, _okay, _) in enumerate(self.queue):
+                    if cellid == _args.cellid:
+                        del self.queue[i]
+                        okay('interrupted')
 
-                            result = {
-                                'source': _args.source,
-                                'index': None,
-                                'time': 0,
-                                'out': u'',
-                                'err': u'',
-                                'files': [],
-                                'plots': [],
-                                'traceback': False,
-                                'interrupted': True,
-                            }
+                        result = {
+                            'source': _args.source,
+                            'index': None,
+                            'time': 0,
+                            'out': u'',
+                            'err': u'',
+                            'files': [],
+                            'plots': [],
+                            'traceback': False,
+                            'interrupted': True,
+                        }
 
-                            _okay(result)
-                            return
+                        _okay(result)
+                        return
 
         # Now the most interesting part. To physically interrupt
         # the interpreter associated with this engine, we send
@@ -538,12 +620,13 @@ class EngineProcess(object):
             args, okay, fail = self.evaluating = self.queue.pop()
 
             body = utilities.xml_encode(args.source, method)
+            headers = HTTPHeaders({'Content-Type': 'application/xml'})
 
-            http_client = tornado.httpclient.AsyncHTTPClient()
-            http_request = tornado.httpclient.HTTPRequest(self.url,
-                method='POST', body=body, request_timeout=0)
+            request = HTTPRequest(self.url, method='POST',
+                body=body, headers=headers, request_timeout=0)
 
-            http_client.fetch(http_request, self._on_evaluate_handler)
+            client = AsyncHTTPClient()
+            client.fetch(request, self._on_evaluate_handler)
 
     def _on_evaluate_timeout(self):
         raise NotImplementedError
@@ -565,8 +648,17 @@ class EngineProcess(object):
         else:
             fail('response-code: %s' % response.code)
 
+        self._reset_io()
+
     def _process_response(self, result, okay):
         """Perform final processing of evaluation results. """
         result['files'] = self.files
+
+        self._read_stdout()
+        self._read_stderr()
+
+        result['shout'] = self.out.getvalue()
+        result['sherr'] = self.err.getvalue()
+
         okay(result)
 

@@ -3,10 +3,9 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     ctype: 'base',
 
     saved: false,
-
+    focused: false,
     collapsed: false,
     hiddenEl: null,
-    bindings: {},
 
     constructor: function(config) {
         if (Ext.isDefined(config.setup)) {
@@ -19,27 +18,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         }
 
         FEMhub.Cell.superclass.constructor.apply(this, arguments);
-
-        Ext.apply(this.bindings, {
-            x_shift_alt_up: {
-                key: Ext.EventObject.UP,
-                shift: true,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.insertTextCellBefore,
-            },
-            x_shift_alt_down: {
-                key: Ext.EventObject.DOWN,
-                shift: true,
-                ctrl: false,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.insertTextCellAfter,
-            },
-        });
     },
 
     initComponent: function() {
@@ -56,11 +34,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
         this.el_bracket.on('click', this.collapseCell, this, { stopEvent: true });
     },
 
-    setupCellKeyMap: function() {
-        /* pass */
-    },
-
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.Cell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell');
@@ -80,7 +54,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
         this.setupCellObserver();
         this.setupCellEvents();
-        this.setupCellKeyMap();
     },
 
     onFocusCell: function() {
@@ -92,6 +65,9 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     focusCell: function() {
+        this.owner.activeCell = this;
+        this.focused = true;
+
         if (this.collapsed) {
             this.el.addClass('femhub-focus');
             this.el_expander.focus();
@@ -101,6 +77,8 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
     },
 
     blurCell: function() {
+        this.focused = false;
+
         if (this.collapsed) {
             this.el.removeClass('femhub-focus');
             this.el_expander.blur();
@@ -203,7 +181,7 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
         if (cell === null) {
             if (this.owner.cycleCells) {
-                var cell = this.getLastCell(type);
+                cell = this.getLastCell(type);
             } else {
                 return null;
             }
@@ -217,14 +195,6 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
     autosize: function() {
         /* pass */
-    },
-
-    insertTextCellBefore: function() {
-        return this.owner.newCell({ type: 'content', before: this });
-    },
-
-    insertTextCellAfter: function() {
-        return this.owner.newCell({ type: 'content', after: this });
     },
 
     removeCell: function() {
@@ -281,6 +251,48 @@ FEMhub.Cell = Ext.extend(Ext.BoxComponent, {
 
     setFontSize: function(size) {
         this.el.setStyle('font-size', size + '%');
+    },
+
+    hasFocus: function() {
+        return this.focused;
+    },
+
+    handlePrev: function(evt) {
+        evt.stopEvent();
+        this.owner.activatePrevCell(this);
+    },
+
+    handleNext: function(evt) {
+        evt.stopEvent();
+        this.owner.activateNextCell(this);
+    },
+
+    getBaseCellForInsertBefore: function() {
+        return this;
+    },
+
+    getBaseCellForInsertAfter: function() {
+        return this;
+    },
+
+    insertInputCellBefore: function() {
+        var base = this.getBaseCellForInsertBefore();
+        return this.owner.insertCellBefore('input', base);
+    },
+
+    insertInputCellAfter: function() {
+        var base = this.getBaseCellForInsertAfter();
+        return this.owner.insertCellAfter('input', base);
+    },
+
+    insertTextCellBefore: function() {
+        var base = this.getBaseCellForInsertBefore();
+        return this.owner.insertCellBefore('text', base);
+    },
+
+    insertTextCellAfter: function() {
+        var base = this.getBaseCellForInsertAfter();
+        return this.owner.insertCellAfter('text', base);
     },
 });
 

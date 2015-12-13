@@ -1,0 +1,16 @@
+#!/bin/bash
+
+which jsl &> /dev/null
+
+if [[ $? -eq 1 ]]; then
+    echo "\`jsl' command not found. Install it from http://www.javascriptlint.com/."
+else
+    if [[ -z $* ]]; then
+        FILES=ui/js/femhub/*
+    else
+        FILES=$*
+    fi
+
+    jsl --nologo --conf=conf/jslint.conf $FILES 2> /dev/null | less
+fi
+

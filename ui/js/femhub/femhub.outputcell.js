@@ -4,22 +4,6 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
 
     labelPrefix: 'Out',
 
-    initComponent: function() {
-        FEMhub.OutputCell.superclass.initComponent.call(this);
-
-        Ext.apply(this.bindings, {
-            x_backspace: {
-                key: Ext.EventObject.BACKSPACE,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: this.removeCell,
-            },
-        });
-    },
-
     getOutput: function() {
         var output = this.el_textarea.dom.innerHTML;
 
@@ -49,7 +33,7 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     getInputCell: function() {
-       return Ext.getCmp(this.id.splice(0, this.id.lastIndexOf('o'))) || null;
+       return Ext.getCmp(this.id.slice(0, this.id.indexOf('o'))) || null;
     },
 
     setupOutputCellObserver: function() {
@@ -61,21 +45,7 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
         this.el_textarea.on('blur', this.blurCell, this);
     },
 
-    setupOutputCellKeyMap: function() {
-        this.keymap_textarea_stop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_backspace,
-            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
-            this.bindings.x_alt_up, this.bindings.x_alt_down,
-            this.bindings.x_alt_left,
-            this.bindings.x_ctrl_space,
-        ]);
-
-        this.keymap_textarea_nostop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_up, this.bindings.x_down,
-        ]);
-    },
-
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.OutputCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-output');
@@ -91,22 +61,25 @@ FEMhub.OutputCell = Ext.extend(FEMhub.IOCell, {
 
         this.setupOutputCellObserver();
         this.setupOutputCellEvents();
-        this.setupOutputCellKeyMap();
     },
 
-    insertInputCellBefore: function() {
-        this.blurCell();
+    getBaseCellForInsertBefore: function() {
+        return this.getInputCell() || this;
+    },
 
-        var before = this.getInputCell();
+    getBaseCellForInsertAfter: function() {
+        var cell = this.getInputCell();
 
-        if (before === null) {
-            before = this;
+        if (cell === null) {
+            return this;
+        } else {
+            var cells = cell.getOutputCells();
+            return cells[cells.length-1];
         }
+    },
 
-        var cell = this.owner.newCell({ type: 'input', before: before });
-        cell.focusCell();
-
-        return cell;
+    backspace: function() {
+        this.removeCell();
     },
 });
 

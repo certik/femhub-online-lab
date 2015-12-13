@@ -24,7 +24,11 @@ class PythonXMLRPCServer(SimpleXMLRPCServer):
     methods = PythonXMLRPCMethods
 
     def __init__(self, port, interpreter):
-        SimpleXMLRPCServer.__init__(self, ('localhost', port), allow_none=True)
+        address = ('localhost', port)
+
+        SimpleXMLRPCServer.__init__(self, address,
+            logRequests=False, allow_none=True)
+
         self.register_instance(self.methods(interpreter))
         self.register_introspection_functions()
 

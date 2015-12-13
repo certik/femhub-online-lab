@@ -1,95 +1,66 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{% extends base.html %}
 
-        <title>FEMhub Online Lab</title>
-        <link rel="icon" type="image/ico" href="/static/img/femhub/favicon.ico"/>
+{% block css %}
+<link href="{{ static_url('css/femhub/femhub.iconcombobox.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static_url('css/femhub/femhub.launcher.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static_url('css/femhub/femhub.desktop.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static_url('css/femhub/femhub.docutils.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static_url('css/femhub/femhub.extjs.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static_url('css/femhub/femhub.icons.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static_url('css/femhub/femhub.cell.css') }}" rel="stylesheet" type="text/css" />
+{% end %}
 
-        <link href="/static/external/ext/css/ext-all.css" rel="stylesheet" type="text/css" />
+{% block script %}
+<script src="{{ static_url('js/femhub/femhub.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.rpc.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.msg.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.util.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.text.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.extjs.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.keymap.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.template.js') }}" type="text/javascript"></script>
 
-        {% if debug %}
-        <script src="/static/external/ext/js/ext-base-debug.js" type="text/javascript"></script>
-        <script src="/static/external/ext/js/ext-all-debug.js" type="text/javascript"></script>
-        {% else %}
-        <script src="/static/external/ext/js/ext-base.js" type="text/javascript"></script>
-        <script src="/static/external/ext/js/ext-all.js" type="text/javascript"></script>
-        {% end %}
+<script src="{{ static_url('js/femhub/femhub.iconcombobox.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.taskbutton.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.statusbar.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.taskbar.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.menubar.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.button.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.textfield.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.bindings.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.module.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.window.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.launcher.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.desktop.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.vtypes.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.login.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.lab.js') }}" type="text/javascript"></script>
 
-        <script src="/static/external/ext/js/ux/StatusBar.js" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.publishedworksheets.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.worksheetchooser.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.worksheetviewer.js') }}" type="text/javascript"></script>
 
-        <link href="/static/css/femhub/femhub.iconcombobox.css" rel="stylesheet" type="text/css" />
-        <link href="/static/css/femhub/femhub.launcher.css" rel="stylesheet" type="text/css" />
-        <link href="/static/css/femhub/femhub.desktop.css" rel="stylesheet" type="text/css" />
-        <link href="/static/css/femhub/femhub.docutils.css" rel="stylesheet" type="text/css" />
-        <link href="/static/css/femhub/femhub.extjs.css" rel="stylesheet" type="text/css" />
-        <link href="/static/css/femhub/femhub.icons.css" rel="stylesheet" type="text/css" />
-        <link href="/static/css/femhub/femhub.cell.css" rel="stylesheet" type="text/css" />
+<script src="{{ static_url('js/femhub/femhub.changepassword.js') }}" type="text/javascript"></script>
 
-        <style type="text/css">
-            {{ extra_css }}
-        </style>
+<script src="{{ static_url('js/femhub/femhub.browser.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.mesheditor.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.worksheet.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.textviewer.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.settings.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.help.js') }}" type="text/javascript"></script>
 
-        <script src="/static/js/femhub/femhub.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.rpc.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.msg.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.logs.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.util.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.extjs.js" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.cellmanager.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.celleditor.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.cellpanel.js') }}" type="text/javascript"></script>
 
-        <script src="/static/js/femhub/femhub.iconcombobox.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.taskbutton.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.taskbar.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.menubar.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.button.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.module.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.launcher.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.desktop.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.vtypes.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.login.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.lab.js" type="text/javascript"></script>
-
-        <script src="/static/js/femhub/femhub.worksheetchooser.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.publishedworksheets.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.browser.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.mesheditor.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.worksheet.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.textviewer.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.settings.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.console.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.help.js" type="text/javascript"></script>
-
-        <script src="/static/js/femhub/femhub.cellmanager.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.celleditor.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.cellpanel.js" type="text/javascript"></script>
-
-        <script src="/static/js/femhub/femhub.cell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.iocell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.outputcell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.rawcell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.imagecell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.errorcell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.inputcell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.textcell.js" type="text/javascript"></script>
-        <script src="/static/js/femhub/femhub.rstcell.js" type="text/javascript"></script>
-
-        <script type="text/javascript">
-            FEMhub.lab = new FEMhub.Lab({
-                init: function() {
-                    Ext.QuickTips.init();
-                },
-                modules: [
-                    FEMhub.Modules.Browser,
-                    FEMhub.Modules.MeshEditor,
-                    FEMhub.Modules.Settings,
-                    FEMhub.Modules.Console,
-                    FEMhub.Modules.Help,
-                    FEMhub.Modules.Logout,
-                ],
-            });
-        </script>
-    </head>
-    <body>
-    </body>
-</html>
+<script src="{{ static_url('js/femhub/femhub.cell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.iocell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.outputcell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.rawcell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.imagecell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.errorcell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.inputcell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.textcell.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/femhub/femhub.rstcell.js') }}" type="text/javascript"></script>
+{% end %}
 

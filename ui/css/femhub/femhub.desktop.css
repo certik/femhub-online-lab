@@ -207,8 +207,13 @@ body {
     background-position: -18px 0;
 }
 
+.femhub-login-form {
+    padding: 40px 10px 10px 10px;
+}
+
 .femhub-login-body {
     padding-top: 82px;
+    padding-bottom: 20px;
     background: #ffffff url(/static/img/femhub/femhub.jpg) no-repeat left top;
 }
 
@@ -225,6 +230,15 @@ body {
     display: block;
 }
 
+.femhub-field-help {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 16px;
+    background-image: url(/static/img/femhub/icons/16x16/help.png);
+    background-repeat: no-repeat;
+}
+
 .femhub-mesheditor-body {
     background-color: white;
     padding: 0 0px;
@@ -234,7 +248,7 @@ body {
 
 .femhub-help-body {
     background-color: white;
-    padding: 0 10px;
+    padding: 0 10px 10px 10px;
     overflow-y: auto;
     font-size: 120%;
 }
@@ -253,5 +267,21 @@ body {
 .femhub-help-body dd {
     margin-left: 0.5em;
     margin-bottom: 0.2em;
+}
+
+.femhub-change-password-heading {
+    background-color: white;
+    padding: 5px 10px;
+    border-bottom: 1px solid #99bbe8;
+}
+
+.femhub-change-password-heading h1 {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.femhub-change-password-heading p {
+    margin-top: 5px;
+    text-align: justify;
 }
 

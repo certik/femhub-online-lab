@@ -1,12 +1,13 @@
-FEMhub.MeshEditor = Ext.extend(Ext.Window, {
+
+FEMhub.MeshEditor = Ext.extend(FEMhub.Window, {
     constructor: function(config) {
         config = config || {};
 
         Ext.apply(config, {
-            title: "MeshEditor",
+            title: "Mesh Editor",
             layout: 'fit',
-            width: 856,
-            height: 668,
+            width: 885,
+            height: 595,
             iconCls: 'femhub-mesheditor-icon',
             bodyCssClass: 'femhub-mesheditor-body',
             closable: true,
@@ -31,6 +32,7 @@ FEMhub.MeshEditor = Ext.extend(Ext.Window, {
                 this.body.createChild({
                     tag: 'div',
                     html: result.rendered,
+                    style: 'width: 100%; height: 100%',
                 });
             }
         }, this);
@@ -39,7 +41,7 @@ FEMhub.MeshEditor = Ext.extend(Ext.Window, {
 
 FEMhub.Modules.MeshEditor = Ext.extend(FEMhub.Module, {
     launcher: {
-        text: 'MeshEditor',
+        text: 'Mesh Editor',
         icon: 'femhub-mesheditor-launcher-icon',
     },
     winCls: FEMhub.MeshEditor,

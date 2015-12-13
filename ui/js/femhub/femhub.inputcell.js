@@ -8,117 +8,6 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     observedInputLength: 0,
     observationInterval: 250,
 
-    initComponent: function() {
-        FEMhub.InputCell.superclass.initComponent.call(this);
-
-        this.addEvents('preevaluate', 'postevaluate');
-
-        Ext.apply(this.bindings, {
-            x_tab: {
-                key: Ext.EventObject.TAB,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    var selection = this.getSelection();
-
-                    if (selection.start == selection.end) {
-                        var input = this.getInput();
-                        var pos = selection.start;
-
-                        var head = input.slice(0, pos);
-                        var tail = input.slice(pos);
-
-                        for (var i = 0; i < this.owner.tabWidth; i++) {
-                            head += ' ';
-                        }
-
-                        this.setInput(head + tail);
-                        this.setSelection(pos + this.owner.tabWidth);
-                    }
-                },
-            },
-            x_shift_tab: {
-                key: Ext.EventObject.TAB,
-                shift: true,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: Ext.emptyFn,
-            },
-            x_shift_enter: {
-                key: Ext.EventObject.ENTER,
-                shift: true,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    this.evaluateCell({ keepfocus: false });
-                },
-            },
-            x_ctrl_enter: {
-                key: Ext.EventObject.ENTER,
-                shift: false,
-                ctrl: true,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: function() {
-                    this.evaluateCell({ keepfocus: true });
-                },
-            },
-            x_enter: {
-                key: Ext.EventObject.ENTER,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: this.newline,
-            },
-            x_backspace: {
-                key: Ext.EventObject.BACKSPACE,
-                shift: false,
-                ctrl: false,
-                alt: false,
-                scope: this,
-                stopEvent: true,
-                handler: this.backspace,
-            },
-            x_ctrl_space: {
-                key: Ext.EventObject.SPACE,
-                shift: false,
-                ctrl: true,
-                alt: false,
-                scope: this,
-                stopEvent: false,
-                handler: this.autocomplete,
-            },
-            x_shift_ctrl_alt_up: {
-                key: Ext.EventObject.UP,
-                shift: true,
-                ctrl: true,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.mergeCellBefore,
-            },
-            x_shift_ctrl_alt_down: {
-                key: Ext.EventObject.DOWN,
-                shift: true,
-                ctrl: true,
-                alt: true,
-                scope: this,
-                stopEvent: true,
-                handler: this.mergeCellAfter,
-            },
-        });
-    },
-
     getInput: function() {
         return this.el_textarea.getValue();
     },
@@ -145,7 +34,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
            var cells = [];
 
            for (var i = 0;; i++) {
-                var cell = Ext.getCmp(this.id + 'o' + i);
+                cell = Ext.getCmp(this.id + 'o' + i);
 
                 if (cell) {
                     cells.push(cell);
@@ -194,25 +83,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         this.el_interrupt.on('click', this.interruptCell, this);
     },
 
-    setupInputCellKeyMap: function() {
-        this.keymap_textarea_stop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_tab, this.bindings.x_shift_tab,
-            this.bindings.x_enter, this.bindings.x_backspace,
-            this.bindings.x_shift_enter, this.bindings.x_ctrl_enter,
-            this.bindings.x_ctrl_up, this.bindings.x_ctrl_down,
-            this.bindings.x_alt_up, this.bindings.x_alt_down,
-            this.bindings.x_shift_alt_up, this.bindings.x_shift_alt_down,
-            this.bindings.x_shift_ctrl_alt_up, this.bindings.x_shift_ctrl_alt_down,
-            this.bindings.x_alt_left,
-            this.bindings.x_ctrl_space,
-        ]);
-
-        this.keymap_textarea_nostop = new Ext.KeyMap(this.el_textarea, [
-            this.bindings.x_up, this.bindings.x_down,
-        ]);
-    },
-
-    onRender: function(container, position) {
+    onRender: function() {
         FEMhub.InputCell.superclass.onRender.apply(this, arguments);
 
         this.el.addClass('femhub-cell-input');
@@ -259,11 +130,10 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         this.setupInputCellObserver();
         this.setupInputCellEvents();
-        this.setupInputCellKeyMap();
 
-        if (this.start === true) {
-            // TODO: this.el_textarea.update("Click here to start ...");
-        }
+        //if (this.start === true) {
+        // TODO: this.el_textarea.update("Click here to start ...");
+        //}
     },
 
     onFocusCell: function() {
@@ -297,7 +167,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         var pos = selection.start;
 
         if (selection.start == selection.end) {
-            if (pos == 0) {
+            if (pos === 0) {
                 input = '\n' + input;
                 pos += 1;
             } else {
@@ -317,7 +187,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
 
                 if (input[pos-1] == ':') {
-                    for (var i = 0; i < this.owner.tabWidth; i++) {
+                    for (var j = 0; j < this.owner.tabWidth; j++) {
                         insert += ' ';
                     }
                 }
@@ -342,14 +212,16 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         var pos = selection.start;
 
         if (selection.start == selection.end) {
-            if (pos == 0) {
+            if (pos === 0) {
+                var result;
+
                 if (this.owner.mergeOnBackspace) {
-                    var result = this.mergeCellBefore();
+                    result = this.mergeCellBefore();
                 } else {
-                    var result = false;
+                    result = false;
                 }
 
-                if (!result && (input.length == 0)) {
+                if (!result && (input.length === 0)) {
                     this.removeCell();
                 }
 
@@ -376,7 +248,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
             if (dirty || i == pos) {
                 --pos;
             } else {
-                pos = Ext.max([i, pos - this.owner.tabWidth])
+                pos = Ext.max([i, pos - this.owner.tabWidth]);
             }
 
             input = input.slice(0, pos) + input.slice(end);
@@ -388,6 +260,40 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         this.autosize();
 
         this.setSelection({ start: pos, end: pos });
+    },
+
+    introspectCell: function() {
+        var selection = this.getSelection();
+
+        if (selection.start == selection.end) {
+            var input = this.getInput();
+            var index = selection.start;
+
+            if (FEMhub.text.isFilledWithBefore(input, index, ' ')) {
+                this.indent();
+            } else {
+                this.autocomplete();
+            }
+        }
+    },
+
+    indent: function() {
+        var selection = this.getSelection();
+
+        if (selection.start == selection.end) {
+            var input = this.getInput();
+            var pos = selection.start;
+
+            var head = input.slice(0, pos);
+            var tail = input.slice(pos);
+
+            for (var i = 0; i < this.owner.tabWidth; i++) {
+                head += ' ';
+            }
+
+            this.setInput(head + tail);
+            this.setSelection(pos + this.owner.tabWidth);
+        }
     },
 
     autocomplete: function() {
@@ -412,21 +318,18 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
             var source = input.slice(start, end);
 
-            FEMhub.RPC.Engine.complete({
-                uuid: this.owner.uuid,
+            this.owner.completeCode({
                 source: source,
-            }, function(result) {
-                if (!result.error) {
-                    var completions = result.completions;
+                okay: function(result) {
+                    var items = [],
+                        completions = result.completions;
 
                     if (!completions || !completions.length) {
-                        var items = [{
+                        items.push({
                             text: '&lt;no matches&gt;',
                             disabled: true,
-                        }];
+                        });
                     } else {
-                        var items = [];
-
                         Ext.each(result.completions, function(completion) {
                             items.push({
                                 text: completion.match,
@@ -435,8 +338,8 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                         }, this);
                     }
 
-                    var menu = new Ext.menu.Menu({
-                        id: 'femhub-completion-menu',
+                    var context = new Ext.menu.Menu({
+                        maxHeight: 200,
                         items: items,
                         listeners: {
                             click: {
@@ -444,25 +347,62 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                                     this.setInput(input.slice(0, start) + item.text + input.slice(end));
                                     this.setSelection(start + item.text.length);
                                     this.focusCell();
-                                    menu.destroy()
+                                    menu.destroy();
                                 },
                                 scope: this,
                             },
                         },
                     });
 
-                    menu.showAt([0, 0]);
-                }
-            }, this);
+                    var textarea = this.el_textarea;
+                    var xy = textarea.getXY();
+
+                    var lineStart = FEMhub.text.getLineStart(input, start);
+                    var line = input.slice(lineStart, end);
+
+                    var text = Ext.util.TextMetrics.measure(textarea, 'x');
+                    var nl = FEMhub.text.getNumberOfLinesBefore(input, start);
+
+                    xy[0] += line.length*text.width;
+                    xy[1] += (nl + 1)*text.height;
+
+                    xy[0] += textarea.getBorderWidth('l');
+                    xy[1] += textarea.getBorderWidth('t');
+
+                    xy[0] += textarea.getMargins('l');
+                    xy[1] += textarea.getMargins('t');
+
+                    xy[0] += textarea.getPadding('l');
+                    xy[1] += textarea.getPadding('t');
+
+                    context.showAt(xy);
+                },
+                fail: function(reason, result) {
+                    this.owner.showEngineError(reason);
+                },
+                scope: this,
+            });
         }
+    },
+
+    preprocessCell: function() {
+        var spaces = '';
+
+        for (var i = 0; i < this.owner.tabWidth; i++) {
+            spaces += ' ';
+        }
+
+        var input = this.getInput();
+        input = input.replace(/\t/g, spaces);
+        this.setInput(input);
+
+        return input;
     },
 
     evaluateCell: function(config) {
         config = config || {};
 
-        var input = this.getInput();
-
-        this.fireEvent('preevaluate', this, input);
+        var input = this.preprocessCell();
 
         this.el_evaluate.removeClass('femhub-enabled');
         this.el_clear.removeClass('femhub-enabled');
@@ -500,7 +440,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                     }
 
                     if (output.length > 0) {
-                        var cell = this.owner.newCell({
+                        cell = this.owner.newCell({
                             type: type,
                             after: after,
                             setup: {
@@ -530,73 +470,110 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
                 }
             }
 
-            this.fireEvent('postevaluate', this, input, cells);
+            if (Ext.isDefined(config.handler)) {
+                config.handler.call(config.scope || this, true);
+            }
         }
 
-        FEMhub.RPC.Engine.evaluate({
-            uuid: this.owner.uuid,
+        function evalFailed() {
+            this.evaluating = false;
+
+            this.el_evaluate.addClass('femhub-enabled');
+            this.el_clear.addClass('femhub-enabled');
+            this.el_interrupt.removeClass('femhub-enabled');
+
+            this.focusCell();
+
+            if (Ext.isDefined(config.handler)) {
+                config.evaluated.call(config.scope || this, true);
+            }
+        }
+
+        this.owner.evaluateCode({
             source: input,
             cellid: this.id,
-        }, function(result) {
-            var cells = [];
+            okay: function(result) {
+                var cells = [];
 
-            if (Ext.isDefined(result.info)) {
-                var type = 'output';
+                if (Ext.isDefined(result.info)) {
+                    var output, type = 'output';
 
-                if (!result.info) {
-                    var output = "Object `" + result.text + "` not found.";
-                } else {
-                    if (result.more && result.info.source) {
-                        if (result.info.source_html) {
-                            var output = result.info.source_html, type = 'raw';
-                        } else {
-                            var output = result.info.source;
-                        }
+                    if (!result.info) {
+                        output = "Object `" + result.text + "` not found.";
                     } else {
-                        if (result.info.docstring) {
-                            if (result.info.docstring_html) {
-                                var output = result.info.docstring_html, type = 'raw';
+                        if (result.more && result.info.source) {
+                            if (result.info.source_html) {
+                                output = result.info.source_html;
+                                type = 'raw';
                             } else {
-                                var output = result.info.docstring;
+                                output = result.info.source;
                             }
                         } else {
-                            var output = '<no docstring>';
+                            if (result.info.docstring) {
+                                if (result.info.docstring_html) {
+                                    output = result.info.docstring_html;
+                                    type = 'raw';
+                                } else {
+                                    output = result.info.docstring;
+                                }
+                            } else {
+                                output = '<no docstring>';
+                            }
                         }
+                    }
+
+                    cells.push({output: output, type: type});
+                }
+
+                if (result.shout) {
+                    cells.push({output: result.shout, type: 'output'});
+                }
+
+                if (result.out) {
+                    cells.push({output: result.out, type: 'output'});
+                }
+
+                if (result.sherr) {
+                    cells.push({output: result.sherr, type: 'error'});
+                }
+
+                if (result.err) {
+                    cells.push({output: result.err, type: 'error'});
+                }
+
+                if (Ext.isArray(result.plots)) {
+                    Ext.each(result.plots, function(plot) {
+                        var contents = 'data:' + plot.type + ';' + plot.encoding + ',' + plot.data;
+                        cells.push({output: contents, type: 'image'});
+                    }, this);
+                }
+
+                if (result.traceback) {
+                    if (result.traceback_html) {
+                        cells.push({output: result.traceback_html, type: 'raw'});
+                    } else {
+                        cells.push({output: result.traceback, type: 'error'});
+                    }
+                } else {
+                    if (result.interrupted) {
+                        cells.push({output: '$Interrupted', type: 'error'});
                     }
                 }
 
-                cells.push({output: output, type: type});
-            }
+                evalSuccess.call(this, result.index, cells);
+            },
+            fail: function(reason, result) {
+                this.owner.showEngineError(reason);
+                evalFailed.call(this);
+            },
+            scope: this,
+        });
+    },
 
-            if (result.out) {
-                cells.push({output: result.out, type: 'output'});
-            }
-
-            if (result.err) {
-                cells.push({output: result.err, type: 'error'});
-            }
-
-            if (Ext.isArray(result.plots)) {
-                Ext.each(result.plots, function(plot) {
-                    var contents = 'data:' + plot.type + ';' + plot.encoding + ',' + plot.data;
-                    cells.push({output: contents, type: 'image'});
-                }, this);
-            }
-
-            if (result.traceback) {
-                if (result.traceback_html) {
-                    cells.push({output: result.traceback_html, type: 'raw'});
-                } else {
-                    cells.push({output: result.traceback, type: 'error'});
-                }
-            }
-
-            if (result.interrupted) {
-                cells.push({output: '$Interrupted', type: 'error'});
-            }
-
-            evalSuccess.call(this, result.index, cells);
-        }, this);
+    wipeCell: function() {
+        this.setInput('');
+        this.autosize();
+        this.focusCell();
     },
 
     clearCell: function() {
@@ -608,42 +585,22 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     },
 
     interruptCell: function() {
-        if (!this.evaluating) {
-            return;
+        if (this.evaluating) {
+            this.owner.interruptEngine(this.id);
         }
-
-        FEMhub.RPC.Engine.interrupt({
-            uuid: this.owner.uuid,
-            cellid: this.id,
-        }, function(result) {
-            this.evaluating = false;
-
-            this.el_evaluate.addClass('femhub-enabled');
-            this.el_clear.addClass('femhub-enabled');
-            this.el_interrupt.removeClass('femhub-enabled');
-
-            this.focusCell();
-        }, this);
     },
 
-    insertInputCellAfter: function() {
-        var after = this.getOutputCells();
+    getBaseCellForInsertAfter: function() {
+        var cells = this.getOutputCells();
 
-        if (!after.length) {
-            after = this;
+        if (cells.length) {
+            return cells[cells.length-1];
         } else {
-            after = after[after.length-1];
+            return this;
         }
-
-        var cell = this.owner.newCell({ type: 'input', after: after });
-
-        this.blurCell();
-        cell.focusCell();
-
-        return cell;
     },
 
-    mergeCellBefore: function() {
+    mergeCellAbove: function() {
         var cell = this.getPrevCell('input');
 
         if (cell === null) {
@@ -652,7 +609,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         var input = cell.getInput();
 
-        if (input.length != 0) {
+        if (input.length !== 0) {
             input += '\n';
         }
 
@@ -676,7 +633,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         return true;
     },
 
-    mergeCellAfter: function() {
+    mergeCellBelow: function() {
         var cell = this.getNextCell('input');
 
         if (cell === null) {
@@ -685,7 +642,7 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
 
         var input = cell.getInput();
 
-        if (input.length != 0) {
+        if (input.length !== 0) {
             input = '\n' + input;
         }
 
@@ -707,6 +664,66 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
     removeCell: function() {
         this.destroyOutputCells();
         FEMhub.InputCell.superclass.removeCell.call(this);
+    },
+
+    handlePrev: function(evt) {
+        if (this.collapsed) {
+            FEMhub.InputCell.superclass.handlePrev.call(this, evt);
+        } else {
+            var input = this.getInput();
+            var index = input.indexOf('\n');
+
+            var selection = this.getSelection();
+
+            if (index === -1 || selection.start <= index) {
+                this.setSelection(selection.start);
+                FEMhub.InputCell.superclass.handlePrev.call(this, evt);
+            }
+        }
+    },
+
+    handleNext: function(evt) {
+        if (this.collapsed) {
+            FEMhub.InputCell.superclass.handleNext.call(this, evt);
+        } else {
+            var input = this.getInput();
+            var index = input.lastIndexOf('\n');
+
+            var selection = this.getSelection();
+
+            if (index === -1 || selection.end > index) {
+                this.setSelection(selection.end);
+                FEMhub.InputCell.superclass.handleNext.call(this, evt);
+            }
+        }
+    },
+
+    nextBracket: function() {
+        var index = this.getLocation();
+
+        if (index !== null) {
+            var input = this.getInput();
+
+            index = FEMhub.text.findAfter(input, index, '()[]{}');
+
+            if (index !== null) {
+                this.setSelection(index);
+            }
+        }
+    },
+
+    prevBracket: function() {
+        var index = this.getLocation();
+
+        if (index !== null) {
+            var input = this.getInput();
+
+            index = FEMhub.text.findBefore(input, index, '()[]{}');
+
+            if (index !== null) {
+                this.setSelection(index);
+            }
+        }
     },
 });
 

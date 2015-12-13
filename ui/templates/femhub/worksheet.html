@@ -1,0 +1,26 @@
+{% extends femhub.html %}
+
+{% block title %}FEMhub Online Lab --- Published Worksheet{% end %}
+
+{% block runtime %}
+FEMhub.RPC.init(function() {
+    Ext.onReady(function() {
+        var viewer = new FEMhub.WorksheetViewer({
+            setup: {
+                uuid: "{{ uuid }}",
+                name: "{{ name }}",
+                user: "{{ user }}",
+            },
+        });
+        viewer.show();
+    });
+});
+{% end %}
+
+{% block body %}
+<h2>Published Worksheet</h2>
+<p>
+uuid = {{ uuid }}<br/>
+</p>
+{% end %}
+

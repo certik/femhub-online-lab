@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>{% block title %}FEMhub Online Lab{% end %}</title>
+        <link rel="icon" type="image/ico" href="/static/img/femhub/favicon.ico"/>
+
+        {% if debug %}
+        <script type="text/javascript">
+            if (console === undefined || console.firebug === undefined) {
+                window._console = window.console;
+
+                var firebug = document.createElement("script");
+
+                firebug.setAttribute("type", "text/javascript");
+                firebug.setAttribute("src", "/static/external/firebug/build/firebug-lite.js");
+
+                document.getElementsByTagName("head")[0].appendChild(firebug);
+            }
+        </script>
+        {% end %}
+
+        <link href="{{ static_url('external/ext/css/ext-all.css') }}" rel="stylesheet" type="text/css" />
+
+        {% if debug %}
+        <script src="{{ static_url('external/ext/js/ext-base-debug.js') }}" type="text/javascript"></script>
+        <script src="{{ static_url('external/ext/js/ext-all-debug.js') }}" type="text/javascript"></script>
+        {% else %}
+        <script src="{{ static_url('external/ext/js/ext-base.js') }}" type="text/javascript"></script>
+        <script src="{{ static_url('external/ext/js/ext-all.js') }}" type="text/javascript"></script>
+        {% end %}
+
+        <link href="{{ static_url('external/ext/css/ux/StatusBar.css') }}" rel="stylesheet" type="text/css" />
+        <script src="{{ static_url('external/ext/js/ux/StatusBar.js') }}" type="text/javascript"></script>
+
+        {% block css %}{% end %}
+
+        <style type="text/css">
+            {{ extra_css }}
+        </style>
+
+        {% block script %}{% end %}
+
+        <script type="text/javascript">
+            {% block runtime %}{% end %}
+        </script>
+    </head>
+    <body>
+    {% block body %}{% end %}
+    </body>
+</html>
+

@@ -1,16 +1,56 @@
 
-FEMhub.PublishedWorksheets = Ext.extend(Ext.Window, {
+FEMhub.PublishedWorksheets = Ext.extend(FEMhub.Window, {
     grid: null,
+
+    defaultButtons: {
+        view: {
+            text: 'View',
+            handler: function(row) {
+                var worksheet = this.getWorksheet();
+
+                if (worksheet === null) {
+                    FEMhub.msg.warning(this, "Select a worksheet first and then click 'View'.");
+                } else {
+                    this.showWorksheetViewer({
+                        uuid: worksheet.uuid,
+                        name: worksheet.name,
+                        user: worksheet.user,
+                    });
+                }
+            },
+        },
+        close: {
+            text: 'Close',
+            handler: function() {
+                this.close();
+            },
+        },
+    },
+
+    defaultMenuItems: {
+        view: {
+            text: 'View',
+            handler: function(record) {
+                this.showWorksheetViewer({
+                    uuid: record.data.uuid,
+                    name: record.data.name,
+                    user: record.data.user,
+                });
+            },
+        },
+    },
 
     constructor: function(config) {
         config = config || {};
 
-        this.addEvents(['worksheetforked']);
+        this.grid = this.initGrid();
 
-        this.initGrid();
-        this.fillGrid();
+        this.statusbar = new FEMhub.Statusbar({
+            defaultText: '',
+            busyText: '',
+        });
 
-        Ext.apply(config, {
+        config = Ext.apply({
             title: "Published worksheets",
             iconCls: 'femhub-published-icon',
             minimizalble: false,
@@ -21,45 +61,61 @@ FEMhub.PublishedWorksheets = Ext.extend(Ext.Window, {
             height: 400,
             layout: 'fit',
             items: this.grid,
-            buttons: [{
-                text: 'Fork',
-                handler: function() {
-                    var model = this.grid.getSelectionModel();
+            buttons: ['view', 'close'],
+            menuItems: ['view'],
+            bbar: this.statusbar,
+        }, config);
 
-                    if (!model.hasSelection()) {
-                        FEMhub.msg.warning(this, "Select a worksheet first and then click 'Fork'.");
-                    } else {
-                        var record = model.getSelected();
-                        this.fireEvent('worksheetforked', record.data.uuid);
-                        this.close();
-                    }
-                },
-                scope: this,
-            }, {
-                text: 'Cancel',
-                handler: function() {
-                    this.close();
-                },
-                scope: this,
-            }],
-        });
+        if (!Ext.isDefined(config.x) && !Ext.isDefined(config.y)) {
+            Ext.apply(config, FEMhub.util.getWindowXY({
+                width: config.width,
+                height: config.height,
+            }));
+        }
+
+        this.configureButtons(config);
+        this.configureMenuItems(config);
 
         FEMhub.PublishedWorksheets.superclass.constructor.call(this, config);
     },
 
+    configureButtons: function(config) {
+        Ext.each(config.buttons, function(button, i, buttons) {
+            if (Ext.isString(button)) {
+                var config = this.defaultButtons[button];
+
+                if (Ext.isDefined(config)) {
+                    buttons[i] = Ext.applyIf({scope: this}, config);
+                }
+            }
+        }, this);
+    },
+
+    configureMenuItems: function(config) {
+        Ext.each(config.menuItems, function(item, i, menuItems) {
+            if (Ext.isString(item)) {
+                var config = this.defaultMenuItems[item];
+
+                if (Ext.isDefined(config)) {
+                    menuItems[i] = Ext.applyIf({scope: this}, config);
+                }
+            }
+        }, this);
+    },
+
     initGrid: function() {
-        this.grid = new Ext.grid.GridPanel({
+        return new Ext.grid.GridPanel({
             ds: new Ext.data.GroupingStore({
                 reader: new Ext.data.ArrayReader({}, [
                     { name: 'user' },
                     { name: 'uuid' },
-                    { name: 'title' },
+                    { name: 'name' },
                     { name: 'engine' },
                     { name: 'created' },
                     { name: 'published' },
                 ]),
                 sortInfo: {
-                    field: 'title',
+                    field: 'name',
                     direction: 'ASC',
                 },
                 groupField: 'user',
@@ -67,7 +123,7 @@ FEMhub.PublishedWorksheets = Ext.extend(Ext.Window, {
             cm: new Ext.grid.ColumnModel({
                 columns: [
                     {header: "User", width: 100, sortable: true, dataIndex: 'user', hidden: true},
-                    {header: "Title", width: 200, sortable: true, dataIndex: 'title'},
+                    {header: "Title", width: 200, sortable: true, dataIndex: 'name'},
                     {header: "Engine", width: 70, sortable: true, dataIndex: 'engine'},
                     {header: "Published", width: 100, sortable: true, dataIndex: 'published'},
                 ],
@@ -81,17 +137,44 @@ FEMhub.PublishedWorksheets = Ext.extend(Ext.Window, {
                 forceFit:true,
             }),
             border: false,
+            listeners: {
+                rowdblclick: function(grid, row, evt) {
+                    evt.stopEvent();
+
+                    var record = grid.getStore().getAt(row);
+
+                    this.showWorksheetViewer({
+                        uuid: record.data.uuid,
+                        name: record.data.name,
+                        user: record.data.user,
+                    });
+                },
+                rowcontextmenu: function(grid, row, evt) {
+                    evt.stopEvent();
+
+                    var record = grid.getStore().getAt(row);
+                    var menu = new Ext.menu.Menu();
+
+                    Ext.each(this.menuItems, function(item) {
+                        var handler = item.handler.createDelegate(this, [record], 0);
+                        menu.addMenuItem(Ext.applyIf({handler: handler}, item));
+                    }, this);
+
+                    menu.showAt(evt.getXY());
+                },
+                scope: this,
+            },
         });
     },
 
     fillGrid: function() {
-        FEMhub.RPC.Core.getUsers({worksheets: true}, function(result) {
-            if (result.ok === true) {
-                var store = this.grid.getStore();
-                store.removeAll();
+        var store = this.grid.getStore();
+        store.removeAll();
 
+        FEMhub.RPC.Core.getPublishedWorksheets({}, {
+            okay: function(result) {
                 var record = Ext.data.Record.create([
-                    'user', 'uuid', 'title', 'engine', 'created', 'published'
+                    'user', 'uuid', 'name', 'engine', 'created', 'published'
                 ]);
 
                 Ext.each(result.users, function(user) {
@@ -99,15 +182,48 @@ FEMhub.PublishedWorksheets = Ext.extend(Ext.Window, {
                         store.add(new record({
                             user: user.username,
                             uuid: worksheet.uuid,
-                            title: worksheet.name,
+                            name: worksheet.name,
                             engine: worksheet.engine.name,
                             created: worksheet.created,
                             published: worksheet.published,
                         }, worksheet.uuid));
                     }, this);
                 }, this);
-            }
-        }, this);
+            },
+            scope: this,
+            status: {
+                start: function() {
+                    return this.statusbar.showBusy("Loading worksheet ...");
+                },
+                end: function(ok, id) {
+                    this.statusbar.clearBusy(id);
+                },
+            },
+        });
+    },
+
+    getWorksheet: function() {
+        var model = this.grid.getSelectionModel();
+
+        if (!model.hasSelection()) {
+            return null;
+        } else {
+            return model.getSelected().data;
+        }
+    },
+
+    showWorksheetViewer: function(config) {
+        var viewer = new FEMhub.WorksheetViewer({
+            setup: Ext.apply({
+                showInputControls: false,
+            }, config),
+        });
+
+        viewer.show();
+    },
+
+    onShow: function() {
+        this.fillGrid();
     },
 });
 

@@ -1,0 +1,17 @@
+{% extends femhub.html %}
+
+{% block runtime %}
+FEMhub.Lab.run({
+    init: function() {
+        Ext.QuickTips.init();
+    },
+    modules: [
+        FEMhub.Modules.Browser,
+        FEMhub.Modules.MeshEditor,
+        FEMhub.Modules.Settings,
+        FEMhub.Modules.Help,
+        FEMhub.Modules.Logout,
+    ],
+});
+{% end %}
+

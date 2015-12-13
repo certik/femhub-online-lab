@@ -129,7 +129,7 @@
     cursor: text;
     outline: none;
     overflow: auto;
-    white-space: pre-wrap;
+    white-space: pre;
     background-color: #ffffcc;
 }
 

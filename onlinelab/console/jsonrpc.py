@@ -1,7 +1,7 @@
 """Convenient interface to JSON RPC services. """
 
 from uuid import uuid4
-from urllib import urlopen
+from urllib2 import urlopen, Request
 from simplejson import dumps, loads
 
 class JSONRPCError(Exception):
@@ -38,7 +38,11 @@ class JSONRPCMethod(object):
             'id': uuid4().hex,
         })
 
-        url = urlopen(self.url, data)
+        request = Request(self.url, data, {
+            'Content-Type': 'application/json',
+        })
+
+        url = urlopen(request)
         response = loads(url.read())
         url.close()
 
@@ -57,7 +61,85 @@ class JSONRPCNamespace(object):
         return "<jsonrpc-namespace %s>" % self.name
 
 class JSONRPCService(object):
-    """Provides convenient access to a JSON RPC service. """
+    """
+    Provides convenient access to a JSON RPC service.
+
+    To use it, first connect to the service, for example:
+
+    >>> from onlinelab.console.jsonrpc import JSONRPCService
+    >>> s = JSONRPCService("http://lab.femhub.org/async")
+
+    If there is no JSON RPC service running at the url, you get an exception:
+
+    >>> s = JSONRPCService("http://lab.femhub.org/some_random_url")
+    Traceback (most recent call last):
+    ...
+    ValueError: No JSON object could be decoded
+
+    After you are connected, then you investigate what methods are available,
+    for example in ipython, type:
+
+    >>> s.<TAB>
+    s.auth
+    s.complete
+    s.desc
+    s.evaluate
+    s.init
+    s.interrupt
+    s.kill
+    s.stat
+    s.url
+
+    This shows you what methods the server offers. You need to study the
+    documentation for the server to learn how those methods should be used. In
+    this particular example, you first initialize the engine:
+
+
+    >>> s.init("some_uuid")
+    {'status': 'started'}
+
+    And then use it:
+
+    >>> s.evaluate("some_uuid", "2+3")
+    {'err': '',
+     'files': [],
+     'index': 1,
+     'interrupted': False,
+     'out': '5\n',
+     'plots': [],
+     'source': '2+3',
+     'time': 0.0,
+     'traceback': False}
+
+
+    >>> s.evaluate("some_uuid", "from sympy import sin, pi")
+    {'err': '',
+     'files': [],
+     'index': 2,
+     'interrupted': False,
+     'out': '',
+     'plots': [],
+     'source': 'from sympy import sin, pi',
+     'time': 0.0,
+     'traceback': False}
+
+    >>> s.evaluate("some_uuid", "sin(pi/3)")
+    {'err': '',
+     'files': [],
+     'index': 3,
+     'interrupted': False,
+     'out': '3**(1/2)/2\n',
+     'plots': [],
+     'source': 'sin(pi/3)',
+     'time': 0.010000000000000009,
+     'traceback': False}
+
+    Finally you kill the engine by::
+
+    >>> s.kill("some_uuid")
+    {'status': 'killed'}
+
+    """
 
     def __init__(self, url, auth=None):
         self.url = url

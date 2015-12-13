@@ -9,6 +9,14 @@ FEMhub.Lab = function(config) {
     }, this);
 };
 
+FEMhub.Lab.run = function(config) {
+    if (!Ext.isDefined(FEMhub.lab)) {
+        FEMhub.lab = new FEMhub.Lab(config);
+    } else {
+        FEMhub.msg.critical("Online Lab was already started.");
+    }
+};
+
 Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     isReady: false,
     desktop: null,
@@ -24,6 +32,8 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
         this.fireEvent('ready', this);
         this.isReady = true;
 
+        this.bindings = new FEMhub.Bindings();
+
         FEMhub.RPC.User.isAuthenticated({}, function(result) {
             if (result.authenticated !== true) {
                 this.startLogin();
@@ -38,6 +48,16 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
         this.startLogin();
     },
 
+    cleanupLab: function() {
+        var group = this.desktop.getGroup();
+
+        group.each(function(wnd) {
+            if (wnd instanceof FEMhub.Worksheet) {
+                wnd.getCellManager().killEngine();
+            }
+        }, this);
+    },
+
     startLogin: function() {
         var login = new FEMhub.Login({
             listeners: {
@@ -48,7 +68,7 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
             },
         });
 
-        login.show();
+        login.render(Ext.getBody());
     },
 
     afterLogin: function() {
@@ -71,16 +91,11 @@ Ext.extend(FEMhub.Lab, Ext.util.Observable, {
     },
 
     onUnload: function(evt) {
-        var group = this.desktop.getGroup();
-
-        group.each(function(wnd) {
-            if (wnd.getXType() === 'x-femhub-worksheet') {
-                wnd.getCellsManager().killEngine();
-            }
-        }, this);
 
         if (this.fireEvent('beforeunload', this) === false) {
             evt.stopEvent();
+        } else {
+            this.cleanupLab();
         }
     },
 
@@ -93,7 +108,7 @@ FEMhub.getDesktop = function() {
     if (Ext.isDefined(FEMhub.lab)) {
         return FEMhub.lab.getDesktop();
     } else {
-        /* XXX: show error */
+        return null; /* XXX: show error */
     }
-}
+};
 
